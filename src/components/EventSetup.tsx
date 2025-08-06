@@ -1,20 +1,26 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Palette, Image, ArrowRight } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Palette, Image, ArrowRight, Eye } from "lucide-react";
+import ColorPicker from "@/components/ColorPicker";
+import ThemePreview from "@/components/ThemePreview";
+import { HSLColor, applyDynamicTheme } from "@/lib/colorUtils";
 
 const EventSetup = () => {
-  const [selectedTheme, setSelectedTheme] = useState("blue");
   const [selectedStyles, setSelectedStyles] = useState<string[]>([]);
+  const [primaryColor, setPrimaryColor] = useState<HSLColor>({ h: 220, s: 100, l: 60 });
+  const [secondaryColor, setSecondaryColor] = useState<HSLColor | null>(null);
+  const [backgroundStyle, setBackgroundStyle] = useState<'solid' | 'gradient' | 'default'>('default');
+  const [eventName, setEventName] = useState("");
+  const [eventLocation, setEventLocation] = useState("");
 
-  const themes = [
-    { id: "blue", name: "Classic Blue", colors: "gradient-primary" },
-    { id: "light", name: "Light & Clean", colors: "gradient-subtle" },
-    { id: "dark", name: "Dark Blue", colors: "bg-primary" },
-    { id: "minimal", name: "Minimal", colors: "bg-secondary border-2 border-primary" },
-  ];
+  // Apply theme changes in real-time
+  useEffect(() => {
+    applyDynamicTheme(primaryColor, secondaryColor || undefined);
+  }, [primaryColor, secondaryColor]);
 
   const avatarStyles = [
     { id: "pixar", name: "Pixar Style", description: "3D animated character style" },
@@ -62,6 +68,8 @@ const EventSetup = () => {
                 <Label htmlFor="eventName">Event Name</Label>
                 <Input 
                   id="eventName"
+                  value={eventName}
+                  onChange={(e) => setEventName(e.target.value)}
                   placeholder="Tech Conference 2024"
                   className="bg-input/50 border-border"
                 />
@@ -70,6 +78,8 @@ const EventSetup = () => {
                 <Label htmlFor="eventLocation">Location</Label>
                 <Input 
                   id="eventLocation"
+                  value={eventLocation}
+                  onChange={(e) => setEventLocation(e.target.value)}
                   placeholder="Convention Center Hall A"
                   className="bg-input/50 border-border"
                 />
@@ -77,34 +87,79 @@ const EventSetup = () => {
             </CardContent>
           </Card>
 
-          {/* Theme Selection */}
-          <Card className="bg-card/80 backdrop-blur border-border shadow-soft">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Palette className="h-6 w-6" />
-                Choose Theme
-              </CardTitle>
-              <CardDescription>This will style your event's kiosk interface</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                {themes.map((theme) => (
-                  <button
-                    key={theme.id}
-                    onClick={() => setSelectedTheme(theme.id)}
-                    className={`p-4 rounded-lg border-2 transition-smooth ${
-                      selectedTheme === theme.id 
-                        ? 'border-primary shadow-medium' 
-                        : 'border-border hover:border-muted-foreground'
-                    }`}
-                  >
-                    <div className={`h-20 w-full rounded ${theme.colors} mb-2`} />
-                    <p className="font-semibold">{theme.name}</p>
-                  </button>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
+          {/* Color Customization */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Primary Color Picker */}
+            <ColorPicker
+              value={primaryColor}
+              onChange={setPrimaryColor}
+              label="Primary Color"
+              showAccessibilityCheck={true}
+              contrastBackground={{ h: 0, s: 0, l: 100 }} // White background for contrast check
+            />
+
+            {/* Secondary Color Picker */}
+            <div className="space-y-4">
+              <Card className="bg-card/80 backdrop-blur border-border">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-lg">
+                    <Palette className="h-5 w-5" />
+                    Secondary Color (Optional)
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      id="useSecondary"
+                      checked={secondaryColor !== null}
+                      onChange={(e) => setSecondaryColor(e.target.checked ? { h: 200, s: 70, l: 50 } : null)}
+                      className="rounded border-border"
+                    />
+                    <Label htmlFor="useSecondary">Use secondary color for gradients</Label>
+                  </div>
+                  
+                  {secondaryColor && (
+                    <ColorPicker
+                      value={secondaryColor}
+                      onChange={setSecondaryColor}
+                      label=""
+                      showAccessibilityCheck={true}
+                      contrastBackground={primaryColor}
+                    />
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* Background Style */}
+              <Card className="bg-card/80 backdrop-blur border-border">
+                <CardHeader>
+                  <CardTitle className="text-lg">Background Style</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <Select value={backgroundStyle} onValueChange={(value: 'solid' | 'gradient' | 'default') => setBackgroundStyle(value)}>
+                    <SelectTrigger className="bg-input/50 border-border">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="default">Default Theme</SelectItem>
+                      <SelectItem value="solid">Solid Color</SelectItem>
+                      <SelectItem value="gradient" disabled={!secondaryColor}>
+                        Gradient {!secondaryColor && '(Enable secondary color)'}
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+
+          {/* Theme Preview */}
+          <ThemePreview 
+            primaryColor={primaryColor}
+            secondaryColor={secondaryColor}
+            backgroundStyle={backgroundStyle}
+          />
 
           {/* Avatar Styles */}
           <Card className="bg-card/80 backdrop-blur border-border shadow-soft">
@@ -132,11 +187,25 @@ const EventSetup = () => {
             </CardContent>
           </Card>
 
-          <div className="text-center">
-            <Button variant="hero" size="lg" className="text-xl px-12 py-6">
+          <div className="text-center space-y-4">
+            <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
+              <Eye className="h-4 w-4" />
+              Live preview updates as you customize colors
+            </div>
+            <Button 
+              variant="hero" 
+              size="lg" 
+              className="text-xl px-12 py-6"
+              disabled={!eventName || selectedStyles.length === 0}
+            >
               Create Event Kiosk
               <ArrowRight className="h-6 w-6 ml-3" />
             </Button>
+            {(!eventName || selectedStyles.length === 0) && (
+              <p className="text-sm text-muted-foreground">
+                Please fill in event details and select at least one avatar style
+              </p>
+            )}
           </div>
         </div>
       </div>

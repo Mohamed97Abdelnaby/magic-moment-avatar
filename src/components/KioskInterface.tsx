@@ -3,7 +3,15 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Camera, ArrowLeft, ArrowRight, RotateCcw, Send, Printer } from "lucide-react";
 
-const KioskInterface = () => {
+interface KioskInterfaceProps {
+  customColors?: {
+    primary: string;
+    secondary?: string;
+    backgroundStyle?: 'solid' | 'gradient' | 'default';
+  };
+}
+
+const KioskInterface = ({ customColors }: KioskInterfaceProps = {}) => {
   const [currentStep, setCurrentStep] = useState<'styles' | 'camera' | 'countdown' | 'loading' | 'result'>('styles');
   const [selectedStyle, setSelectedStyle] = useState<string>('');
   const [countdown, setCountdown] = useState(3);
