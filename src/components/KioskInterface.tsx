@@ -69,9 +69,9 @@ const KioskInterface = () => {
                 <button
                   key={style.id}
                   onClick={() => handleStyleSelect(style.id)}
-                  className={`p-8 rounded-2xl border-4 transition-all transform hover:scale-105 ${
+                  className={`p-8 rounded-2xl border-4 transition-smooth transform hover:scale-105 ${
                     selectedStyle === style.id
-                      ? 'border-primary glow-primary bg-primary/10'
+                      ? 'border-primary shadow-medium bg-primary/10'
                       : 'border-border hover:border-primary/50'
                   }`}
                 >
@@ -99,21 +99,21 @@ const KioskInterface = () => {
       case 'camera':
         return (
           <div className="text-center">
-            <h1 className="text-6xl font-bold mb-8 gradient-secondary bg-clip-text text-transparent">
+            <h1 className="text-6xl font-bold mb-8 text-accent">
               Get Ready!
             </h1>
             
             <div className="relative max-w-2xl mx-auto mb-12">
-              <div className="aspect-video bg-muted rounded-2xl border-4 border-dashed border-secondary flex items-center justify-center glow-secondary">
-                <Camera className="h-32 w-32 text-secondary animate-pulse" />
+              <div className="aspect-video bg-muted rounded-2xl border-4 border-dashed border-accent flex items-center justify-center shadow-medium">
+                <Camera className="h-32 w-32 text-accent animate-pulse-soft" />
               </div>
-              <div className="absolute top-4 left-4 bg-secondary text-secondary-foreground px-4 py-2 rounded-lg font-bold">
+              <div className="absolute top-4 left-4 bg-accent text-accent-foreground px-4 py-2 rounded-lg font-bold">
                 LIVE
               </div>
             </div>
             
             <div className="flex gap-6 justify-center">
-              <Button 
+              <Button
                 variant="outline" 
                 size="lg"
                 onClick={() => setCurrentStep('styles')}
@@ -143,7 +143,7 @@ const KioskInterface = () => {
               Get Ready...
             </h1>
             
-            <div className="text-[20rem] font-bold gradient-accent bg-clip-text text-transparent animate-countdown-pulse glow-accent">
+            <div className="text-[20rem] font-bold text-accent animate-pulse-soft">
               {countdown}
             </div>
           </div>
@@ -152,20 +152,20 @@ const KioskInterface = () => {
       case 'loading':
         return (
           <div className="text-center">
-            <h1 className="text-6xl font-bold mb-8 gradient-holographic bg-clip-text text-transparent">
+            <h1 className="text-6xl font-bold mb-8 gradient-primary bg-clip-text text-transparent">
               Creating Your Avatar...
             </h1>
             
             <div className="relative max-w-md mx-auto mb-12">
-              <div className="w-64 h-64 gradient-holographic rounded-full animate-loading-spin mx-auto glow-primary" />
+              <div className="w-64 h-64 bg-primary rounded-full animate-pulse-soft mx-auto shadow-medium" />
               <div className="absolute inset-0 flex items-center justify-center">
-                <div className="w-48 h-48 bg-background rounded-full flex items-center justify-center">
-                  <Camera className="h-24 w-24 text-primary animate-pulse" />
+                <div className="w-48 h-48 bg-background rounded-full flex items-center justify-center shadow-soft">
+                  <Camera className="h-24 w-24 text-primary animate-pulse-soft" />
                 </div>
               </div>
             </div>
             
-            <p className="text-2xl text-muted-foreground animate-pulse">
+            <p className="text-2xl text-muted-foreground animate-pulse-soft">
               AI is working its magic...
             </p>
           </div>
@@ -179,7 +179,7 @@ const KioskInterface = () => {
             </h1>
             
             <div className="max-w-md mx-auto mb-12">
-              <Card className="p-8 glow-primary">
+              <Card className="p-8 shadow-medium">
                 <div className="aspect-square bg-muted rounded-2xl flex items-center justify-center mb-4">
                   <div className="text-8xl">🎭</div>
                 </div>
@@ -199,7 +199,7 @@ const KioskInterface = () => {
               </Button>
               
               <Button 
-                variant="accent" 
+                variant="default" 
                 size="lg"
                 className="text-xl px-8 py-6"
               >
@@ -208,7 +208,7 @@ const KioskInterface = () => {
               </Button>
               
               <Button 
-                variant="secondary" 
+                variant="accent" 
                 size="lg"
                 className="text-xl px-8 py-6"
               >

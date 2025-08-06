@@ -4,29 +4,24 @@ import heroImage from "@/assets/hero-image.jpg";
 
 const HeroSection = () => {
   return (
-    <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
-      {/* Background Image */}
+    <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-20">
+      {/* Background Image with overlay */}
       <div 
         className="absolute inset-0 bg-cover bg-center bg-no-repeat"
         style={{ backgroundImage: `url(${heroImage})` }}
       >
-        <div className="absolute inset-0 bg-background/80 backdrop-blur-sm" />
+        <div className="absolute inset-0 bg-white/90 backdrop-blur-sm" />
       </div>
       
-      {/* Floating Elements */}
-      <div className="absolute top-20 left-10 animate-float">
-        <div className="gradient-primary p-4 rounded-full glow-primary">
+      {/* Simple floating elements */}
+      <div className="absolute top-32 left-10 animate-float">
+        <div className="bg-primary p-4 rounded-full shadow-soft">
           <Camera className="h-8 w-8 text-primary-foreground" />
         </div>
       </div>
       <div className="absolute top-40 right-20 animate-float" style={{ animationDelay: '1s' }}>
-        <div className="gradient-secondary p-4 rounded-full glow-secondary">
-          <Sparkles className="h-8 w-8 text-secondary-foreground" />
-        </div>
-      </div>
-      <div className="absolute bottom-40 left-20 animate-float" style={{ animationDelay: '2s' }}>
-        <div className="gradient-accent p-4 rounded-full glow-accent">
-          <Zap className="h-8 w-8 text-accent-foreground" />
+        <div className="bg-accent p-4 rounded-full shadow-soft">
+          <Sparkles className="h-8 w-8 text-accent-foreground" />
         </div>
       </div>
       
@@ -34,7 +29,7 @@ const HeroSection = () => {
       <div className="relative z-10 text-center max-w-6xl mx-auto px-6">
         <div className="animate-fade-in">
           <h1 className="text-6xl md:text-8xl font-bold mb-8 leading-tight">
-            <span className="gradient-holographic bg-clip-text text-transparent animate-gradient-shift">
+            <span className="gradient-primary bg-clip-text text-transparent">
               Transform Events
             </span>
             <br />
@@ -61,7 +56,7 @@ const HeroSection = () => {
           
           <div className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto">
             <div className="text-center">
-              <div className="gradient-primary p-6 rounded-2xl glow-primary inline-block mb-4">
+              <div className="bg-primary p-6 rounded-2xl shadow-medium inline-block mb-4">
                 <Camera className="h-12 w-12 text-primary-foreground" />
               </div>
               <h3 className="text-2xl font-bold mb-2">Instant Capture</h3>
@@ -69,16 +64,16 @@ const HeroSection = () => {
             </div>
             
             <div className="text-center">
-              <div className="gradient-secondary p-6 rounded-2xl glow-secondary inline-block mb-4">
-                <Sparkles className="h-12 w-12 text-secondary-foreground" />
+              <div className="bg-accent p-6 rounded-2xl shadow-medium inline-block mb-4">
+                <Sparkles className="h-12 w-12 text-accent-foreground" />
               </div>
               <h3 className="text-2xl font-bold mb-2">AI Generation</h3>
               <p className="text-muted-foreground">Choose from dozens of avatar styles and themes</p>
             </div>
             
             <div className="text-center">
-              <div className="gradient-accent p-6 rounded-2xl glow-accent inline-block mb-4">
-                <Zap className="h-12 w-12 text-accent-foreground" />
+              <div className="bg-secondary border-2 border-primary p-6 rounded-2xl shadow-soft inline-block mb-4">
+                <Zap className="h-12 w-12 text-primary" />
               </div>
               <h3 className="text-2xl font-bold mb-2">Instant Delivery</h3>
               <p className="text-muted-foreground">Print on-site or send directly to WhatsApp</p>

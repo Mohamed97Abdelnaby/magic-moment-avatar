@@ -6,14 +6,14 @@ import { Label } from "@/components/ui/label";
 import { Palette, Image, ArrowRight } from "lucide-react";
 
 const EventSetup = () => {
-  const [selectedTheme, setSelectedTheme] = useState("cyberpunk");
+  const [selectedTheme, setSelectedTheme] = useState("blue");
   const [selectedStyles, setSelectedStyles] = useState<string[]>([]);
 
   const themes = [
-    { id: "cyberpunk", name: "Cyberpunk", colors: "gradient-primary" },
-    { id: "neon", name: "Neon Dreams", colors: "gradient-secondary" },
-    { id: "holographic", name: "Holographic", colors: "gradient-holographic" },
-    { id: "retro", name: "Retro Wave", colors: "gradient-accent" },
+    { id: "blue", name: "Classic Blue", colors: "gradient-primary" },
+    { id: "light", name: "Light & Clean", colors: "gradient-subtle" },
+    { id: "dark", name: "Dark Blue", colors: "bg-primary" },
+    { id: "minimal", name: "Minimal", colors: "bg-secondary border-2 border-primary" },
   ];
 
   const avatarStyles = [
@@ -49,7 +49,7 @@ const EventSetup = () => {
 
         <div className="space-y-8">
           {/* Event Details */}
-          <Card className="bg-card/50 backdrop-blur border-border glow-primary">
+          <Card className="bg-card/80 backdrop-blur border-border shadow-soft">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Image className="h-6 w-6" />
@@ -78,7 +78,7 @@ const EventSetup = () => {
           </Card>
 
           {/* Theme Selection */}
-          <Card className="bg-card/50 backdrop-blur border-border glow-secondary">
+          <Card className="bg-card/80 backdrop-blur border-border shadow-soft">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Palette className="h-6 w-6" />
@@ -92,9 +92,9 @@ const EventSetup = () => {
                   <button
                     key={theme.id}
                     onClick={() => setSelectedTheme(theme.id)}
-                    className={`p-4 rounded-lg border-2 transition-all ${
+                    className={`p-4 rounded-lg border-2 transition-smooth ${
                       selectedTheme === theme.id 
-                        ? 'border-primary glow-primary' 
+                        ? 'border-primary shadow-medium' 
                         : 'border-border hover:border-muted-foreground'
                     }`}
                   >
@@ -107,7 +107,7 @@ const EventSetup = () => {
           </Card>
 
           {/* Avatar Styles */}
-          <Card className="bg-card/50 backdrop-blur border-border glow-accent">
+          <Card className="bg-card/80 backdrop-blur border-border shadow-soft">
             <CardHeader>
               <CardTitle>Avatar Styles</CardTitle>
               <CardDescription>Select which avatar styles attendees can choose from</CardDescription>
@@ -118,9 +118,9 @@ const EventSetup = () => {
                   <button
                     key={style.id}
                     onClick={() => toggleStyle(style.id)}
-                    className={`p-4 rounded-lg border-2 text-left transition-all ${
+                    className={`p-4 rounded-lg border-2 text-left transition-smooth ${
                       selectedStyles.includes(style.id)
-                        ? 'border-accent glow-accent bg-accent/10'
+                        ? 'border-accent shadow-medium bg-accent/10'
                         : 'border-border hover:border-muted-foreground'
                     }`}
                   >

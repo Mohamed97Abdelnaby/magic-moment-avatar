@@ -8,8 +8,8 @@ const Navigation = () => {
       <div className="container mx-auto px-6 py-4">
         <div className="flex items-center justify-between">
           <Link to="/" className="flex items-center space-x-2">
-            <div className="gradient-holographic p-2 rounded-lg">
-              <Camera className="h-6 w-6 text-foreground" />
+            <div className="bg-primary p-2 rounded-lg shadow-soft">
+              <Camera className="h-6 w-6 text-primary-foreground" />
             </div>
             <span className="text-2xl font-bold gradient-primary bg-clip-text text-transparent">
               AvatarMoment
