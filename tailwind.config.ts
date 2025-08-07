@@ -174,6 +174,15 @@ export default {
 						transform: 'scale(1.02)',
 						boxShadow: '0 0 0 20px hsl(var(--accent) / 0)'
 					}
+				},
+				'breathe': {
+					'0%, 100%': { transform: 'scale(1) translateY(0)', opacity: '1' },
+					'50%': { transform: 'scale(1.02) translateY(-2px)', opacity: '0.95' }
+				},
+				'watercolor-bloom': {
+					'0%': { transform: 'scale(0.8)', opacity: '0', filter: 'blur(2px)' },
+					'50%': { transform: 'scale(1.1)', opacity: '0.7', filter: 'blur(1px)' },
+					'100%': { transform: 'scale(1)', opacity: '1', filter: 'blur(0)' }
 				}
 			},
 			animation: {
@@ -190,6 +199,8 @@ export default {
 				'flip-3d': 'flip-3d 0.8s ease-in-out',
 				'drawing-motion': 'drawing-motion 2s ease-in-out infinite',
 				'subtle-float': 'subtle-float 3s ease-in-out infinite',
+				'breathe': 'breathe 4s ease-in-out infinite',
+				'watercolor-bloom': 'watercolor-bloom 0.8s ease-out',
 				'countdown-pulse': 'countdown-pulse 1s ease-in-out infinite',
 				'neural-pulse': 'neural-pulse 3s ease-in-out infinite',
 				'confetti-fall': 'confetti-fall 3s linear infinite',

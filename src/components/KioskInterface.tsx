@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Camera, ArrowLeft, ArrowRight, RotateCcw, Send, Printer, Sparkles, Zap } from "lucide-react";
+import { Camera, ArrowLeft, ArrowRight, RotateCcw, Send, Printer, Sparkles, Heart } from "lucide-react";
 import AIRobotDrawing from "./AIRobotDrawing";
+import QuoteDisplay from "./QuoteDisplay";
 
 interface KioskInterfaceProps {
   customColors?: {
@@ -12,17 +13,20 @@ interface KioskInterfaceProps {
   };
 }
 
-const ParticleField = ({ count = 20 }: { count?: number }) => {
+const ParticleField = ({ count = 12 }: { count?: number }) => {
   return (
     <div className="particles">
       {Array.from({ length: count }).map((_, i) => (
         <div
           key={i}
-          className="particle"
+          className="absolute w-1 h-1 rounded-full opacity-40"
           style={{
             left: `${Math.random() * 100}%`,
-            animationDelay: `${Math.random() * 6}s`,
-            animationDuration: `${6 + Math.random() * 4}s`,
+            top: `${Math.random() * 100}%`,
+            background: 'hsl(var(--gradient-particle))',
+            animationDelay: `${Math.random() * 8}s`,
+            animationDuration: `${8 + Math.random() * 4}s`,
+            animation: 'float 8s ease-in-out infinite',
           }}
         />
       ))}
@@ -86,6 +90,22 @@ const KioskInterface = ({ customColors }: KioskInterfaceProps = {}) => {
   const [countdown, setCountdown] = useState(3);
   const [showConfetti, setShowConfetti] = useState(false);
   const [stageAnimationKey, setStageAnimationKey] = useState(0);
+
+  // Quote collections for different stages
+  const countdownQuotes = [
+    "Take a deep breath and let your authentic self shine...",
+    "In stillness, we find our truest expression...",
+    "Every moment of pause is a moment of possibility...",
+    "Breathe in confidence, breathe out perfection..."
+  ];
+
+  const generationQuotes = [
+    "Art is not what you see, but what you make others see...",
+    "Every artist dips their brush in their soul...",
+    "Creativity takes courage - you're being brave...",
+    "Your unique story is being painted right now...",
+    "In the dance of pixels and imagination, magic happens..."
+  ];
 
   const avatarStyles = [
     { id: "pixar", name: "Pixar Style", preview: "🎭", description: "3D Animated Magic" },
@@ -194,9 +214,9 @@ const KioskInterface = ({ customColors }: KioskInterfaceProps = {}) => {
                   className="text-3xl px-20 py-10 rounded-2xl shadow-glow hover:shadow-neon transition-all duration-500 transform hover:scale-105 neon-glow"
                 >
                   <Camera className="h-10 w-10 mr-6" />
-                  Start Camera
+                  Begin Your Journey
                   <ArrowRight className="h-10 w-10 ml-6" />
-                  <Sparkles className="h-8 w-8 ml-4 animate-pulse-soft" />
+                  <Heart className="h-8 w-8 ml-4 animate-pulse-soft" />
                 </Button>
               </div>
             )}
@@ -260,8 +280,8 @@ const KioskInterface = ({ customColors }: KioskInterfaceProps = {}) => {
                 className="text-3xl px-20 py-10 rounded-2xl shadow-glow hover:shadow-neon transition-all duration-500 transform hover:scale-105 neon-glow"
               >
                 <Camera className="h-10 w-10 mr-6" />
-                Take Photo
-                <Zap className="h-8 w-8 ml-4 animate-pulse-soft" />
+                Capture Magic
+                <Sparkles className="h-8 w-8 ml-4 animate-pulse-soft" />
               </Button>
             </div>
           </div>
@@ -270,48 +290,33 @@ const KioskInterface = ({ customColors }: KioskInterfaceProps = {}) => {
       case 'countdown':
         return (
           <div className="text-center relative min-h-screen flex items-center justify-center" key={`countdown-${stageAnimationKey}`}>
-            <ParticleField count={30} />
+            <ParticleField count={8} />
             
-            {/* Background gradient wave */}
-            <div className="absolute inset-0 gradient-hero opacity-20 animate-pulse-glow" />
+            {/* Gentle background glow */}
+            <div className="absolute inset-0 gradient-subtle opacity-30" />
             
-            <div className="relative z-10">
-              <h1 className="text-6xl font-bold mb-16 text-accent animate-fade-in-up">
-                Get Ready...
-              </h1>
-              
-              {/* Circular progress ring */}
-              <div className="relative mb-8">
-                <svg className="w-96 h-96 transform -rotate-90" viewBox="0 0 100 100">
-                  <circle
-                    cx="50"
-                    cy="50"
-                    r="45"
-                    stroke="hsl(var(--accent) / 0.2)"
-                    strokeWidth="2"
-                    fill="none"
-                  />
-                  <circle
-                    cx="50"
-                    cy="50"
-                    r="45"
-                    stroke="hsl(var(--accent))"
-                    strokeWidth="4"
-                    fill="none"
-                    strokeDasharray={`${(3 - countdown) * (283 / 3)} 283`}
-                    className="transition-all duration-1000 ease-linear"
-                  />
-                </svg>
+            <div className="relative z-10 space-y-12">
+              <div className="space-y-8 animate-fade-in-up">
+                <h1 className="text-5xl font-light mb-8 text-primary">
+                  Take a moment...
+                </h1>
                 
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="text-[20rem] font-bold text-accent animate-countdown-pulse shadow-neon">
-                    {countdown}
-                  </div>
+                <QuoteDisplay 
+                  quotes={countdownQuotes}
+                  className="mb-12"
+                  interval={2500}
+                />
+              </div>
+              
+              {/* Simple, elegant countdown */}
+              <div className="relative">
+                <div className="text-[8rem] font-light text-accent/80 transition-all duration-1000 ease-out animate-breathe">
+                  {countdown}
                 </div>
               </div>
               
-              <p className="text-3xl text-muted-foreground animate-pulse-soft">
-                Smile for the camera! 📸
+              <p className="text-2xl text-muted-foreground font-light">
+                When you're ready... 🌸
               </p>
             </div>
           </div>
@@ -320,26 +325,39 @@ const KioskInterface = ({ customColors }: KioskInterfaceProps = {}) => {
       case 'loading':
         return (
           <div className="text-center relative min-h-screen flex items-center justify-center" key={`loading-${stageAnimationKey}`}>
-            <ParticleField count={20} />
-            <NeuralNetwork />
+            <ParticleField count={6} />
             
-            <div className="relative z-10">
-              <h1 className="text-6xl font-bold mb-16 gradient-primary bg-clip-text text-transparent animate-pulse-glow">
-                AI Artist at Work...
-              </h1>
+            {/* Soft, artistic background */}
+            <div className="absolute inset-0 gradient-subtle opacity-40" />
+            
+            <div className="relative z-10 space-y-12">
+              <div className="space-y-8 animate-watercolor-bloom">
+                <h1 className="text-4xl font-light gradient-primary bg-clip-text text-transparent">
+                  Crafting your artistic vision...
+                </h1>
+                
+                <QuoteDisplay 
+                  quotes={generationQuotes}
+                  className="mb-8"
+                  interval={3500}
+                />
+              </div>
               
               <AIRobotDrawing selectedStyle={selectedStyle} />
               
-              <div className="mt-12 space-y-4">
-                <p className="text-2xl text-muted-foreground animate-pulse-soft">
-                  Creating your personalized {selectedStyle} avatar
+              <div className="mt-8 space-y-6">
+                <p className="text-xl text-muted-foreground font-light">
+                  Creating your {selectedStyle} masterpiece
                 </p>
-                <div className="flex justify-center items-center gap-2">
+                <div className="flex justify-center items-center gap-1">
                   {Array.from({ length: 3 }).map((_, i) => (
                     <div
                       key={i}
-                      className="w-3 h-3 bg-primary rounded-full animate-bounce"
-                      style={{ animationDelay: `${i * 0.1}s` }}
+                      className="w-2 h-2 bg-primary/60 rounded-full animate-pulse"
+                      style={{ 
+                        animationDelay: `${i * 0.3}s`,
+                        animationDuration: '1.5s'
+                      }}
                     />
                   ))}
                 </div>

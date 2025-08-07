@@ -10,10 +10,10 @@ const AIRobotDrawing: React.FC<AIRobotDrawingProps> = ({ selectedStyle }) => {
 
   useEffect(() => {
     const phases = [
-      { duration: 1000, description: "Setting up..." },
-      { duration: 2000, description: "Drawing outline..." },
-      { duration: 2000, description: "Adding details..." },
-      { duration: 1500, description: "Final touches..." }
+      { duration: 1500, description: "Preparing the canvas..." },
+      { duration: 2500, description: "Sketching with care..." },
+      { duration: 3000, description: "Adding artistic touches..." },
+      { duration: 2000, description: "Bringing it to life..." }
     ];
 
     let totalTime = 0;
@@ -24,13 +24,13 @@ const AIRobotDrawing: React.FC<AIRobotDrawingProps> = ({ selectedStyle }) => {
       totalTime += phase.duration;
     });
 
-    // Animate stroke progress
+    // Gentle stroke animation
     const interval = setInterval(() => {
       setStrokeProgress(prev => {
         if (prev >= 100) return 0;
-        return prev + 2;
+        return prev + 1.5;
       });
-    }, 100);
+    }, 150);
 
     return () => clearInterval(interval);
   }, []);
@@ -154,32 +154,33 @@ const AIRobotDrawing: React.FC<AIRobotDrawingProps> = ({ selectedStyle }) => {
           )}
         </g>
 
-        {/* Robot Body */}
-        <g className="animate-subtle-float">
-          {/* Main Body */}
+        {/* Artistic Robot Body */}
+        <g className="animate-breathe">
+          {/* Main Body - Softer, more organic */}
           <rect
             x="100"
             y="250"
             width="120"
             height="150"
-            rx="20"
+            rx="30"
             fill="url(#robotGradient)"
             stroke="hsl(var(--accent))"
-            strokeWidth="2"
+            strokeWidth="1.5"
             filter="url(#glow)"
+            opacity="0.9"
           />
 
-          {/* Head */}
-          <rect
-            x="110"
-            y="180"
-            width="100"
-            height="80"
-            rx="40"
+          {/* Head - More rounded and gentle */}
+          <ellipse
+            cx="160"
+            cy="220"
+            rx="55"
+            ry="45"
             fill="url(#robotGradient)"
             stroke="hsl(var(--accent))"
-            strokeWidth="2"
+            strokeWidth="1.5"
             filter="url(#glow)"
+            opacity="0.9"
           />
 
           {/* Eyes */}
@@ -238,39 +239,42 @@ const AIRobotDrawing: React.FC<AIRobotDrawingProps> = ({ selectedStyle }) => {
           />
         </g>
 
-        {/* Robot Arm - Animated Drawing Arm */}
-        <g className={`transition-all duration-1000 ${drawingPhase >= 1 ? 'animate-drawing-motion' : ''}`}>
-          {/* Upper Arm */}
+        {/* Artistic Robot Arm - Gentle, fluid movements */}
+        <g className={`transition-all duration-2000 ease-in-out ${drawingPhase >= 1 ? 'animate-breathe' : ''}`}>
+          {/* Upper Arm - More fluid */}
           <line
             x1="220"
             y1="300"
-            x2={280 + Math.sin(drawingPhase * 0.5) * 20}
-            y2={280 + Math.cos(drawingPhase * 0.5) * 10}
-            stroke="hsl(var(--accent))"
-            strokeWidth="8"
-            strokeLinecap="round"
-            className="transition-all duration-500"
-          />
-          
-          {/* Lower Arm */}
-          <line
-            x1={280 + Math.sin(drawingPhase * 0.5) * 20}
-            y1={280 + Math.cos(drawingPhase * 0.5) * 10}
-            x2={320 + Math.sin(drawingPhase * 0.8) * 30}
-            y2={200 + Math.cos(drawingPhase * 0.8) * 15}
+            x2={280 + Math.sin(drawingPhase * 0.3) * 15}
+            y2={280 + Math.cos(drawingPhase * 0.3) * 8}
             stroke="hsl(var(--accent))"
             strokeWidth="6"
             strokeLinecap="round"
-            className="transition-all duration-500"
+            className="transition-all duration-1000 ease-out"
+            opacity="0.8"
+          />
+          
+          {/* Lower Arm - Graceful movements */}
+          <line
+            x1={280 + Math.sin(drawingPhase * 0.3) * 15}
+            y1={280 + Math.cos(drawingPhase * 0.3) * 8}
+            x2={320 + Math.sin(drawingPhase * 0.5) * 20}
+            y2={200 + Math.cos(drawingPhase * 0.5) * 10}
+            stroke="hsl(var(--accent))"
+            strokeWidth="4"
+            strokeLinecap="round"
+            className="transition-all duration-1000 ease-out"
+            opacity="0.8"
           />
 
-          {/* Stylus/Brush */}
+          {/* Artistic Brush/Stylus */}
           <circle
-            cx={320 + Math.sin(drawingPhase * 0.8) * 30}
-            cy={200 + Math.cos(drawingPhase * 0.8) * 15}
-            r="4"
+            cx={320 + Math.sin(drawingPhase * 0.5) * 20}
+            cy={200 + Math.cos(drawingPhase * 0.5) * 10}
+            r="3"
             fill="hsl(var(--primary))"
-            className="animate-pulse-glow"
+            className="animate-pulse-soft"
+            opacity="0.9"
           />
           
           {/* Drawing particles */}
@@ -303,21 +307,27 @@ const AIRobotDrawing: React.FC<AIRobotDrawingProps> = ({ selectedStyle }) => {
         />
       </svg>
 
-      {/* Progress Text */}
-      <div className="mt-8 text-center">
-        <div className="text-2xl font-semibold mb-4 text-accent animate-pulse-soft">
-          {drawingPhase === 0 && "Robot is setting up..."}
-          {drawingPhase === 1 && "Drawing the outline..."}
-          {drawingPhase === 2 && "Adding beautiful details..."}
-          {drawingPhase === 3 && "Applying finishing touches..."}
+      {/* Gentle Progress Display */}
+      <div className="mt-12 text-center space-y-6">
+        <div className="text-xl font-light text-primary/80 animate-breathe">
+          {drawingPhase === 0 && "Preparing the canvas..."}
+          {drawingPhase === 1 && "Sketching with care..."}
+          {drawingPhase === 2 && "Adding artistic touches..."}
+          {drawingPhase === 3 && "Bringing it to life..."}
         </div>
         
-        {/* Progress Bar */}
-        <div className="w-full max-w-md mx-auto bg-muted rounded-full h-3 shadow-inner">
-          <div
-            className="bg-gradient-to-r from-primary to-accent h-3 rounded-full transition-all duration-300 shadow-glow"
-            style={{ width: `${Math.min(100, (drawingPhase + 1) * 25)}%` }}
-          />
+        {/* Minimalist Progress Indicator */}
+        <div className="flex justify-center space-x-2">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div
+              key={i}
+              className={`w-2 h-2 rounded-full transition-all duration-500 ${
+                i <= drawingPhase 
+                  ? 'bg-primary/80 scale-110' 
+                  : 'bg-muted-foreground/30'
+              }`}
+            />
+          ))}
         </div>
       </div>
     </div>

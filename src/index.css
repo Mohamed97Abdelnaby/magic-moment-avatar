@@ -8,31 +8,31 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    /* AvatarMoment Design System - Clean Blue Theme */
-    --background: 250 100% 99%;
-    --foreground: 220 40% 15%;
+    /* AvatarMoment Design System - Artistic & Calm Theme */
+    --background: 30 50% 98%;
+    --foreground: 25 30% 25%;
 
     --card: 0 0% 100%;
-    --card-foreground: 220 40% 15%;
+    --card-foreground: 25 30% 25%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 220 40% 15%;
+    --popover-foreground: 25 30% 25%;
 
-    /* Primary: Clean Blue */
-    --primary: 220 100% 60%;
+    /* Primary: Warm Terra Cotta */
+    --primary: 15 65% 65%;
     --primary-foreground: 0 0% 100%;
-    --primary-light: 220 100% 85%;
+    --primary-light: 15 65% 85%;
 
-    /* Secondary: Light Blue */
-    --secondary: 210 40% 96%;
-    --secondary-foreground: 220 40% 15%;
+    /* Secondary: Soft Sage */
+    --secondary: 85 25% 85%;
+    --secondary-foreground: 25 30% 25%;
 
-    /* Muted: Soft Grays */
-    --muted: 210 40% 96%;
-    --muted-foreground: 220 20% 50%;
+    /* Muted: Gentle Creams */
+    --muted: 40 30% 94%;
+    --muted-foreground: 25 20% 55%;
 
-    /* Accent: Bright Blue */
-    --accent: 210 100% 50%;
+    /* Accent: Dusty Rose */
+    --accent: 345 45% 70%;
     --accent-foreground: 0 0% 100%;
 
     --destructive: 0 75% 60%;
@@ -44,19 +44,19 @@ All colors MUST be HSL.
 
     --radius: 0.75rem;
 
-    /* Advanced Design Tokens */
-    --gradient-primary: linear-gradient(135deg, hsl(220 100% 60%), hsl(210 100% 65%), hsl(260 100% 70%));
-    --gradient-hero: linear-gradient(135deg, hsl(220 100% 60% / 0.9), hsl(210 100% 65% / 0.9));
-    --gradient-subtle: linear-gradient(180deg, hsl(220 20% 98%), hsl(220 20% 95%));
-    --gradient-glow: radial-gradient(circle at center, hsl(220 100% 60% / 0.3), transparent 70%);
-    --gradient-particle: linear-gradient(45deg, hsl(220 100% 60%), hsl(260 100% 70%), hsl(300 100% 65%));
+    /* Advanced Design Tokens - Artistic & Calm */
+    --gradient-primary: linear-gradient(135deg, hsl(15 65% 65%), hsl(25 55% 70%), hsl(345 45% 70%));
+    --gradient-hero: linear-gradient(135deg, hsl(15 65% 65% / 0.8), hsl(345 45% 70% / 0.8));
+    --gradient-subtle: linear-gradient(180deg, hsl(30 50% 98%), hsl(40 30% 95%));
+    --gradient-glow: radial-gradient(circle at center, hsl(15 65% 65% / 0.2), transparent 70%);
+    --gradient-particle: linear-gradient(45deg, hsl(15 65% 65%), hsl(345 45% 70%), hsl(85 25% 75%));
     
-    /* Advanced Effects */
-    --shadow-soft: 0 4px 20px hsl(220 100% 60% / 0.1);
-    --shadow-medium: 0 8px 30px hsl(220 100% 60% / 0.15);
-    --shadow-glow: 0 0 40px hsl(220 100% 60% / 0.4), 0 0 80px hsl(220 100% 60% / 0.2);
-    --shadow-3d: 0 10px 30px hsl(220 40% 20% / 0.3), 0 20px 60px hsl(220 40% 20% / 0.15);
-    --shadow-neon: 0 0 20px hsl(220 100% 60%), 0 0 40px hsl(220 100% 60%), 0 0 60px hsl(220 100% 60%);
+    /* Advanced Effects - Soft & Warm */
+    --shadow-soft: 0 4px 20px hsl(15 65% 65% / 0.1);
+    --shadow-medium: 0 8px 30px hsl(15 65% 65% / 0.15);
+    --shadow-glow: 0 0 40px hsl(15 65% 65% / 0.3), 0 0 60px hsl(345 45% 70% / 0.2);
+    --shadow-3d: 0 10px 30px hsl(25 30% 25% / 0.2), 0 20px 60px hsl(25 30% 25% / 0.1);
+    --shadow-neon: 0 0 20px hsl(15 65% 65%), 0 0 30px hsl(345 45% 70%);
     
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     --transition-bounce: all 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
@@ -80,26 +80,26 @@ All colors MUST be HSL.
   }
 
   .dark {
-    --background: 220 40% 4%;
-    --foreground: 220 20% 95%;
+    --background: 25 40% 8%;
+    --foreground: 30 20% 92%;
 
-    --card: 220 40% 6%;
-    --card-foreground: 220 20% 95%;
+    --card: 25 30% 12%;
+    --card-foreground: 30 20% 92%;
 
-    --popover: 220 40% 6%;
-    --popover-foreground: 220 20% 95%;
+    --popover: 25 30% 12%;
+    --popover-foreground: 30 20% 92%;
 
-    --primary: 220 100% 70%;
-    --primary-foreground: 220 40% 4%;
+    --primary: 15 55% 70%;
+    --primary-foreground: 25 40% 8%;
 
-    --secondary: 220 30% 15%;
-    --secondary-foreground: 220 20% 95%;
+    --secondary: 85 15% 20%;
+    --secondary-foreground: 30 20% 92%;
 
-    --muted: 220 30% 15%;
-    --muted-foreground: 220 20% 65%;
+    --muted: 25 25% 18%;
+    --muted-foreground: 30 15% 65%;
 
-    --accent: 210 100% 60%;
-    --accent-foreground: 220 40% 4%;
+    --accent: 345 40% 75%;
+    --accent-foreground: 25 40% 8%;
 
     --destructive: 0 62% 50%;
     --destructive-foreground: 220 20% 95%;
@@ -277,12 +277,23 @@ All colors MUST be HSL.
 @keyframes pulse-glow {
   0%, 100% { 
     transform: scale(1); 
-    box-shadow: 0 0 20px hsl(var(--primary) / 0.4);
+    box-shadow: 0 0 20px hsl(var(--primary) / 0.3);
   }
   50% { 
-    transform: scale(1.02); 
-    box-shadow: 0 0 40px hsl(var(--primary) / 0.8), 0 0 60px hsl(var(--primary) / 0.4);
+    transform: scale(1.01); 
+    box-shadow: 0 0 30px hsl(var(--primary) / 0.5), 0 0 50px hsl(var(--primary) / 0.3);
   }
+}
+
+@keyframes breathe {
+  0%, 100% { transform: scale(1) translateY(0); opacity: 1; }
+  50% { transform: scale(1.02) translateY(-2px); opacity: 0.95; }
+}
+
+@keyframes watercolor-bloom {
+  0% { transform: scale(0.8); opacity: 0; filter: blur(2px); }
+  50% { transform: scale(1.1); opacity: 0.7; filter: blur(1px); }
+  100% { transform: scale(1); opacity: 1; filter: blur(0); }
 }
 
 @keyframes rotate-3d {
