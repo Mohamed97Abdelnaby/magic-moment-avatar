@@ -29,10 +29,12 @@ const Navigation = () => {
                 Kiosk Demo
               </Button>
             </Link>
-            <Button variant="hero" size="sm">
-              <Sparkles className="h-4 w-4 mr-2" />
-              Get Started
-            </Button>
+            <Link to="/setup">
+              <Button variant="hero" size="sm">
+                <Sparkles className="h-4 w-4 mr-2" />
+                Get Started
+              </Button>
+            </Link>
           </div>
         </div>
       </div>

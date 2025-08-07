@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Sparkles, Camera, Zap } from "lucide-react";
+import { Link } from "react-router-dom";
 import heroImage from "@/assets/hero-image.jpg";
 
 const HeroSection = () => {
@@ -42,16 +43,20 @@ const HeroSection = () => {
           </p>
           
           <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
-            <Button variant="hero" size="lg" className="text-xl px-12 py-6">
-              <Sparkles className="h-6 w-6 mr-3" />
-              Start Your Event
-              <ArrowRight className="h-6 w-6 ml-3" />
-            </Button>
+            <Link to="/setup">
+              <Button variant="hero" size="lg" className="text-xl px-12 py-6">
+                <Sparkles className="h-6 w-6 mr-3" />
+                Start Your Event
+                <ArrowRight className="h-6 w-6 ml-3" />
+              </Button>
+            </Link>
             
-            <Button variant="outline" size="lg" className="text-xl px-12 py-6 border-2">
-              <Camera className="h-6 w-6 mr-3" />
-              View Demo
-            </Button>
+            <Link to="/demo">
+              <Button variant="outline" size="lg" className="text-xl px-12 py-6 border-2">
+                <Camera className="h-6 w-6 mr-3" />
+                View Demo
+              </Button>
+            </Link>
           </div>
           
           <div className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto">
