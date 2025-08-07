@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Camera, ArrowLeft, ArrowRight, RotateCcw, Send, Printer, Sparkles, Zap } from "lucide-react";
+import AIRobotDrawing from "./AIRobotDrawing";
 
 interface KioskInterfaceProps {
   customColors?: {
@@ -319,47 +320,19 @@ const KioskInterface = ({ customColors }: KioskInterfaceProps = {}) => {
       case 'loading':
         return (
           <div className="text-center relative min-h-screen flex items-center justify-center" key={`loading-${stageAnimationKey}`}>
-            <ParticleField count={40} />
+            <ParticleField count={20} />
             <NeuralNetwork />
             
             <div className="relative z-10">
-              <h1 className="text-7xl font-bold mb-16 gradient-primary bg-clip-text text-transparent animate-pulse-glow">
-                Creating Your Avatar...
+              <h1 className="text-6xl font-bold mb-16 gradient-primary bg-clip-text text-transparent animate-pulse-glow">
+                AI Artist at Work...
               </h1>
               
-              <div className="relative max-w-md mx-auto mb-16">
-                {/* Outer rotating ring */}
-                <div className="w-80 h-80 rounded-full border-4 border-primary/20 animate-rotate-3d mx-auto" />
-                
-                {/* Middle pulsing ring */}
-                <div className="absolute inset-4 w-72 h-72 rounded-full border-8 border-primary animate-pulse-glow shadow-glow" />
-                
-                {/* Inner morphing avatar */}
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="w-56 h-56 bg-background rounded-full flex items-center justify-center shadow-3d glass relative overflow-hidden">
-                    <div className="absolute inset-0 gradient-glow animate-neural-pulse" />
-                    <Camera className="h-32 w-32 text-primary animate-flip-3d relative z-10" />
-                  </div>
-                </div>
-                
-                {/* Orbital particles */}
-                {Array.from({ length: 8 }).map((_, i) => (
-                  <div
-                    key={i}
-                    className="absolute w-4 h-4 bg-primary rounded-full animate-neural-pulse"
-                    style={{
-                      top: '50%',
-                      left: '50%',
-                      transform: `rotate(${i * 45}deg) translateX(140px) translateY(-50%)`,
-                      animationDelay: `${i * 0.2}s`,
-                    }}
-                  />
-                ))}
-              </div>
+              <AIRobotDrawing selectedStyle={selectedStyle} />
               
-              <div className="space-y-4">
-                <p className="text-3xl text-muted-foreground animate-pulse-soft">
-                  AI is working its magic...
+              <div className="mt-12 space-y-4">
+                <p className="text-2xl text-muted-foreground animate-pulse-soft">
+                  Creating your personalized {selectedStyle} avatar
                 </p>
                 <div className="flex justify-center items-center gap-2">
                   {Array.from({ length: 3 }).map((_, i) => (

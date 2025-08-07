@@ -188,6 +188,8 @@ export default {
 				'pulse-glow': 'pulse-glow 2s ease-in-out infinite',
 				'rotate-3d': 'rotate-3d 20s linear infinite',
 				'flip-3d': 'flip-3d 0.8s ease-in-out',
+				'drawing-motion': 'drawing-motion 2s ease-in-out infinite',
+				'subtle-float': 'subtle-float 3s ease-in-out infinite',
 				'countdown-pulse': 'countdown-pulse 1s ease-in-out infinite',
 				'neural-pulse': 'neural-pulse 3s ease-in-out infinite',
 				'confetti-fall': 'confetti-fall 3s linear infinite',

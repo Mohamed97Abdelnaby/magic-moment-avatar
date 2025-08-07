@@ -319,6 +319,19 @@ All colors MUST be HSL.
   50% { opacity: 1; filter: brightness(1.2) saturate(1.2); }
 }
 
+@keyframes drawing-motion {
+  0% { transform: translateX(0) translateY(0); }
+  25% { transform: translateX(5px) translateY(-2px); }
+  50% { transform: translateX(3px) translateY(2px); }
+  75% { transform: translateX(-2px) translateY(-1px); }
+  100% { transform: translateX(0) translateY(0); }
+}
+
+@keyframes subtle-float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-3px); }
+}
+
 @keyframes particle-float {
   0% { 
     transform: translateY(100vh) translateX(0px) rotate(0deg) scale(0);
@@ -332,7 +345,7 @@ All colors MUST be HSL.
     opacity: 1;
     transform: translateY(10vh) translateX(-10px) rotate(324deg) scale(1);
   }
-  100% { 
+  100% {
     transform: translateY(-10vh) translateX(0px) rotate(360deg) scale(0);
     opacity: 0;
   }
