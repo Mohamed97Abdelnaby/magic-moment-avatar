@@ -1,0 +1,324 @@
+import { useEffect, useMemo, useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { ArrowLeft, ArrowRight, CheckCircle2, Image, Palette, Play, Sparkles, Eye } from "lucide-react";
+import ColorPicker from "@/components/ColorPicker";
+import ThemePreview from "@/components/ThemePreview";
+import ScreenAppearanceEditor from "@/components/ScreenAppearanceEditor";
+import SetupProgress from "@/components/SetupProgress";
+import { HSLColor, applyDynamicTheme } from "@/lib/colorUtils";
+import { getDefaultScreenSettings, loadScreenSettings, saveScreenSettings, type ScreenKey, type ScreenSettings } from "@/lib/kioskSettings";
+
+const calmBlue: HSLColor = { h: 217, s: 90, l: 61 };
+
+const stepLabels = [
+  "Welcome",
+  "Event",
+  "Colors",
+  "Screens",
+  "Preview",
+  "Styles",
+];
+
+const StepsTotal = stepLabels.length;
+
+type Dir = "forward" | "backward";
+
+const AnimatedBackdrop = () => (
+  <div className="absolute inset-0 -z-10 overflow-hidden">
+    <div className="absolute inset-0 gradient-subtle" />
+    <div className="absolute inset-0 gradient-hero opacity-60 mix-blend-screen" />
+    <div className="particles">
+      {Array.from({ length: 14 }).map((_, i) => (
+        <span key={i} className="particle" style={{ left: `${(i * 7) % 100}%`, animationDuration: `${6 + (i % 5)}s`, animationDelay: `${i * 0.4}s` }} />
+      ))}
+    </div>
+  </div>
+);
+
+const SetupWizard = () => {
+  // SEO title
+  useEffect(() => {
+    document.title = "Event Setup Wizard – Calm Dark Blue";
+  }, []);
+
+  const [step, setStep] = useState(0);
+  const [dir, setDir] = useState<Dir>("forward");
+
+  // Core state (mirrors EventSetup to preserve functionality)
+  const [eventName, setEventName] = useState("");
+  const [eventLocation, setEventLocation] = useState("");
+  const [selectedStyles, setSelectedStyles] = useState<string[]>([]);
+  const [primaryColor, setPrimaryColor] = useState<HSLColor>(calmBlue);
+  const [secondaryColor, setSecondaryColor] = useState<HSLColor | null>(null);
+  const [backgroundStyle, setBackgroundStyle] = useState<'solid' | 'gradient' | 'default'>("default");
+  const [screenSettings, setScreenSettings] = useState<ScreenSettings>(getDefaultScreenSettings());
+  const [previewScreen, setPreviewScreen] = useState<ScreenKey>('styles');
+
+  // Apply theme live
+  useEffect(() => {
+    applyDynamicTheme(primaryColor, secondaryColor || undefined);
+  }, [primaryColor, secondaryColor]);
+
+  // Load saved screen settings
+  useEffect(() => {
+    setScreenSettings(loadScreenSettings());
+  }, []);
+
+  const next = () => { setDir("forward"); setStep((s) => Math.min(StepsTotal - 1, s + 1)); };
+  const back = () => { setDir("backward"); setStep((s) => Math.max(0, s - 1)); };
+
+  const avatarStyles = [
+    { id: "pixar", name: "Pixar Style", description: "3D animated character style" },
+    { id: "cyberpunk", name: "Cyberpunk", description: "Futuristic neon aesthetic" },
+    { id: "cartoon", name: "90s Cartoon", description: "Classic hand-drawn animation" },
+    { id: "sketch", name: "Sketch Art", description: "Pencil drawing style" },
+    { id: "oil", name: "Oil Painting", description: "Classical painted portrait" },
+    { id: "anime", name: "Anime", description: "Japanese animation style" },
+  ];
+
+  const toggleStyle = (styleId: string) => {
+    setSelectedStyles((prev) => prev.includes(styleId) ? prev.filter((id) => id !== styleId) : [...prev, styleId]);
+  };
+
+  const canFinish = eventName.trim().length > 0 && selectedStyles.length > 0;
+
+  const StepContainer = ({ children }: { children: React.ReactNode }) => (
+    <section
+      className={`relative transition-all duration-500 ${dir === 'forward' ? 'animate-fade-in' : 'animate-fade-in'}`}
+    >
+      {children}
+    </section>
+  );
+
+  const Welcome = () => (
+    <StepContainer>
+      <div className="text-center py-10">
+        <div className="inline-flex items-center gap-3 px-4 py-2 rounded-full bg-secondary/60 border border-border shadow-soft animate-[pulse-soft_3s_ease-in-out_infinite]">
+          <Sparkles className="h-4 w-4 text-primary" />
+          <span className="text-sm">A calm, animated setup experience</span>
+        </div>
+        <h1 className="mt-6 text-4xl md:text-5xl font-bold tracking-tight">
+          <span className="bg-clip-text text-transparent gradient-primary">Setup Your Event</span>
+        </h1>
+        <p className="mt-3 text-muted-foreground max-w-xl mx-auto">
+          Guided steps with smooth animations inspired by Apple and Frame.io.
+        </p>
+      </div>
+      <div className="flex justify-center">
+        <Button size="lg" variant="hero" onClick={next} className="px-10">
+          Get Started
+          <ArrowRight className="ml-2 h-5 w-5" />
+        </Button>
+      </div>
+    </StepContainer>
+  );
+
+  const EventDetails = () => (
+    <StepContainer>
+      <Card className="bg-card/80 backdrop-blur border-border shadow-soft">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2"><Image className="h-6 w-6" />Event Details</CardTitle>
+          <CardDescription>Basic information about your event</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div>
+            <Label htmlFor="eventName">Event Name</Label>
+            <Input id="eventName" value={eventName} onChange={(e) => setEventName(e.target.value)} placeholder="Tech Conference 2025" className="bg-input/50 border-border" />
+          </div>
+          <div>
+            <Label htmlFor="eventLocation">Location</Label>
+            <Input id="eventLocation" value={eventLocation} onChange={(e) => setEventLocation(e.target.value)} placeholder="Convention Center Hall A" className="bg-input/50 border-border" />
+          </div>
+        </CardContent>
+      </Card>
+    </StepContainer>
+  );
+
+  const ThemeColors = () => (
+    <StepContainer>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <ColorPicker value={primaryColor} onChange={setPrimaryColor} label="Primary Color" showAccessibilityCheck contrastBackground={{ h: 0, s: 0, l: 100 }} />
+
+        <div className="space-y-4">
+          <Card className="bg-card/80 backdrop-blur border-border">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-lg"><Palette className="h-5 w-5" />Secondary Color (Optional)</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center gap-2">
+                <input type="checkbox" id="useSecondary" checked={secondaryColor !== null} onChange={(e) => setSecondaryColor(e.target.checked ? calmBlue : null)} className="rounded border-border" />
+                <Label htmlFor="useSecondary">Use secondary color for gradients</Label>
+              </div>
+              {secondaryColor && (
+                <ColorPicker value={secondaryColor} onChange={setSecondaryColor} label="" showAccessibilityCheck contrastBackground={primaryColor} />
+              )}
+            </CardContent>
+          </Card>
+
+          <Card className="bg-card/80 backdrop-blur border-border">
+            <CardHeader><CardTitle className="text-lg">Background Style</CardTitle></CardHeader>
+            <CardContent>
+              <Select value={backgroundStyle} onValueChange={(v: 'solid' | 'gradient' | 'default') => setBackgroundStyle(v)}>
+                <SelectTrigger className="bg-input/50 border-border"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="default">Default Theme</SelectItem>
+                  <SelectItem value="solid">Solid Color</SelectItem>
+                  <SelectItem value="gradient" disabled={!secondaryColor}>Gradient {!secondaryColor && '(Enable secondary color)'}</SelectItem>
+                </SelectContent>
+              </Select>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    </StepContainer>
+  );
+
+  const Screens = () => (
+    <StepContainer>
+      <Card className="bg-card/80 backdrop-blur border-border">
+        <CardHeader>
+          <CardTitle className="text-lg">Screen Appearance</CardTitle>
+          <CardDescription>Customize text color, background image, and overlay per screen</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <Accordion type="single" collapsible className="w-full">
+            {(["styles","camera","countdown","loading","result"] as ScreenKey[]).map((key) => (
+              <AccordionItem value={key} key={key}>
+                <AccordionTrigger className="capitalize">{key}</AccordionTrigger>
+                <AccordionContent>
+                  <ScreenAppearanceEditor
+                    label={key}
+                    value={screenSettings[key]}
+                    onChange={(next) => {
+                      const merged = { ...screenSettings, [key]: next } as ScreenSettings;
+                      setScreenSettings(merged);
+                      saveScreenSettings(merged);
+                    }}
+                  />
+                </AccordionContent>
+              </AccordionItem>
+            ))}
+          </Accordion>
+        </CardContent>
+      </Card>
+    </StepContainer>
+  );
+
+  const Preview = () => (
+    <StepContainer>
+      <div className="space-y-3">
+        <div className="flex items-center justify-end gap-2">
+          <Label>Preview Screen</Label>
+          <Select value={previewScreen} onValueChange={(v: ScreenKey) => setPreviewScreen(v)}>
+            <SelectTrigger className="w-52 bg-input/50 border-border"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="styles">Choose Avatar</SelectItem>
+              <SelectItem value="camera">Camera</SelectItem>
+              <SelectItem value="countdown">Countdown</SelectItem>
+              <SelectItem value="loading">Generating</SelectItem>
+              <SelectItem value="result">Result</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        <ThemePreview
+          primaryColor={primaryColor}
+          secondaryColor={secondaryColor || undefined}
+          backgroundStyle={backgroundStyle}
+          title={screenSettings[previewScreen]?.title}
+          textColorHex={screenSettings[previewScreen]?.textColorHex}
+          backgroundImageDataUrl={screenSettings[previewScreen]?.backgroundImageDataUrl || undefined}
+          overlayOpacity={screenSettings[previewScreen]?.overlayOpacity}
+        />
+      </div>
+    </StepContainer>
+  );
+
+  const StylesAndFinish = () => (
+    <StepContainer>
+      <Card className="bg-card/80 backdrop-blur border-border shadow-soft">
+        <CardHeader>
+          <CardTitle>Avatar Styles</CardTitle>
+          <CardDescription>Select which avatar styles attendees can choose from</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {avatarStyles.map((style) => (
+              <button
+                key={style.id}
+                onClick={() => toggleStyle(style.id)}
+                className={`p-4 rounded-lg border-2 text-left transition-smooth ${
+                  selectedStyles.includes(style.id) ? 'border-accent shadow-medium bg-accent/10' : 'border-border hover:border-muted-foreground'
+                }`}
+              >
+                <h4 className="font-semibold mb-1">{style.name}</h4>
+                <p className="text-sm text-muted-foreground">{style.description}</p>
+              </button>
+            ))}
+          </div>
+
+          <div className="text-center space-y-4 mt-8">
+            <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
+              <Eye className="h-4 w-4" />
+              Live preview updates as you customize colors
+            </div>
+            <Button variant="hero" size="lg" className="text-xl px-12 py-6" disabled={!canFinish}>
+              Create Event Kiosk
+              <ArrowRight className="h-6 w-6 ml-3" />
+            </Button>
+            {!canFinish && (
+              <p className="text-sm text-muted-foreground">Please fill in event details and select at least one avatar style</p>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+    </StepContainer>
+  );
+
+  const renderStep = () => {
+    switch (step) {
+      case 0: return <Welcome />;
+      case 1: return <EventDetails />;
+      case 2: return <ThemeColors />;
+      case 3: return <Screens />;
+      case 4: return <Preview />;
+      case 5: return <StylesAndFinish />;
+      default: return null;
+    }
+  };
+
+  return (
+    <main className="min-h-screen bg-background relative">
+      <AnimatedBackdrop />
+      <div className="container mx-auto px-6 py-10 max-w-5xl">
+        <SetupProgress total={StepsTotal} current={step} labels={stepLabels} />
+
+        {renderStep()}
+
+        {/* Nav */}
+        <div className="mt-8 flex items-center justify-between">
+          <Button variant="ghost" onClick={back} disabled={step === 0}>
+            <ArrowLeft className="mr-2 h-4 w-4" /> Back
+          </Button>
+          <div className="flex items-center gap-2">
+            {step < StepsTotal - 1 ? (
+              <Button onClick={next}>
+                Next <ArrowRight className="ml-2 h-4 w-4" />
+              </Button>
+            ) : (
+              <Button disabled={!canFinish} className="gap-2">
+                Finish <CheckCircle2 className="h-4 w-4" />
+              </Button>
+            )}
+          </div>
+        </div>
+      </div>
+    </main>
+  );
+};
+
+export default SetupWizard;

@@ -1,12 +1,12 @@
 import Navigation from "@/components/Navigation";
-import EventSetup from "@/components/EventSetup";
+import SetupWizard from "@/components/SetupWizard";
 
 const Setup = () => {
   return (
     <div className="min-h-screen bg-background">
       <Navigation />
       <div className="pt-20">
-        <EventSetup />
+        <SetupWizard />
       </div>
     </div>
   );
