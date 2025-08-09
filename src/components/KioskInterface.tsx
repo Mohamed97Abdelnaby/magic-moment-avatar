@@ -4,14 +4,7 @@ import { Card } from "@/components/ui/card";
 import { Camera, ArrowLeft, ArrowRight, RotateCcw, Send, Printer, Sparkles, Heart } from "lucide-react";
 import AIRobotDrawing from "./AIRobotDrawing";
 import QuoteDisplay from "./QuoteDisplay";
-
-interface KioskInterfaceProps {
-  customColors?: {
-    primary: string;
-    secondary?: string;
-    backgroundStyle?: 'solid' | 'gradient' | 'default';
-  };
-}
+import { loadScreenSettings, type ScreenSettings } from "@/lib/kioskSettings";
 
 const ParticleField = ({ count = 12 }: { count?: number }) => {
   return (
@@ -90,13 +83,7 @@ const KioskInterface = ({ customColors }: KioskInterfaceProps = {}) => {
   const [countdown, setCountdown] = useState(3);
   const [showConfetti, setShowConfetti] = useState(false);
   const [stageAnimationKey, setStageAnimationKey] = useState(0);
-  const [styleSelection, setStyleSelection] = useState<{
-    title?: string;
-    textColorHex?: string;
-    textColorHsl?: string;
-    backgroundImageDataUrl?: string;
-    overlayOpacity?: number;
-  }>({});
+  const [screens, setScreens] = useState<ScreenSettings>(() => loadScreenSettings());
 
   // Quote collections for different stages
   const countdownQuotes = [
@@ -123,18 +110,14 @@ const KioskInterface = ({ customColors }: KioskInterfaceProps = {}) => {
     { id: "oil", name: "Oil Painting", preview: "🖼️", description: "Classical Art" },
   ];
 
-  useEffect(() => {
-    setStageAnimationKey(prev => prev + 1);
-  }, [currentStep]);
+useEffect(() => {
+  setStageAnimationKey(prev => prev + 1);
+}, [currentStep]);
 
-  // Load Choose Avatar style settings
-  useEffect(() => {
-    const raw = localStorage.getItem('kiosk:styleSelection');
-    if (!raw) return;
-    try {
-      setStyleSelection(JSON.parse(raw));
-    } catch {}
-  }, []);
+// Load per-screen settings
+useEffect(() => {
+  setScreens(loadScreenSettings());
+}, []);
 
   const handleStyleSelect = (styleId: string) => {
     setSelectedStyle(styleId);
@@ -179,40 +162,40 @@ const KioskInterface = ({ customColors }: KioskInterfaceProps = {}) => {
       case 'styles':
         return (
           <div className="relative min-h-screen overflow-hidden" key={`styles-${stageAnimationKey}`}>
-            {styleSelection.backgroundImageDataUrl && (
+            {screens.styles.backgroundImageDataUrl && (
               <div
                 className="absolute inset-0"
                 style={{
-                  backgroundImage: `url(${styleSelection.backgroundImageDataUrl})`,
+                  backgroundImage: `url(${screens.styles.backgroundImageDataUrl})`,
                   backgroundSize: 'cover',
                   backgroundPosition: 'center',
                 }}
               />
             )}
-            {typeof styleSelection.overlayOpacity === 'number' && styleSelection.backgroundImageDataUrl && (
+            {typeof screens.styles.overlayOpacity === 'number' && screens.styles.backgroundImageDataUrl && (
               <div
                 className="absolute inset-0"
-                style={{ background: `hsla(0 0% 0% / ${styleSelection.overlayOpacity})` }}
+                style={{ background: `hsla(0 0% 0% / ${screens.styles.overlayOpacity})` }}
               />
             )}
 
             <div className="relative z-10 text-center">
               <ParticleField count={15} />
               
-              <div className="animate-fade-in-up">
-                <h1
-                  className="text-7xl font-bold mb-6 animate-scale-in"
-                  style={{ color: styleSelection.textColorHsl ? `hsl(${styleSelection.textColorHsl})` : undefined }}
-                >
-                  {styleSelection.title || 'Choose your Avatar'}
-                </h1>
-                <p
-                  className="text-3xl mb-16 animate-fade-in-up"
-                  style={{ color: styleSelection.textColorHsl ? `hsl(${styleSelection.textColorHsl})` : undefined, animationDelay: '0.2s' }}
-                >
-                  Select how you want your avatar to look
-                </p>
-              </div>
+            <div className="animate-fade-in-up">
+              <h1
+                className="text-7xl font-bold mb-6 animate-scale-in"
+                style={{ color: screens.styles.textColorHsl ? `hsl(${screens.styles.textColorHsl})` : undefined }}
+              >
+                {screens.styles.title || 'Choose your Avatar'}
+              </h1>
+              <p
+                className="text-3xl mb-16 animate-fade-in-up"
+                style={{ color: screens.styles.textColorHsl ? `hsl(${screens.styles.textColorHsl})` : undefined, animationDelay: '0.2s' }}
+              >
+                Select how you want your avatar to look
+              </p>
+            </div>
               
               <div className="grid grid-cols-2 md:grid-cols-3 gap-8 max-w-6xl mx-auto mb-16">
                 {avatarStyles.map((style, index) => (
@@ -267,15 +250,57 @@ const KioskInterface = ({ customColors }: KioskInterfaceProps = {}) => {
       case 'camera':
         return (
           <div className="text-center relative" key={`camera-${stageAnimationKey}`}>
+            {screens.camera.backgroundImageDataUrl && (
+              <div
+                className="absolute inset-0"
+                style={{
+                  backgroundImage: `url(${screens.camera.backgroundImageDataUrl})`,
+                  backgroundSize: 'cover',
+                  backgroundPosition: 'center',
+                }}
+              />
+            )}
+            {typeof screens.camera.overlayOpacity === 'number' && screens.camera.backgroundImageDataUrl && (
+              <div className="absolute inset-0" style={{ background: `hsla(0 0% 0% / ${screens.camera.overlayOpacity})` }} />
+            )}
+
             <ParticleField count={10} />
             
-            <div className="animate-fade-in-up">
-              <h1 className="text-7xl font-bold mb-12 text-accent animate-pulse-glow">
-                Get Ready!
+            <div className="animate-fade-in-up relative z-10">
+              <h1 className="text-7xl font-bold mb-12 animate-pulse-glow" style={{ color: screens.camera.textColorHsl ? `hsl(${screens.camera.textColorHsl})` : undefined }}>
+                {screens.camera.title || 'Get Ready!'}
               </h1>
             </div>
             
             <div className="relative max-w-4xl mx-auto mb-16 animate-scale-in">
+              <div className="aspect-video bg-muted rounded-3xl border-4 border-accent flex items-center justify-center shadow-3d glass animate-camera-focus relative overflow-hidden">
+                {/* Camera focus rings */}
+                <div className="absolute inset-4 border-2 border-accent/30 rounded-2xl animate-pulse-soft" />
+                <div className="absolute inset-8 border-2 border-accent/20 rounded-xl animate-pulse-soft" style={{ animationDelay: '0.5s' }} />
+                <div className="absolute inset-12 border-2 border-accent/10 rounded-lg animate-pulse-soft" style={{ animationDelay: '1s' }} />
+                
+                {/* Rule of thirds grid */}
+                <div className="absolute inset-0 grid grid-cols-3 grid-rows-3 opacity-20">
+                  {Array.from({ length: 9 }).map((_, i) => (
+                    <div key={i} className="border border-accent/30" />
+                  ))}
+                </div>
+                
+                <Camera className="h-40 w-40 text-accent animate-pulse-glow relative z-10" />
+                
+                {/* Corner brackets */}
+                <div className="absolute top-4 left-4 w-8 h-8 border-t-4 border-l-4 border-accent animate-pulse-soft" />
+                <div className="absolute top-4 right-4 w-8 h-8 border-t-4 border-r-4 border-accent animate-pulse-soft" />
+                <div className="absolute bottom-4 left-4 w-8 h-8 border-b-4 border-l-4 border-accent animate-pulse-soft" />
+                <div className="absolute bottom-4 right-4 w-8 h-8 border-b-4 border-r-4 border-accent animate-pulse-soft" />
+              </div>
+              
+              <div className="absolute top-6 left-6 bg-red-500 text-white px-6 py-3 rounded-xl font-bold text-xl animate-pulse-soft neon-glow">
+                🔴 LIVE
+              </div>
+            </div>
+            
+            <div className="flex gap-8 justify-center relative z-10">
               <div className="aspect-video bg-muted rounded-3xl border-4 border-accent flex items-center justify-center shadow-3d glass animate-camera-focus relative overflow-hidden">
                 {/* Camera focus rings */}
                 <div className="absolute inset-4 border-2 border-accent/30 rounded-2xl animate-pulse-soft" />
@@ -331,6 +356,12 @@ const KioskInterface = ({ customColors }: KioskInterfaceProps = {}) => {
       case 'countdown':
         return (
           <div className="text-center relative min-h-screen flex items-center justify-center" key={`countdown-${stageAnimationKey}`}>
+            {screens.countdown.backgroundImageDataUrl && (
+              <div className="absolute inset-0" style={{ backgroundImage: `url(${screens.countdown.backgroundImageDataUrl})`, backgroundSize: 'cover', backgroundPosition: 'center' }} />
+            )}
+            {typeof screens.countdown.overlayOpacity === 'number' && screens.countdown.backgroundImageDataUrl && (
+              <div className="absolute inset-0" style={{ background: `hsla(0 0% 0% / ${screens.countdown.overlayOpacity})` }} />
+            )}
             <ParticleField count={8} />
             
             {/* Gentle background glow */}
@@ -338,8 +369,8 @@ const KioskInterface = ({ customColors }: KioskInterfaceProps = {}) => {
             
             <div className="relative z-10 space-y-12">
               <div className="space-y-8 animate-fade-in-up">
-                <h1 className="text-5xl font-light mb-8 text-primary">
-                  Take a moment...
+                <h1 className="text-5xl font-light mb-8" style={{ color: screens.countdown.textColorHsl ? `hsl(${screens.countdown.textColorHsl})` : undefined }}>
+                  {screens.countdown.title || 'Take a moment...'}
                 </h1>
                 
                 <QuoteDisplay 
@@ -366,6 +397,12 @@ const KioskInterface = ({ customColors }: KioskInterfaceProps = {}) => {
       case 'loading':
         return (
           <div className="text-center relative min-h-screen flex items-center justify-center" key={`loading-${stageAnimationKey}`}>
+            {screens.loading.backgroundImageDataUrl && (
+              <div className="absolute inset-0" style={{ backgroundImage: `url(${screens.loading.backgroundImageDataUrl})`, backgroundSize: 'cover', backgroundPosition: 'center' }} />
+            )}
+            {typeof screens.loading.overlayOpacity === 'number' && screens.loading.backgroundImageDataUrl && (
+              <div className="absolute inset-0" style={{ background: `hsla(0 0% 0% / ${screens.loading.overlayOpacity})` }} />
+            )}
             <ParticleField count={6} />
             
             {/* Soft, artistic background */}
@@ -373,8 +410,8 @@ const KioskInterface = ({ customColors }: KioskInterfaceProps = {}) => {
             
             <div className="relative z-10 space-y-12">
               <div className="space-y-8 animate-watercolor-bloom">
-                <h1 className="text-4xl font-light gradient-primary bg-clip-text text-transparent">
-                  Crafting your artistic vision...
+                <h1 className="text-4xl font-light" style={{ color: screens.loading.textColorHsl ? `hsl(${screens.loading.textColorHsl})` : undefined }}>
+                  {screens.loading.title || 'Crafting your artistic vision...'}
                 </h1>
                 
                 <QuoteDisplay 
@@ -411,11 +448,17 @@ const KioskInterface = ({ customColors }: KioskInterfaceProps = {}) => {
         return (
           <div className="text-center relative" key={`result-${stageAnimationKey}`}>
             {showConfetti && <ConfettiExplosion />}
+            {screens.result.backgroundImageDataUrl && (
+              <div className="absolute inset-0" style={{ backgroundImage: `url(${screens.result.backgroundImageDataUrl})`, backgroundSize: 'cover', backgroundPosition: 'center' }} />
+            )}
+            {typeof screens.result.overlayOpacity === 'number' && screens.result.backgroundImageDataUrl && (
+              <div className="absolute inset-0" style={{ background: `hsla(0 0% 0% / ${screens.result.overlayOpacity})` }} />
+            )}
             <ParticleField count={25} />
             
-            <div className="animate-fade-in-up">
-              <h1 className="text-8xl font-bold mb-12 gradient-primary bg-clip-text text-transparent animate-bounce-in">
-                Your Avatar is Ready! 🎉
+            <div className="animate-fade-in-up relative z-10">
+              <h1 className="text-8xl font-bold mb-12 animate-bounce-in" style={{ color: screens.result.textColorHsl ? `hsl(${screens.result.textColorHsl})` : undefined }}>
+                {screens.result.title || 'Your Avatar is Ready! 🎉'}
               </h1>
             </div>
             
@@ -491,8 +534,8 @@ const KioskInterface = ({ customColors }: KioskInterfaceProps = {}) => {
 
   return (
     <div className="min-h-screen bg-background relative overflow-hidden">
-      {/* Animated background gradient */}
-      <div className="absolute inset-0 gradient-subtle opacity-50" />
+      {/* Animated background gradient (kept as subtle base) */}
+      <div className="absolute inset-0 gradient-subtle opacity-30" />
       
       <div className="relative z-10 min-h-screen flex items-center justify-center p-8">
         <div className="w-full max-w-7xl">

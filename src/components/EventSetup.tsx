@@ -4,11 +4,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Palette, Image, ArrowRight, Eye } from "lucide-react";
 import ColorPicker from "@/components/ColorPicker";
 import ThemePreview from "@/components/ThemePreview";
-import { HSLColor, applyDynamicTheme, hslToHex, hexToHsl } from "@/lib/colorUtils";
-
+import ScreenAppearanceEditor from "@/components/ScreenAppearanceEditor";
+import { HSLColor, applyDynamicTheme, hslToHex } from "@/lib/colorUtils";
+import { getDefaultScreenSettings, loadScreenSettings, saveScreenSettings, type ScreenKey, type ScreenSettings } from "@/lib/kioskSettings";
 const EventSetup = () => {
   const [selectedStyles, setSelectedStyles] = useState<string[]>([]);
   const [primaryColor, setPrimaryColor] = useState<HSLColor>({ h: 220, s: 100, l: 60 });
@@ -17,41 +19,18 @@ const EventSetup = () => {
   const [eventName, setEventName] = useState("");
   const [eventLocation, setEventLocation] = useState("");
 
-  // Choose Avatar Screen settings
-  const [stylesTitle, setStylesTitle] = useState<string>("Choose your Avatar");
-  const [stylesTextColor, setStylesTextColor] = useState<HSLColor>({ h: 0, s: 0, l: 100 });
-  const [backgroundImageDataUrl, setBackgroundImageDataUrl] = useState<string | null>(null);
-  const [overlayOpacity, setOverlayOpacity] = useState<number>(45); // 0-80 (percent)
-
+  // Screen appearance settings
+  const [screenSettings, setScreenSettings] = useState<ScreenSettings>(getDefaultScreenSettings());
+  const [previewScreen, setPreviewScreen] = useState<ScreenKey>('styles');
   // Apply theme changes in real-time
   useEffect(() => {
     applyDynamicTheme(primaryColor, secondaryColor || undefined);
   }, [primaryColor, secondaryColor]);
 
-  // Load saved Choose Avatar screen settings
+  // Load saved screen settings (with legacy migration)
   useEffect(() => {
-    const raw = localStorage.getItem('kiosk:styleSelection');
-    if (!raw) return;
-    try {
-      const data = JSON.parse(raw);
-      if (data.title) setStylesTitle(data.title);
-      if (data.textColorHex) setStylesTextColor(hexToHsl(data.textColorHex));
-      if (typeof data.overlayOpacity === 'number') setOverlayOpacity(Math.round(data.overlayOpacity * 100));
-      if (data.backgroundImageDataUrl) setBackgroundImageDataUrl(data.backgroundImageDataUrl);
-    } catch {}
+    setScreenSettings(loadScreenSettings());
   }, []);
-
-  // Persist Choose Avatar screen settings
-  useEffect(() => {
-    const payload = {
-      title: stylesTitle,
-      textColorHex: hslToHex(stylesTextColor),
-      textColorHsl: `${stylesTextColor.h} ${stylesTextColor.s}% ${stylesTextColor.l}%`,
-      backgroundImageDataUrl,
-      overlayOpacity: Math.max(0, Math.min(0.8, overlayOpacity / 100)),
-    };
-    localStorage.setItem('kiosk:styleSelection', JSON.stringify(payload));
-  }, [stylesTitle, stylesTextColor, backgroundImageDataUrl, overlayOpacity]);
 
   const avatarStyles = [
     { id: "pixar", name: "Pixar Style", description: "3D animated character style" },
@@ -185,86 +164,115 @@ const EventSetup = () => {
             </div>
           </div>
 
-          {/* Choose Avatar Screen */}
+          {/* Screen Appearance - per screen customization */}
           <Card className="bg-card/80 backdrop-blur border-border">
             <CardHeader>
-              <CardTitle className="text-lg">Choose Avatar Screen</CardTitle>
-              <CardDescription>Customize the text color, background image, and overlay</CardDescription>
+              <CardTitle className="text-lg">Screen Appearance</CardTitle>
+              <CardDescription>Customize text color, background image, and overlay per screen</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-6">
-              <div>
-                <Label htmlFor="stylesTitle">Title</Label>
-                <Input
-                  id="stylesTitle"
-                  value={stylesTitle}
-                  onChange={(e) => setStylesTitle(e.target.value)}
-                  placeholder="Choose your Avatar"
-                  className="bg-input/50 border-border"
-                />
-              </div>
-
-              <div>
-                <ColorPicker
-                  value={stylesTextColor}
-                  onChange={setStylesTextColor}
-                  label="Text Color"
-                  showAccessibilityCheck={!!backgroundImageDataUrl}
-                  contrastBackground={backgroundImageDataUrl ? { h: 0, s: 0, l: 0 } : { h: 0, s: 0, l: 100 }}
-                />
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <Label>Background Image</Label>
-                  <Input
-                    type="file"
-                    accept="image/*"
-                    onChange={(e) => {
-                      const file = e.target.files?.[0];
-                      if (!file) return;
-                      const reader = new FileReader();
-                      reader.onload = () => setBackgroundImageDataUrl(reader.result as string);
-                      reader.readAsDataURL(file);
-                    }}
-                    className="bg-input/50 border-border"
-                  />
-                  {backgroundImageDataUrl && (
-                    <div className="relative">
-                      <img src={backgroundImageDataUrl} alt="Choose Avatar background preview" className="w-full h-40 object-cover rounded-md border border-border" />
-                      <div className="flex gap-2 mt-2">
-                        <Button variant="outline" onClick={() => setBackgroundImageDataUrl(null)}>Remove</Button>
-                      </div>
-                    </div>
-                  )}
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="overlayOpacity">Overlay Opacity</Label>
-                  <input
-                    id="overlayOpacity"
-                    type="range"
-                    min={0}
-                    max={80}
-                    value={overlayOpacity}
-                    onChange={(e) => setOverlayOpacity(parseInt(e.target.value))}
-                    className="w-full"
-                  />
-                  <div className="text-sm text-muted-foreground">{Math.round((overlayOpacity/100)*100)}%</div>
-                </div>
-              </div>
+            <CardContent className="space-y-4">
+              <Accordion type="single" collapsible className="w-full">
+                <AccordionItem value="styles">
+                  <AccordionTrigger>Choose Avatar</AccordionTrigger>
+                  <AccordionContent>
+                    <ScreenAppearanceEditor
+                      label="Choose Avatar"
+                      value={screenSettings.styles}
+                      onChange={(next) => {
+                        const merged = { ...screenSettings, styles: next };
+                        setScreenSettings(merged);
+                        saveScreenSettings(merged);
+                      }}
+                    />
+                  </AccordionContent>
+                </AccordionItem>
+                <AccordionItem value="camera">
+                  <AccordionTrigger>Camera</AccordionTrigger>
+                  <AccordionContent>
+                    <ScreenAppearanceEditor
+                      label="Camera"
+                      value={screenSettings.camera}
+                      onChange={(next) => {
+                        const merged = { ...screenSettings, camera: next };
+                        setScreenSettings(merged);
+                        saveScreenSettings(merged);
+                      }}
+                    />
+                  </AccordionContent>
+                </AccordionItem>
+                <AccordionItem value="countdown">
+                  <AccordionTrigger>Countdown</AccordionTrigger>
+                  <AccordionContent>
+                    <ScreenAppearanceEditor
+                      label="Countdown"
+                      value={screenSettings.countdown}
+                      onChange={(next) => {
+                        const merged = { ...screenSettings, countdown: next };
+                        setScreenSettings(merged);
+                        saveScreenSettings(merged);
+                      }}
+                    />
+                  </AccordionContent>
+                </AccordionItem>
+                <AccordionItem value="loading">
+                  <AccordionTrigger>Generating</AccordionTrigger>
+                  <AccordionContent>
+                    <ScreenAppearanceEditor
+                      label="Generating"
+                      value={screenSettings.loading}
+                      onChange={(next) => {
+                        const merged = { ...screenSettings, loading: next };
+                        setScreenSettings(merged);
+                        saveScreenSettings(merged);
+                      }}
+                    />
+                  </AccordionContent>
+                </AccordionItem>
+                <AccordionItem value="result">
+                  <AccordionTrigger>Result</AccordionTrigger>
+                  <AccordionContent>
+                    <ScreenAppearanceEditor
+                      label="Result"
+                      value={screenSettings.result}
+                      onChange={(next) => {
+                        const merged = { ...screenSettings, result: next };
+                        setScreenSettings(merged);
+                        saveScreenSettings(merged);
+                      }}
+                    />
+                  </AccordionContent>
+                </AccordionItem>
+              </Accordion>
             </CardContent>
           </Card>
 
-          {/* Theme Preview */}
-          <ThemePreview 
-            primaryColor={primaryColor}
-            secondaryColor={secondaryColor}
-            backgroundStyle={backgroundStyle}
-            title={stylesTitle}
-            textColorHex={hslToHex(stylesTextColor)}
-            backgroundImageDataUrl={backgroundImageDataUrl || undefined}
-            overlayOpacity={Math.max(0, Math.min(0.8, overlayOpacity / 100))}
-          />
+          {/* Theme Preview with screen selector */}
+          <div className="space-y-3">
+            <div className="flex items-center justify-end gap-2">
+              <Label>Preview Screen</Label>
+              <Select value={previewScreen} onValueChange={(v: ScreenKey) => setPreviewScreen(v)}>
+                <SelectTrigger className="w-52 bg-input/50 border-border">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="styles">Choose Avatar</SelectItem>
+                  <SelectItem value="camera">Camera</SelectItem>
+                  <SelectItem value="countdown">Countdown</SelectItem>
+                  <SelectItem value="loading">Generating</SelectItem>
+                  <SelectItem value="result">Result</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <ThemePreview 
+              primaryColor={primaryColor}
+              secondaryColor={secondaryColor}
+              backgroundStyle={backgroundStyle}
+              title={screenSettings[previewScreen]?.title}
+              textColorHex={screenSettings[previewScreen]?.textColorHex}
+              backgroundImageDataUrl={screenSettings[previewScreen]?.backgroundImageDataUrl || undefined}
+              overlayOpacity={screenSettings[previewScreen]?.overlayOpacity}
+            />
+          </div>
 
           {/* Avatar Styles */}
           <Card className="bg-card/80 backdrop-blur border-border shadow-soft">
