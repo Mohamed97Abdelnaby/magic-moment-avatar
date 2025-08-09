@@ -77,7 +77,7 @@ const NeuralNetwork = () => {
   );
 };
 
-const KioskInterface = ({ customColors }: KioskInterfaceProps = {}) => {
+const KioskInterface = () => {
   const [currentStep, setCurrentStep] = useState<'styles' | 'camera' | 'countdown' | 'loading' | 'result'>('styles');
   const [selectedStyle, setSelectedStyle] = useState<string>('');
   const [countdown, setCountdown] = useState(3);
