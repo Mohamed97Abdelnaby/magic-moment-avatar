@@ -90,6 +90,13 @@ const KioskInterface = ({ customColors }: KioskInterfaceProps = {}) => {
   const [countdown, setCountdown] = useState(3);
   const [showConfetti, setShowConfetti] = useState(false);
   const [stageAnimationKey, setStageAnimationKey] = useState(0);
+  const [styleSelection, setStyleSelection] = useState<{
+    title?: string;
+    textColorHex?: string;
+    textColorHsl?: string;
+    backgroundImageDataUrl?: string;
+    overlayOpacity?: number;
+  }>({});
 
   // Quote collections for different stages
   const countdownQuotes = [
@@ -119,6 +126,15 @@ const KioskInterface = ({ customColors }: KioskInterfaceProps = {}) => {
   useEffect(() => {
     setStageAnimationKey(prev => prev + 1);
   }, [currentStep]);
+
+  // Load Choose Avatar style settings
+  useEffect(() => {
+    const raw = localStorage.getItem('kiosk:styleSelection');
+    if (!raw) return;
+    try {
+      setStyleSelection(JSON.parse(raw));
+    } catch {}
+  }, []);
 
   const handleStyleSelect = (styleId: string) => {
     setSelectedStyle(styleId);
@@ -162,64 +178,89 @@ const KioskInterface = ({ customColors }: KioskInterfaceProps = {}) => {
     switch (currentStep) {
       case 'styles':
         return (
-          <div className="text-center relative" key={`styles-${stageAnimationKey}`}>
-            <ParticleField count={15} />
-            
-            <div className="animate-fade-in-up">
-              <h1 className="text-7xl font-bold mb-6 gradient-primary bg-clip-text text-transparent animate-scale-in">
-                Choose Your Style
-              </h1>
-              <p className="text-3xl text-muted-foreground mb-16 animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
-                Select how you want your avatar to look
-              </p>
-            </div>
-            
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-8 max-w-6xl mx-auto mb-16">
-              {avatarStyles.map((style, index) => (
-                <div
-                  key={style.id}
-                  className="animate-bounce-in card-3d"
-                  style={{ animationDelay: `${index * 0.1}s` }}
-                >
-                  <button
-                    onClick={() => handleStyleSelect(style.id)}
-                    className={`w-full p-8 rounded-3xl border-4 transition-all duration-500 transform-3d magnetic relative overflow-hidden ${
-                      selectedStyle === style.id
-                        ? 'border-primary shadow-glow bg-primary/10 scale-105 neon-glow'
-                        : 'border-border hover:border-primary/50 hover:shadow-3d glass'
-                    }`}
-                  >
-                    <div className="relative z-10">
-                      <div className="text-8xl mb-6 animate-float" style={{ animationDelay: `${index * 0.2}s` }}>
-                        {style.preview}
-                      </div>
-                      <h3 className="text-3xl font-bold mb-2">{style.name}</h3>
-                      <p className="text-lg text-muted-foreground">{style.description}</p>
-                    </div>
-                    
-                    {selectedStyle === style.id && (
-                      <div className="absolute inset-0 gradient-glow animate-pulse-glow" />
-                    )}
-                  </button>
-                </div>
-              ))}
-            </div>
-            
-            {selectedStyle && (
-              <div className="animate-scale-in">
-                <Button 
-                  variant="default" 
-                  size="lg" 
-                  onClick={handleStartCamera}
-                  className="text-3xl px-20 py-10 rounded-2xl shadow-glow hover:shadow-neon transition-all duration-500 transform hover:scale-105 neon-glow"
-                >
-                  <Camera className="h-10 w-10 mr-6" />
-                  Begin Your Journey
-                  <ArrowRight className="h-10 w-10 ml-6" />
-                  <Heart className="h-8 w-8 ml-4 animate-pulse-soft" />
-                </Button>
-              </div>
+          <div className="relative min-h-screen overflow-hidden" key={`styles-${stageAnimationKey}`}>
+            {styleSelection.backgroundImageDataUrl && (
+              <div
+                className="absolute inset-0"
+                style={{
+                  backgroundImage: `url(${styleSelection.backgroundImageDataUrl})`,
+                  backgroundSize: 'cover',
+                  backgroundPosition: 'center',
+                }}
+              />
             )}
+            {typeof styleSelection.overlayOpacity === 'number' && styleSelection.backgroundImageDataUrl && (
+              <div
+                className="absolute inset-0"
+                style={{ background: `hsla(0 0% 0% / ${styleSelection.overlayOpacity})` }}
+              />
+            )}
+
+            <div className="relative z-10 text-center">
+              <ParticleField count={15} />
+              
+              <div className="animate-fade-in-up">
+                <h1
+                  className="text-7xl font-bold mb-6 animate-scale-in"
+                  style={{ color: styleSelection.textColorHsl ? `hsl(${styleSelection.textColorHsl})` : undefined }}
+                >
+                  {styleSelection.title || 'Choose your Avatar'}
+                </h1>
+                <p
+                  className="text-3xl mb-16 animate-fade-in-up"
+                  style={{ color: styleSelection.textColorHsl ? `hsl(${styleSelection.textColorHsl})` : undefined, animationDelay: '0.2s' }}
+                >
+                  Select how you want your avatar to look
+                </p>
+              </div>
+              
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-8 max-w-6xl mx-auto mb-16">
+                {avatarStyles.map((style, index) => (
+                  <div
+                    key={style.id}
+                    className="animate-bounce-in card-3d"
+                    style={{ animationDelay: `${index * 0.1}s` }}
+                  >
+                    <button
+                      onClick={() => handleStyleSelect(style.id)}
+                      className={`w-full p-8 rounded-3xl border-4 transition-all duration-500 transform-3d magnetic relative overflow-hidden ${
+                        selectedStyle === style.id
+                          ? 'border-primary shadow-glow bg-primary/10 scale-105 neon-glow'
+                          : 'border-border hover:border-primary/50 hover:shadow-3d glass'
+                      }`}
+                    >
+                      <div className="relative z-10">
+                        <div className="text-8xl mb-6 animate-float" style={{ animationDelay: `${index * 0.2}s` }}>
+                          {style.preview}
+                        </div>
+                        <h3 className="text-3xl font-bold mb-2">{style.name}</h3>
+                        <p className="text-lg text-muted-foreground">{style.description}</p>
+                      </div>
+                      
+                      {selectedStyle === style.id && (
+                        <div className="absolute inset-0 gradient-glow animate-pulse-glow" />
+                      )}
+                    </button>
+                  </div>
+                ))}
+              </div>
+              
+              {selectedStyle && (
+                <div className="animate-scale-in">
+                  <Button 
+                    variant="default" 
+                    size="lg" 
+                    onClick={handleStartCamera}
+                    className="text-3xl px-20 py-10 rounded-2xl shadow-glow hover:shadow-neon transition-all duration-500 transform hover:scale-105 neon-glow"
+                  >
+                    <Camera className="h-10 w-10 mr-6" />
+                    Begin Your Journey
+                    <ArrowRight className="h-10 w-10 ml-6" />
+                    <Heart className="h-8 w-8 ml-4 animate-pulse-soft" />
+                  </Button>
+                </div>
+              )}
+            </div>
           </div>
         );
 

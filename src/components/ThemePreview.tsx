@@ -9,11 +9,16 @@ interface ThemePreviewProps {
   primaryColor: HSLColor;
   secondaryColor?: HSLColor;
   backgroundStyle: 'solid' | 'gradient' | 'default';
+  title?: string;
+  textColorHex?: string;
+  backgroundImageDataUrl?: string;
+  overlayOpacity?: number; // 0-1
 }
 
-const ThemePreview = ({ primaryColor, secondaryColor, backgroundStyle }: ThemePreviewProps) => {
+const ThemePreview = ({ primaryColor, secondaryColor, backgroundStyle, title, textColorHex, backgroundImageDataUrl, overlayOpacity = 0 }: ThemePreviewProps) => {
   const primaryHex = hslToHex(primaryColor);
   const secondaryHex = secondaryColor ? hslToHex(secondaryColor) : primaryHex;
+  const textColor = textColorHex || `hsl(var(--preview-primary))`;
   
   // Create CSS variables for preview
   const previewStyle = {
@@ -44,8 +49,17 @@ const ThemePreview = ({ primaryColor, secondaryColor, backgroundStyle }: ThemePr
       </CardHeader>
       <CardContent>
         <div 
-          className={`p-6 rounded-lg border-2 border-border min-h-[300px] ${getBackgroundClass()}`}
-          style={previewStyle}
+          className={`p-6 rounded-lg border-2 border-border min-h-[300px] relative ${getBackgroundClass()}`}
+          style={{
+            ...previewStyle,
+            ...(backgroundImageDataUrl
+              ? {
+                  backgroundImage: `${overlayOpacity ? `linear-gradient(hsla(0 0% 0% / ${overlayOpacity}), hsla(0 0% 0% / ${overlayOpacity})), ` : ''}url(${backgroundImageDataUrl})`,
+                  backgroundSize: 'cover',
+                  backgroundPosition: 'center',
+                }
+              : {}),
+          }}
         >
           {/* Mini Kiosk Interface Preview */}
           <div className="space-y-4">
@@ -67,11 +81,11 @@ const ThemePreview = ({ primaryColor, secondaryColor, backgroundStyle }: ThemePr
               </div>
               <h3 
                 className="text-xl font-bold mb-1"
-                style={{ color: `hsl(var(--preview-primary))` }}
+                style={{ color: textColor }}
               >
-                Choose Your Style
+                {title || 'Choose Your Style'}
               </h3>
-              <p className="text-sm opacity-75">Select an avatar style for your photo</p>
+              <p className="text-sm opacity-90" style={{ color: textColor }}>Select an avatar style for your photo</p>
             </div>
 
             {/* Style Options Preview */}
