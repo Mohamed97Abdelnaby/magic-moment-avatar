@@ -32,8 +32,7 @@ const ScreenAppearanceEditor = ({ label, value, onChange, showTitle = true }: Sc
   }, [value.textColorHex, value.textColorHsl]);
 
   return (
-    <Card className="bg-card/60 border-border">
-      <CardContent className="space-y-4 pt-6">
+    <div className="space-y-6">
         {showTitle && (
           <div>
             <Label htmlFor={`${label}-title`}>Title</Label>
@@ -110,8 +109,7 @@ const ScreenAppearanceEditor = ({ label, value, onChange, showTitle = true }: Sc
             </div>
           </div>
         </div>
-      </CardContent>
-    </Card>
+    </div>
   );
 };
 

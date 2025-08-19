@@ -9,6 +9,7 @@ import { ArrowLeft, ArrowRight, CheckCircle2, Image, Palette, Play, Sparkles, Ey
 import ColorPicker from "@/components/ColorPicker";
 import ThemePreview from "@/components/ThemePreview";
 import ScreenAppearanceEditor from "@/components/ScreenAppearanceEditor";
+import SplitScreenStep from "@/components/SplitScreenStep";
 import SetupProgress from "@/components/SetupProgress";
 import { HSLColor, applyDynamicTheme } from "@/lib/colorUtils";
 import { getDefaultScreenSettings, loadScreenSettings, saveScreenSettings, type ScreenKey, type ScreenSettings } from "@/lib/kioskSettings";
@@ -17,11 +18,14 @@ const calmBlue: HSLColor = { h: 217, s: 90, l: 61 };
 
 const stepLabels = [
   "Welcome",
-  "Event",
+  "Event", 
   "Colors",
-  "Screens",
-  "Preview",
-  "Styles",
+  "Styles Screen",
+  "Camera Screen",
+  "Countdown Screen", 
+  "Loading Screen",
+  "Result Screen",
+  "Finish",
 ];
 
 const StepsTotal = stepLabels.length;
@@ -178,65 +182,92 @@ const SetupWizard = () => {
     </StepContainer>
   );
 
-  const Screens = () => (
-    <StepContainer>
-      <Card className="bg-card/80 backdrop-blur border-border">
-        <CardHeader>
-          <CardTitle className="text-lg">Screen Appearance</CardTitle>
-          <CardDescription>Customize text color, background image, and overlay per screen</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <Accordion type="single" collapsible className="w-full">
-            {(["styles","camera","countdown","loading","result"] as ScreenKey[]).map((key) => (
-              <AccordionItem value={key} key={key}>
-                <AccordionTrigger className="capitalize">{key}</AccordionTrigger>
-                <AccordionContent>
-                  <ScreenAppearanceEditor
-                    label={key}
-                    value={screenSettings[key]}
-                    onChange={(next) => {
-                      const merged = { ...screenSettings, [key]: next } as ScreenSettings;
-                      setScreenSettings(merged);
-                      saveScreenSettings(merged);
-                    }}
-                  />
-                </AccordionContent>
-              </AccordionItem>
-            ))}
-          </Accordion>
-        </CardContent>
-      </Card>
-    </StepContainer>
+  // Individual Screen Steps
+  const StylesScreen = () => (
+    <SplitScreenStep
+      screenKey="styles"
+      screenSettings={screenSettings.styles}
+      onScreenChange={(next) => {
+        const merged = { ...screenSettings, styles: next };
+        setScreenSettings(merged);
+        saveScreenSettings(merged);
+      }}
+      primaryColor={primaryColor}
+      secondaryColor={secondaryColor || undefined}
+      backgroundStyle={backgroundStyle}
+      title="Avatar Styles Screen"
+      description="Customize how the avatar selection screen looks and feels"
+    />
   );
 
-  const Preview = () => (
-    <StepContainer>
-      <div className="space-y-3">
-        <div className="flex items-center justify-end gap-2">
-          <Label>Preview Screen</Label>
-          <Select value={previewScreen} onValueChange={(v: ScreenKey) => setPreviewScreen(v)}>
-            <SelectTrigger className="w-52 bg-input/50 border-border"><SelectValue /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="styles">Choose Avatar</SelectItem>
-              <SelectItem value="camera">Camera</SelectItem>
-              <SelectItem value="countdown">Countdown</SelectItem>
-              <SelectItem value="loading">Generating</SelectItem>
-              <SelectItem value="result">Result</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-        <ThemePreview
-          primaryColor={primaryColor}
-          secondaryColor={secondaryColor || undefined}
-          backgroundStyle={backgroundStyle}
-          title={screenSettings[previewScreen]?.title}
-          textColorHex={screenSettings[previewScreen]?.textColorHex}
-          backgroundImageDataUrl={screenSettings[previewScreen]?.backgroundImageDataUrl || undefined}
-          overlayOpacity={screenSettings[previewScreen]?.overlayOpacity}
-        />
-      </div>
-    </StepContainer>
+  const CameraScreen = () => (
+    <SplitScreenStep
+      screenKey="camera"
+      screenSettings={screenSettings.camera}
+      onScreenChange={(next) => {
+        const merged = { ...screenSettings, camera: next };
+        setScreenSettings(merged);
+        saveScreenSettings(merged);
+      }}
+      primaryColor={primaryColor}
+      secondaryColor={secondaryColor || undefined}
+      backgroundStyle={backgroundStyle}
+      title="Camera Screen"
+      description="Design the camera interface where users take their photos"
+    />
   );
+
+  const CountdownScreen = () => (
+    <SplitScreenStep
+      screenKey="countdown"
+      screenSettings={screenSettings.countdown}
+      onScreenChange={(next) => {
+        const merged = { ...screenSettings, countdown: next };
+        setScreenSettings(merged);
+        saveScreenSettings(merged);
+      }}
+      primaryColor={primaryColor}
+      secondaryColor={secondaryColor || undefined}
+      backgroundStyle={backgroundStyle}
+      title="Countdown Screen"
+      description="Customize the countdown timer that prepares users for their photo"
+    />
+  );
+
+  const LoadingScreen = () => (
+    <SplitScreenStep
+      screenKey="loading"
+      screenSettings={screenSettings.loading}
+      onScreenChange={(next) => {
+        const merged = { ...screenSettings, loading: next };
+        setScreenSettings(merged);
+        saveScreenSettings(merged);
+      }}
+      primaryColor={primaryColor}
+      secondaryColor={secondaryColor || undefined}
+      backgroundStyle={backgroundStyle}
+      title="Loading Screen"
+      description="Style the AI generation screen that creates the avatar"
+    />
+  );
+
+  const ResultScreen = () => (
+    <SplitScreenStep
+      screenKey="result"
+      screenSettings={screenSettings.result}
+      onScreenChange={(next) => {
+        const merged = { ...screenSettings, result: next };
+        setScreenSettings(merged);
+        saveScreenSettings(merged);
+      }}
+      primaryColor={primaryColor}
+      secondaryColor={secondaryColor || undefined}
+      backgroundStyle={backgroundStyle}
+      title="Result Screen"
+      description="Design how users see and share their final avatar"
+    />
+  );
+
 
   const StylesAndFinish = () => (
     <StepContainer>
@@ -284,9 +315,12 @@ const SetupWizard = () => {
       case 0: return <Welcome />;
       case 1: return <EventDetails />;
       case 2: return <ThemeColors />;
-      case 3: return <Screens />;
-      case 4: return <Preview />;
-      case 5: return <StylesAndFinish />;
+      case 3: return <StylesScreen />;
+      case 4: return <CameraScreen />;
+      case 5: return <CountdownScreen />;
+      case 6: return <LoadingScreen />;
+      case 7: return <ResultScreen />;
+      case 8: return <StylesAndFinish />;
       default: return null;
     }
   };
