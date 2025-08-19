@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useCallback, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -12,7 +12,7 @@ import ScreenAppearanceEditor from "@/components/ScreenAppearanceEditor";
 import SplitScreenStep from "@/components/SplitScreenStep";
 import SetupProgress from "@/components/SetupProgress";
 import { HSLColor, applyDynamicTheme } from "@/lib/colorUtils";
-import { getDefaultScreenSettings, loadScreenSettings, saveScreenSettings, type ScreenKey, type ScreenSettings } from "@/lib/kioskSettings";
+import { getDefaultScreenSettings, loadScreenSettings, saveScreenSettings, type ScreenKey, type ScreenSettings, type ScreenAppearance } from "@/lib/kioskSettings";
 
 const calmBlue: HSLColor = { h: 217, s: 90, l: 61 };
 
@@ -72,6 +72,35 @@ const SetupWizard = () => {
   useEffect(() => {
     setScreenSettings(loadScreenSettings());
   }, []);
+
+  // Debounced localStorage save
+  const saveTimeoutRef = useRef<NodeJS.Timeout>();
+  const screenSettingsRef = useRef(screenSettings);
+  screenSettingsRef.current = screenSettings;
+
+  const debouncedSave = useCallback(() => {
+    if (saveTimeoutRef.current) {
+      clearTimeout(saveTimeoutRef.current);
+    }
+    saveTimeoutRef.current = setTimeout(() => {
+      saveScreenSettings(screenSettingsRef.current);
+    }, 300);
+  }, []);
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (saveTimeoutRef.current) {
+        clearTimeout(saveTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  // Memoized screen change handler
+  const handleScreenChange = useCallback((screenKey: ScreenKey, next: ScreenAppearance) => {
+    setScreenSettings(prev => ({ ...prev, [screenKey]: next }));
+    debouncedSave();
+  }, [debouncedSave]);
 
   const next = () => { setDir("forward"); setStep((s) => Math.min(StepsTotal - 1, s + 1)); };
   const back = () => { setDir("backward"); setStep((s) => Math.max(0, s - 1)); };
@@ -182,91 +211,71 @@ const SetupWizard = () => {
     </StepContainer>
   );
 
-  // Individual Screen Steps
-  const StylesScreen = () => (
+  // Individual Screen Steps - Memoized for performance
+  const StylesScreen = useMemo(() => (
     <SplitScreenStep
       screenKey="styles"
       screenSettings={screenSettings.styles}
-      onScreenChange={(next) => {
-        const merged = { ...screenSettings, styles: next };
-        setScreenSettings(merged);
-        saveScreenSettings(merged);
-      }}
+      onScreenChange={(next) => handleScreenChange('styles', next)}
       primaryColor={primaryColor}
       secondaryColor={secondaryColor || undefined}
       backgroundStyle={backgroundStyle}
       title="Avatar Styles Screen"
       description="Customize how the avatar selection screen looks and feels"
     />
-  );
+  ), [screenSettings.styles, handleScreenChange, primaryColor, secondaryColor, backgroundStyle]);
 
-  const CameraScreen = () => (
+  const CameraScreen = useMemo(() => (
     <SplitScreenStep
       screenKey="camera"
       screenSettings={screenSettings.camera}
-      onScreenChange={(next) => {
-        const merged = { ...screenSettings, camera: next };
-        setScreenSettings(merged);
-        saveScreenSettings(merged);
-      }}
+      onScreenChange={(next) => handleScreenChange('camera', next)}
       primaryColor={primaryColor}
       secondaryColor={secondaryColor || undefined}
       backgroundStyle={backgroundStyle}
       title="Camera Screen"
       description="Design the camera interface where users take their photos"
     />
-  );
+  ), [screenSettings.camera, handleScreenChange, primaryColor, secondaryColor, backgroundStyle]);
 
-  const CountdownScreen = () => (
+  const CountdownScreen = useMemo(() => (
     <SplitScreenStep
       screenKey="countdown"
       screenSettings={screenSettings.countdown}
-      onScreenChange={(next) => {
-        const merged = { ...screenSettings, countdown: next };
-        setScreenSettings(merged);
-        saveScreenSettings(merged);
-      }}
+      onScreenChange={(next) => handleScreenChange('countdown', next)}
       primaryColor={primaryColor}
       secondaryColor={secondaryColor || undefined}
       backgroundStyle={backgroundStyle}
       title="Countdown Screen"
       description="Customize the countdown timer that prepares users for their photo"
     />
-  );
+  ), [screenSettings.countdown, handleScreenChange, primaryColor, secondaryColor, backgroundStyle]);
 
-  const LoadingScreen = () => (
+  const LoadingScreen = useMemo(() => (
     <SplitScreenStep
       screenKey="loading"
       screenSettings={screenSettings.loading}
-      onScreenChange={(next) => {
-        const merged = { ...screenSettings, loading: next };
-        setScreenSettings(merged);
-        saveScreenSettings(merged);
-      }}
+      onScreenChange={(next) => handleScreenChange('loading', next)}
       primaryColor={primaryColor}
       secondaryColor={secondaryColor || undefined}
       backgroundStyle={backgroundStyle}
       title="Loading Screen"
       description="Style the AI generation screen that creates the avatar"
     />
-  );
+  ), [screenSettings.loading, handleScreenChange, primaryColor, secondaryColor, backgroundStyle]);
 
-  const ResultScreen = () => (
+  const ResultScreen = useMemo(() => (
     <SplitScreenStep
       screenKey="result"
       screenSettings={screenSettings.result}
-      onScreenChange={(next) => {
-        const merged = { ...screenSettings, result: next };
-        setScreenSettings(merged);
-        saveScreenSettings(merged);
-      }}
+      onScreenChange={(next) => handleScreenChange('result', next)}
       primaryColor={primaryColor}
       secondaryColor={secondaryColor || undefined}
       backgroundStyle={backgroundStyle}
       title="Result Screen"
       description="Design how users see and share their final avatar"
     />
-  );
+  ), [screenSettings.result, handleScreenChange, primaryColor, secondaryColor, backgroundStyle]);
 
 
   const StylesAndFinish = () => (
@@ -315,11 +324,11 @@ const SetupWizard = () => {
       case 0: return <Welcome />;
       case 1: return <EventDetails />;
       case 2: return <ThemeColors />;
-      case 3: return <StylesScreen />;
-      case 4: return <CameraScreen />;
-      case 5: return <CountdownScreen />;
-      case 6: return <LoadingScreen />;
-      case 7: return <ResultScreen />;
+      case 3: return StylesScreen;
+      case 4: return CameraScreen;
+      case 5: return CountdownScreen;
+      case 6: return LoadingScreen;
+      case 7: return ResultScreen;
       case 8: return <StylesAndFinish />;
       default: return null;
     }

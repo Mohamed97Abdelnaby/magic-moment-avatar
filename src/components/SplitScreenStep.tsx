@@ -3,6 +3,7 @@ import ScreenAppearanceEditor from "@/components/ScreenAppearanceEditor";
 import ThemePreview from "@/components/ThemePreview";
 import { HSLColor } from "@/lib/colorUtils";
 import { ScreenAppearance, ScreenKey } from "@/lib/kioskSettings";
+import { memo } from "react";
 
 interface SplitScreenStepProps {
   screenKey: ScreenKey;
@@ -26,7 +27,7 @@ const getScreenDisplayName = (screenKey: ScreenKey): string => {
   return names[screenKey];
 };
 
-const SplitScreenStep = ({
+const SplitScreenStep = memo(({
   screenKey,
   screenSettings,
   onScreenChange,
@@ -84,6 +85,6 @@ const SplitScreenStep = ({
       </div>
     </div>
   );
-};
+});
 
 export default SplitScreenStep;

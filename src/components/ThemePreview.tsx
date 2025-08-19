@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Camera, Sparkles, User } from "lucide-react";
 import { HSLColor, hslToHex } from "@/lib/colorUtils";
+import { memo } from "react";
 
 interface ThemePreviewProps {
   primaryColor: HSLColor;
@@ -15,7 +16,7 @@ interface ThemePreviewProps {
   overlayOpacity?: number; // 0-1
 }
 
-const ThemePreview = ({ primaryColor, secondaryColor, backgroundStyle, title, textColorHex, backgroundImageDataUrl, overlayOpacity = 0 }: ThemePreviewProps) => {
+const ThemePreview = memo(({ primaryColor, secondaryColor, backgroundStyle, title, textColorHex, backgroundImageDataUrl, overlayOpacity = 0 }: ThemePreviewProps) => {
   const primaryHex = hslToHex(primaryColor);
   const secondaryHex = secondaryColor ? hslToHex(secondaryColor) : primaryHex;
   const textColor = textColorHex || `hsl(var(--preview-primary))`;
@@ -176,6 +177,6 @@ const ThemePreview = ({ primaryColor, secondaryColor, backgroundStyle, title, te
       </CardContent>
     </Card>
   );
-};
+});
 
 export default ThemePreview;

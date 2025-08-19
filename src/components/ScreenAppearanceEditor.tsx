@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, memo, useCallback } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -25,11 +25,40 @@ const parseHslString = (str?: string): HSLColor => {
   }
 };
 
-const ScreenAppearanceEditor = ({ label, value, onChange, showTitle = true }: ScreenAppearanceEditorProps) => {
+const ScreenAppearanceEditor = memo(({ label, value, onChange, showTitle = true }: ScreenAppearanceEditorProps) => {
   const currentHsl = useMemo<HSLColor>(() => {
     if (value.textColorHex) return hexToHsl(value.textColorHex);
     return parseHslString(value.textColorHsl);
   }, [value.textColorHex, value.textColorHsl]);
+
+  // Memoized event handlers
+  const handleTitleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    onChange({ ...value, title: e.target.value });
+  }, [value, onChange]);
+
+  const handleColorChange = useCallback((hsl: HSLColor) => {
+    onChange({
+      ...value,
+      textColorHex: hslToHex(hsl),
+      textColorHsl: `${hsl.h} ${hsl.s}% ${hsl.l}%`,
+    });
+  }, [value, onChange]);
+
+  const handleFileChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => onChange({ ...value, backgroundImageDataUrl: reader.result as string });
+    reader.readAsDataURL(file);
+  }, [value, onChange]);
+
+  const handleRemoveImage = useCallback(() => {
+    onChange({ ...value, backgroundImageDataUrl: null });
+  }, [value, onChange]);
+
+  const handleOpacityChange = useCallback((vals: number[]) => {
+    onChange({ ...value, overlayOpacity: Math.max(0, Math.min(0.8, (vals?.[0] ?? 0) / 100)) });
+  }, [value, onChange]);
 
   return (
     <div className="space-y-6">
@@ -39,7 +68,7 @@ const ScreenAppearanceEditor = ({ label, value, onChange, showTitle = true }: Sc
             <Input
               id={`${label}-title`}
               value={value.title || ""}
-              onChange={(e) => onChange({ ...value, title: e.target.value })}
+              onChange={handleTitleChange}
               placeholder={label}
               className="bg-input/50 border-border"
             />
@@ -49,13 +78,7 @@ const ScreenAppearanceEditor = ({ label, value, onChange, showTitle = true }: Sc
         <div>
           <ColorPicker
             value={currentHsl}
-            onChange={(hsl) =>
-              onChange({
-                ...value,
-                textColorHex: hslToHex(hsl),
-                textColorHsl: `${hsl.h} ${hsl.s}% ${hsl.l}%`,
-              })
-            }
+            onChange={handleColorChange}
             label="Text Color"
             showAccessibilityCheck={!!value.backgroundImageDataUrl}
             contrastBackground={value.backgroundImageDataUrl ? { h: 0, s: 0, l: 0 } : { h: 0, s: 0, l: 100 }}
@@ -68,13 +91,7 @@ const ScreenAppearanceEditor = ({ label, value, onChange, showTitle = true }: Sc
             <Input
               type="file"
               accept="image/*"
-              onChange={(e) => {
-                const file = e.target.files?.[0];
-                if (!file) return;
-                const reader = new FileReader();
-                reader.onload = () => onChange({ ...value, backgroundImageDataUrl: reader.result as string });
-                reader.readAsDataURL(file);
-              }}
+              onChange={handleFileChange}
               className="bg-input/50 border-border"
             />
             {value.backgroundImageDataUrl && (
@@ -85,7 +102,7 @@ const ScreenAppearanceEditor = ({ label, value, onChange, showTitle = true }: Sc
                   className="w-full h-40 object-cover rounded-md border border-border"
                 />
                 <div className="flex gap-2 mt-2">
-                  <Button variant="outline" onClick={() => onChange({ ...value, backgroundImageDataUrl: null })}>
+                  <Button variant="outline" onClick={handleRemoveImage}>
                     Remove
                   </Button>
                 </div>
@@ -101,7 +118,7 @@ const ScreenAppearanceEditor = ({ label, value, onChange, showTitle = true }: Sc
                 max={80}
                 min={0}
                 step={1}
-                onValueChange={(vals) => onChange({ ...value, overlayOpacity: Math.max(0, Math.min(0.8, (vals?.[0] ?? 0) / 100)) })}
+                onValueChange={handleOpacityChange}
               />
             </div>
             <div className="text-sm text-muted-foreground">
@@ -111,6 +128,6 @@ const ScreenAppearanceEditor = ({ label, value, onChange, showTitle = true }: Sc
         </div>
     </div>
   );
-};
+});
 
 export default ScreenAppearanceEditor;
