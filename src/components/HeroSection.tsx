@@ -11,7 +11,7 @@ const HeroSection = () => {
         className="absolute inset-0 bg-cover bg-center bg-no-repeat"
         style={{ backgroundImage: `url(${heroImage})` }}
       >
-        <div className="absolute inset-0 bg-white/90 backdrop-blur-sm" />
+        <div className="absolute inset-0 bg-muted/90 backdrop-blur-sm" />
       </div>
       
       {/* Simple floating elements */}
