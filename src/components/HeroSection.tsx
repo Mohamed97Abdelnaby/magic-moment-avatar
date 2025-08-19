@@ -34,7 +34,7 @@ const HeroSection = () => {
               Transform Events
             </span>
             <br />
-            <span className="text-foreground">into Magic</span>
+            <span className="text-muted-foreground">into Magic</span>
           </h1>
           
           <p className="text-xl md:text-2xl text-muted-foreground mb-12 max-w-3xl mx-auto leading-relaxed">
