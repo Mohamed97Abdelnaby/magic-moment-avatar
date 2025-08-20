@@ -2,16 +2,14 @@ import { useEffect, useMemo, useState, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { ArrowLeft, ArrowRight, CheckCircle2, Image, Palette, Play, Sparkles, Eye } from "lucide-react";
+import { ArrowLeft, ArrowRight, CheckCircle2, Palette, Sparkles, Eye } from "lucide-react";
 import ColorPicker from "@/components/ColorPicker";
-import ThemePreview from "@/components/ThemePreview";
 import ScreenAppearanceEditor from "@/components/ScreenAppearanceEditor";
 import SplitScreenStep from "@/components/SplitScreenStep";
 import SetupProgress from "@/components/SetupProgress";
+import EventDetailsForm from "@/components/EventDetailsForm";
 import { HSLColor, applyDynamicTheme } from "@/lib/colorUtils";
 import { getDefaultScreenSettings, loadScreenSettings, saveScreenSettings, type ScreenKey, type ScreenSettings, type ScreenAppearance } from "@/lib/kioskSettings";
 
@@ -121,13 +119,13 @@ const SetupWizard = () => {
     setSelectedStyles((prev) => prev.includes(styleId) ? prev.filter((id) => id !== styleId) : [...prev, styleId]);
   }, []);
 
-  // Memoized input handlers for Event Details
-  const handleEventNameChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    setEventName(e.target.value);
+  // Event details update handlers (called from EventDetailsForm)
+  const handleEventNameChange = useCallback((eventName: string) => {
+    setEventName(eventName);
   }, []);
 
-  const handleEventLocationChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    setEventLocation(e.target.value);
+  const handleEventLocationChange = useCallback((eventLocation: string) => {
+    setEventLocation(eventLocation);
   }, []);
 
   const canFinish = eventName.trim().length > 0 && selectedStyles.length > 0;
@@ -185,22 +183,12 @@ const SetupWizard = () => {
 
   const EventDetails = useMemo(() => (
     <StepContainer>
-      <Card className="bg-card/80 backdrop-blur border-border shadow-soft">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2"><Image className="h-6 w-6" />Event Details</CardTitle>
-          <CardDescription>Basic information about your event</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div>
-            <Label htmlFor="eventName">Event Name</Label>
-            <Input id="eventName" value={eventName} onChange={handleEventNameChange} placeholder="Tech Conference 2025" className="bg-input/50 border-border" />
-          </div>
-          <div>
-            <Label htmlFor="eventLocation">Location</Label>
-            <Input id="eventLocation" value={eventLocation} onChange={handleEventLocationChange} placeholder="Convention Center Hall A" className="bg-input/50 border-border" />
-          </div>
-        </CardContent>
-      </Card>
+      <EventDetailsForm
+        initialEventName={eventName}
+        initialEventLocation={eventLocation}
+        onEventNameChange={handleEventNameChange}
+        onEventLocationChange={handleEventLocationChange}
+      />
     </StepContainer>
   ), [eventName, eventLocation, handleEventNameChange, handleEventLocationChange]);
 
