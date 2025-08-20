@@ -121,6 +121,15 @@ const SetupWizard = () => {
     setSelectedStyles((prev) => prev.includes(styleId) ? prev.filter((id) => id !== styleId) : [...prev, styleId]);
   }, []);
 
+  // Memoized input handlers for Event Details
+  const handleEventNameChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setEventName(e.target.value);
+  }, []);
+
+  const handleEventLocationChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setEventLocation(e.target.value);
+  }, []);
+
   const canFinish = eventName.trim().length > 0 && selectedStyles.length > 0;
 
   const handleFinish = useCallback(() => {
@@ -174,7 +183,7 @@ const SetupWizard = () => {
     </StepContainer>
   );
 
-  const EventDetails = () => (
+  const EventDetails = useMemo(() => (
     <StepContainer>
       <Card className="bg-card/80 backdrop-blur border-border shadow-soft">
         <CardHeader>
@@ -184,16 +193,16 @@ const SetupWizard = () => {
         <CardContent className="space-y-4">
           <div>
             <Label htmlFor="eventName">Event Name</Label>
-            <Input id="eventName" value={eventName} onChange={(e) => setEventName(e.target.value)} placeholder="Tech Conference 2025" className="bg-input/50 border-border" />
+            <Input id="eventName" value={eventName} onChange={handleEventNameChange} placeholder="Tech Conference 2025" className="bg-input/50 border-border" />
           </div>
           <div>
             <Label htmlFor="eventLocation">Location</Label>
-            <Input id="eventLocation" value={eventLocation} onChange={(e) => setEventLocation(e.target.value)} placeholder="Convention Center Hall A" className="bg-input/50 border-border" />
+            <Input id="eventLocation" value={eventLocation} onChange={handleEventLocationChange} placeholder="Convention Center Hall A" className="bg-input/50 border-border" />
           </div>
         </CardContent>
       </Card>
     </StepContainer>
-  );
+  ), [eventName, eventLocation, handleEventNameChange, handleEventLocationChange]);
 
   const ThemeColors = () => (
     <StepContainer>
@@ -351,7 +360,7 @@ const SetupWizard = () => {
   const renderStep = () => {
     switch (step) {
       case 0: return <Welcome />;
-      case 1: return <EventDetails />;
+      case 1: return EventDetails;
       case 2: return <ThemeColors />;
       case 3: return StylesScreen;
       case 4: return CameraScreen;
