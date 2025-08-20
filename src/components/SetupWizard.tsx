@@ -183,7 +183,7 @@ const SetupWizard = () => {
     </StepContainer>
   );
 
-  const EventDetails = useMemo(() => (
+  const EventDetails = () => (
     <StepContainer>
       <Card className="bg-card/80 backdrop-blur border-border shadow-soft">
         <CardHeader>
@@ -202,7 +202,7 @@ const SetupWizard = () => {
         </CardContent>
       </Card>
     </StepContainer>
-  ), [eventName, eventLocation, handleEventNameChange, handleEventLocationChange]);
+  );
 
   const ThemeColors = () => (
     <StepContainer>
@@ -370,7 +370,7 @@ const SetupWizard = () => {
   const renderStep = () => {
     switch (step) {
       case 0: return <Welcome />;
-      case 1: return EventDetails;
+      case 1: return <EventDetails />;
       case 2: return <ThemeColors />;
       case 3: return StylesScreen;
       case 4: return CameraScreen;
