@@ -119,13 +119,13 @@ const SetupWizard = () => {
     setSelectedStyles((prev) => prev.includes(styleId) ? prev.filter((id) => id !== styleId) : [...prev, styleId]);
   }, []);
 
-  // Event details update handlers (called from EventDetailsForm)
-  const handleEventNameChange = useCallback((eventName: string) => {
-    setEventName(eventName);
+  // Event details update handlers (called from EventDetailsForm) - stable callbacks
+  const handleEventNameChange = useCallback((newEventName: string) => {
+    setEventName(newEventName);
   }, []);
 
-  const handleEventLocationChange = useCallback((eventLocation: string) => {
-    setEventLocation(eventLocation);
+  const handleEventLocationChange = useCallback((newEventLocation: string) => {
+    setEventLocation(newEventLocation);
   }, []);
 
   const canFinish = eventName.trim().length > 0 && selectedStyles.length > 0;
@@ -190,7 +190,7 @@ const SetupWizard = () => {
         onEventLocationChange={handleEventLocationChange}
       />
     </StepContainer>
-  ), [eventName, eventLocation, handleEventNameChange, handleEventLocationChange]);
+  ), [handleEventNameChange, handleEventLocationChange]);
 
   const ThemeColors = () => (
     <StepContainer>
