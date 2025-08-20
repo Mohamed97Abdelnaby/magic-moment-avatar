@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { ArrowLeft, ArrowRight, CheckCircle2, Image, Palette, Play, Sparkles, Eye } from "lucide-react";
 import ColorPicker from "@/components/ColorPicker";
-
+import ThemePreview from "@/components/ThemePreview";
 import ScreenAppearanceEditor from "@/components/ScreenAppearanceEditor";
 import SplitScreenStep from "@/components/SplitScreenStep";
 import SetupProgress from "@/components/SetupProgress";
