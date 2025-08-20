@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, useCallback, useRef } from "react";
+import React, { useEffect, useMemo, useState, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -12,6 +12,7 @@ import ThemePreview from "@/components/ThemePreview";
 import ScreenAppearanceEditor from "@/components/ScreenAppearanceEditor";
 import SplitScreenStep from "@/components/SplitScreenStep";
 import SetupProgress from "@/components/SetupProgress";
+import EventDetailsForm from "@/components/EventDetailsForm";
 import { HSLColor, applyDynamicTheme } from "@/lib/colorUtils";
 import { getDefaultScreenSettings, loadScreenSettings, saveScreenSettings, type ScreenKey, type ScreenSettings, type ScreenAppearance } from "@/lib/kioskSettings";
 
@@ -121,13 +122,10 @@ const SetupWizard = () => {
     setSelectedStyles((prev) => prev.includes(styleId) ? prev.filter((id) => id !== styleId) : [...prev, styleId]);
   }, []);
 
-  // Memoized input handlers for Event Details
-  const handleEventNameChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    setEventName(e.target.value);
-  }, []);
-
-  const handleEventLocationChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    setEventLocation(e.target.value);
+  // Handle event details changes from form component
+  const handleEventDetailsChange = useCallback((name: string, location: string) => {
+    setEventName(name);
+    setEventLocation(location);
   }, []);
 
   const canFinish = eventName.trim().length > 0 && selectedStyles.length > 0;
@@ -183,26 +181,15 @@ const SetupWizard = () => {
     </StepContainer>
   );
 
-  const EventDetails = useMemo(() => (
+  const EventDetails = React.memo(() => (
     <StepContainer>
-      <Card className="bg-card/80 backdrop-blur border-border shadow-soft">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2"><Image className="h-6 w-6" />Event Details</CardTitle>
-          <CardDescription>Basic information about your event</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div>
-            <Label htmlFor="eventName">Event Name</Label>
-            <Input id="eventName" value={eventName} onChange={handleEventNameChange} placeholder="Tech Conference 2025" className="bg-input/50 border-border" />
-          </div>
-          <div>
-            <Label htmlFor="eventLocation">Location</Label>
-            <Input id="eventLocation" value={eventLocation} onChange={handleEventLocationChange} placeholder="Convention Center Hall A" className="bg-input/50 border-border" />
-          </div>
-        </CardContent>
-      </Card>
+      <EventDetailsForm
+        initialEventName={eventName}
+        initialEventLocation={eventLocation}
+        onEventDetailsChange={handleEventDetailsChange}
+      />
     </StepContainer>
-  ), [eventName, eventLocation, handleEventNameChange, handleEventLocationChange]);
+  ));
 
   const ThemeColors = () => (
     <StepContainer>
@@ -360,7 +347,7 @@ const SetupWizard = () => {
   const renderStep = () => {
     switch (step) {
       case 0: return <Welcome />;
-      case 1: return EventDetails;
+      case 1: return <EventDetails />;
       case 2: return <ThemeColors />;
       case 3: return StylesScreen;
       case 4: return CameraScreen;
