@@ -4,7 +4,12 @@ import { Card } from "@/components/ui/card";
 import { Camera, ArrowLeft, ArrowRight, RotateCcw, Send, Printer, Sparkles, Heart } from "lucide-react";
 import AIRobotDrawing from "./AIRobotDrawing";
 import QuoteDisplay from "./QuoteDisplay";
-import { loadScreenSettings, type ScreenSettings } from "@/lib/kioskSettings";
+import { loadScreenSettings, getDefaultScreenSettings, type ScreenSettings } from "@/lib/kioskSettings";
+
+interface KioskInterfaceProps {
+  isDemo?: boolean;
+  demoSettings?: ScreenSettings;
+}
 
 const ParticleField = ({ count = 12 }: { count?: number }) => {
   return (
@@ -77,13 +82,48 @@ const NeuralNetwork = () => {
   );
 };
 
-const KioskInterface = () => {
+const KioskInterface = ({ isDemo = false, demoSettings }: KioskInterfaceProps = {}) => {
   const [currentStep, setCurrentStep] = useState<'styles' | 'camera' | 'countdown' | 'loading' | 'result'>('styles');
   const [selectedStyle, setSelectedStyle] = useState<string>('');
   const [countdown, setCountdown] = useState(3);
   const [showConfetti, setShowConfetti] = useState(false);
   const [stageAnimationKey, setStageAnimationKey] = useState(0);
-  const [screens, setScreens] = useState<ScreenSettings>(() => loadScreenSettings());
+  const [screens, setScreens] = useState<ScreenSettings>(() => {
+    if (isDemo && demoSettings) return demoSettings;
+    if (isDemo) {
+      // Return beautiful static demo settings
+      const demoScreens = getDefaultScreenSettings();
+      return {
+        ...demoScreens,
+        styles: {
+          ...demoScreens.styles,
+          title: "Welcome to AvatarMoment",
+          textColorHsl: "0 0% 100%"
+        },
+        camera: {
+          ...demoScreens.camera,
+          title: "Strike Your Pose!",
+          textColorHsl: "0 0% 100%"
+        },
+        countdown: {
+          ...demoScreens.countdown,
+          title: "Perfect! Get ready...",
+          textColorHsl: "0 0% 100%"
+        },
+        loading: {
+          ...demoScreens.loading,
+          title: "Creating Your Avatar...",
+          textColorHsl: "0 0% 100%"
+        },
+        result: {
+          ...demoScreens.result,
+          title: "Amazing! Your Avatar is Ready!",
+          textColorHsl: "0 0% 100%"
+        }
+      };
+    }
+    return loadScreenSettings();
+  });
 
   // Quote collections for different stages
   const countdownQuotes = [
@@ -114,10 +154,12 @@ useEffect(() => {
   setStageAnimationKey(prev => prev + 1);
 }, [currentStep]);
 
-// Load per-screen settings
+// Load per-screen settings (only if not in demo mode)
 useEffect(() => {
-  setScreens(loadScreenSettings());
-}, []);
+  if (!isDemo) {
+    setScreens(loadScreenSettings());
+  }
+}, [isDemo]);
 
   const handleStyleSelect = (styleId: string) => {
     setSelectedStyle(styleId);
