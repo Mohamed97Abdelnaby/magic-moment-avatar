@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState, useCallback, useRef } from "react";
+import { useEffect, useMemo, useState, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -12,7 +12,6 @@ import ThemePreview from "@/components/ThemePreview";
 import ScreenAppearanceEditor from "@/components/ScreenAppearanceEditor";
 import SplitScreenStep from "@/components/SplitScreenStep";
 import SetupProgress from "@/components/SetupProgress";
-import EventDetailsForm from "@/components/EventDetailsForm";
 import { HSLColor, applyDynamicTheme } from "@/lib/colorUtils";
 import { getDefaultScreenSettings, loadScreenSettings, saveScreenSettings, type ScreenKey, type ScreenSettings, type ScreenAppearance } from "@/lib/kioskSettings";
 
@@ -122,10 +121,13 @@ const SetupWizard = () => {
     setSelectedStyles((prev) => prev.includes(styleId) ? prev.filter((id) => id !== styleId) : [...prev, styleId]);
   }, []);
 
-  // Handle event details changes from form component
-  const handleEventDetailsChange = useCallback((name: string, location: string) => {
-    setEventName(name);
-    setEventLocation(location);
+  // Memoized input handlers for Event Details
+  const handleEventNameChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setEventName(e.target.value);
+  }, []);
+
+  const handleEventLocationChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setEventLocation(e.target.value);
   }, []);
 
   const canFinish = eventName.trim().length > 0 && selectedStyles.length > 0;
@@ -181,15 +183,26 @@ const SetupWizard = () => {
     </StepContainer>
   );
 
-  const EventDetails = React.memo(() => (
+  const EventDetails = useMemo(() => (
     <StepContainer>
-      <EventDetailsForm
-        initialEventName={eventName}
-        initialEventLocation={eventLocation}
-        onEventDetailsChange={handleEventDetailsChange}
-      />
+      <Card className="bg-card/80 backdrop-blur border-border shadow-soft">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2"><Image className="h-6 w-6" />Event Details</CardTitle>
+          <CardDescription>Basic information about your event</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div>
+            <Label htmlFor="eventName">Event Name</Label>
+            <Input id="eventName" value={eventName} onChange={handleEventNameChange} placeholder="Tech Conference 2025" className="bg-input/50 border-border" />
+          </div>
+          <div>
+            <Label htmlFor="eventLocation">Location</Label>
+            <Input id="eventLocation" value={eventLocation} onChange={handleEventLocationChange} placeholder="Convention Center Hall A" className="bg-input/50 border-border" />
+          </div>
+        </CardContent>
+      </Card>
     </StepContainer>
-  ));
+  ), [eventName, eventLocation, handleEventNameChange, handleEventLocationChange]);
 
   const ThemeColors = () => (
     <StepContainer>
@@ -235,66 +248,76 @@ const SetupWizard = () => {
     <SplitScreenStep
       screenKey="styles"
       screenSettings={screenSettings.styles}
+      allScreenSettings={screenSettings}
       onScreenChange={(next) => handleScreenChange('styles', next)}
       primaryColor={primaryColor}
       secondaryColor={secondaryColor || undefined}
       backgroundStyle={backgroundStyle}
       title="Avatar Styles Screen"
       description="Customize how the avatar selection screen looks and feels"
+      eventName={eventName}
     />
-  ), [screenSettings.styles, handleScreenChange, primaryColor, secondaryColor, backgroundStyle]);
+  ), [screenSettings, handleScreenChange, primaryColor, secondaryColor, backgroundStyle, eventName]);
 
   const CameraScreen = useMemo(() => (
     <SplitScreenStep
       screenKey="camera"
       screenSettings={screenSettings.camera}
+      allScreenSettings={screenSettings}
       onScreenChange={(next) => handleScreenChange('camera', next)}
       primaryColor={primaryColor}
       secondaryColor={secondaryColor || undefined}
       backgroundStyle={backgroundStyle}
       title="Camera Screen"
       description="Design the camera interface where users take their photos"
+      eventName={eventName}
     />
-  ), [screenSettings.camera, handleScreenChange, primaryColor, secondaryColor, backgroundStyle]);
+  ), [screenSettings, handleScreenChange, primaryColor, secondaryColor, backgroundStyle, eventName]);
 
   const CountdownScreen = useMemo(() => (
     <SplitScreenStep
       screenKey="countdown"
       screenSettings={screenSettings.countdown}
+      allScreenSettings={screenSettings}
       onScreenChange={(next) => handleScreenChange('countdown', next)}
       primaryColor={primaryColor}
       secondaryColor={secondaryColor || undefined}
       backgroundStyle={backgroundStyle}
       title="Countdown Screen"
       description="Customize the countdown timer that prepares users for their photo"
+      eventName={eventName}
     />
-  ), [screenSettings.countdown, handleScreenChange, primaryColor, secondaryColor, backgroundStyle]);
+  ), [screenSettings, handleScreenChange, primaryColor, secondaryColor, backgroundStyle, eventName]);
 
   const LoadingScreen = useMemo(() => (
     <SplitScreenStep
       screenKey="loading"
       screenSettings={screenSettings.loading}
+      allScreenSettings={screenSettings}
       onScreenChange={(next) => handleScreenChange('loading', next)}
       primaryColor={primaryColor}
       secondaryColor={secondaryColor || undefined}
       backgroundStyle={backgroundStyle}
       title="Loading Screen"
       description="Style the AI generation screen that creates the avatar"
+      eventName={eventName}
     />
-  ), [screenSettings.loading, handleScreenChange, primaryColor, secondaryColor, backgroundStyle]);
+  ), [screenSettings, handleScreenChange, primaryColor, secondaryColor, backgroundStyle, eventName]);
 
   const ResultScreen = useMemo(() => (
     <SplitScreenStep
       screenKey="result"
       screenSettings={screenSettings.result}
+      allScreenSettings={screenSettings}
       onScreenChange={(next) => handleScreenChange('result', next)}
       primaryColor={primaryColor}
       secondaryColor={secondaryColor || undefined}
       backgroundStyle={backgroundStyle}
       title="Result Screen"
       description="Design how users see and share their final avatar"
+      eventName={eventName}
     />
-  ), [screenSettings.result, handleScreenChange, primaryColor, secondaryColor, backgroundStyle]);
+  ), [screenSettings, handleScreenChange, primaryColor, secondaryColor, backgroundStyle, eventName]);
 
 
   const StylesAndFinish = useMemo(() => (
@@ -347,7 +370,7 @@ const SetupWizard = () => {
   const renderStep = () => {
     switch (step) {
       case 0: return <Welcome />;
-      case 1: return <EventDetails />;
+      case 1: return EventDetails;
       case 2: return <ThemeColors />;
       case 3: return StylesScreen;
       case 4: return CameraScreen;

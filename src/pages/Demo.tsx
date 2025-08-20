@@ -54,7 +54,7 @@ const Demo = () => {
             </div>
           </div>
           
-          <Link to="/kiosk">
+          <Link to="/kiosk?demo=true">
             <Button variant="hero" size="lg" className="text-xl px-12 py-6">
               <Camera className="h-6 w-6 mr-3" />
               Try Interactive Demo
