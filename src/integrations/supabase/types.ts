@@ -41,6 +41,122 @@ export type Database = {
         }
         Relationships: []
       }
+      event_screen_settings: {
+        Row: {
+          background_image: string | null
+          created_at: string
+          event_id: string
+          id: string
+          overlay_opacity: number | null
+          screen_key: string
+          text_color: string | null
+          title: string | null
+          updated_at: string
+        }
+        Insert: {
+          background_image?: string | null
+          created_at?: string
+          event_id: string
+          id?: string
+          overlay_opacity?: number | null
+          screen_key: string
+          text_color?: string | null
+          title?: string | null
+          updated_at?: string
+        }
+        Update: {
+          background_image?: string | null
+          created_at?: string
+          event_id?: string
+          id?: string
+          overlay_opacity?: number | null
+          screen_key?: string
+          text_color?: string | null
+          title?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_screen_settings_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      events: {
+        Row: {
+          avatar_styles: string[] | null
+          background_style: string | null
+          created_at: string
+          id: string
+          is_active: boolean | null
+          location: string | null
+          name: string
+          primary_color: string
+          secondary_color: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          avatar_styles?: string[] | null
+          background_style?: string | null
+          created_at?: string
+          id?: string
+          is_active?: boolean | null
+          location?: string | null
+          name: string
+          primary_color?: string
+          secondary_color?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          avatar_styles?: string[] | null
+          background_style?: string | null
+          created_at?: string
+          id?: string
+          is_active?: boolean | null
+          location?: string | null
+          name?: string
+          primary_color?: string
+          secondary_color?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          email: string
+          first_name: string | null
+          id: string
+          last_name: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          first_name?: string | null
+          id?: string
+          last_name?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          first_name?: string | null
+          id?: string
+          last_name?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
