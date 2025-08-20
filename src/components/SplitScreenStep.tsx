@@ -1,21 +1,19 @@
 import { Card, CardContent } from "@/components/ui/card";
 import ScreenAppearanceEditor from "@/components/ScreenAppearanceEditor";
-import LiveKioskPreview from "@/components/LiveKioskPreview";
+import ThemePreview from "@/components/ThemePreview";
 import { HSLColor } from "@/lib/colorUtils";
-import { ScreenAppearance, ScreenKey, ScreenSettings } from "@/lib/kioskSettings";
+import { ScreenAppearance, ScreenKey } from "@/lib/kioskSettings";
 import { memo } from "react";
 
 interface SplitScreenStepProps {
   screenKey: ScreenKey;
   screenSettings: ScreenAppearance;
-  allScreenSettings: ScreenSettings;
-  onScreenChange: (changes: Partial<ScreenAppearance>) => void;
+  onScreenChange: (settings: ScreenAppearance) => void;
   primaryColor: HSLColor;
   secondaryColor?: HSLColor;
   backgroundStyle: 'solid' | 'gradient' | 'default';
   title: string;
   description: string;
-  eventName?: string;
 }
 
 const getScreenDisplayName = (screenKey: ScreenKey): string => {
@@ -29,17 +27,15 @@ const getScreenDisplayName = (screenKey: ScreenKey): string => {
   return names[screenKey];
 };
 
-const SplitScreenStep = memo(({ 
-  screenKey, 
-  screenSettings, 
-  allScreenSettings,
-  onScreenChange, 
-  primaryColor, 
-  secondaryColor, 
-  backgroundStyle, 
-  title, 
-  description,
-  eventName
+const SplitScreenStep = memo(({
+  screenKey,
+  screenSettings,
+  onScreenChange,
+  primaryColor,
+  secondaryColor,
+  backgroundStyle,
+  title,
+  description
 }: SplitScreenStepProps) => {
   return (
     <div className="relative transition-all duration-500 animate-fade-in">
@@ -76,12 +72,14 @@ const SplitScreenStep = memo(({
 
         {/* Right Panel - Live Preview */}
         <div className="lg:sticky lg:top-8 lg:h-fit">
-          <LiveKioskPreview
+          <ThemePreview
             primaryColor={primaryColor}
             secondaryColor={secondaryColor}
             backgroundStyle={backgroundStyle}
-            screenSettings={allScreenSettings}
-            eventName={eventName}
+            title={screenSettings.title}
+            textColorHex={screenSettings.textColorHex}
+            backgroundImageDataUrl={screenSettings.backgroundImageDataUrl || undefined}
+            overlayOpacity={screenSettings.overlayOpacity}
           />
         </div>
       </div>
