@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState, useCallback, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -45,6 +46,8 @@ const AnimatedBackdrop = () => (
 );
 
 const SetupWizard = () => {
+  const navigate = useNavigate();
+
   // SEO title
   useEffect(() => {
     document.title = "Event Setup Wizard – Calm Dark Blue";
@@ -114,11 +117,31 @@ const SetupWizard = () => {
     { id: "anime", name: "Anime", description: "Japanese animation style" },
   ];
 
-  const toggleStyle = (styleId: string) => {
+  const toggleStyle = useCallback((styleId: string) => {
     setSelectedStyles((prev) => prev.includes(styleId) ? prev.filter((id) => id !== styleId) : [...prev, styleId]);
-  };
+  }, []);
 
   const canFinish = eventName.trim().length > 0 && selectedStyles.length > 0;
+
+  const handleFinish = useCallback(() => {
+    // Save complete setup configuration
+    const setupConfig = {
+      eventName,
+      eventLocation,
+      selectedStyles,
+      primaryColor,
+      secondaryColor,
+      backgroundStyle,
+      screenSettings,
+      setupCompleted: true,
+      setupDate: new Date().toISOString()
+    };
+    
+    localStorage.setItem('kioskSetupConfig', JSON.stringify(setupConfig));
+    
+    // Navigate to kiosk
+    navigate('/kiosk');
+  }, [eventName, eventLocation, selectedStyles, primaryColor, secondaryColor, backgroundStyle, screenSettings, navigate]);
 
   const StepContainer = ({ children }: { children: React.ReactNode }) => (
     <section
@@ -278,7 +301,7 @@ const SetupWizard = () => {
   ), [screenSettings.result, handleScreenChange, primaryColor, secondaryColor, backgroundStyle]);
 
 
-  const StylesAndFinish = () => (
+  const StylesAndFinish = useMemo(() => (
     <StepContainer>
       <Card className="bg-card/80 backdrop-blur border-border shadow-soft">
         <CardHeader>
@@ -306,7 +329,13 @@ const SetupWizard = () => {
               <Eye className="h-4 w-4" />
               Live preview updates as you customize colors
             </div>
-            <Button variant="hero" size="lg" className="text-xl px-12 py-6" disabled={!canFinish}>
+            <Button 
+              variant="hero" 
+              size="lg" 
+              className="text-xl px-12 py-6" 
+              disabled={!canFinish}
+              onClick={handleFinish}
+            >
               Create Event Kiosk
               <ArrowRight className="h-6 w-6 ml-3" />
             </Button>
@@ -317,7 +346,7 @@ const SetupWizard = () => {
         </CardContent>
       </Card>
     </StepContainer>
-  );
+  ), [selectedStyles, toggleStyle, canFinish, handleFinish]);
 
   const renderStep = () => {
     switch (step) {
@@ -329,7 +358,7 @@ const SetupWizard = () => {
       case 5: return CountdownScreen;
       case 6: return LoadingScreen;
       case 7: return ResultScreen;
-      case 8: return <StylesAndFinish />;
+      case 8: return StylesAndFinish;
       default: return null;
     }
   };
