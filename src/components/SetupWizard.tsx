@@ -202,7 +202,7 @@ const SetupWizard = () => {
         </CardContent>
       </Card>
     </StepContainer>
-  ), [eventName, eventLocation, handleEventNameChange, handleEventLocationChange]);
+  ), [handleEventNameChange, handleEventLocationChange]);
 
   const ThemeColors = () => (
     <StepContainer>
