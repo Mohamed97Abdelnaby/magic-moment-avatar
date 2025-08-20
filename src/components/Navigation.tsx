@@ -1,7 +1,9 @@
 import { Button } from "@/components/ui/button";
 import { Camera, Sparkles, User, LogOut } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { useToast } from "@/hooks/use-toast";
+import { useState } from "react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -12,9 +14,42 @@ import {
 
 const Navigation = () => {
   const { user, signOut } = useAuth();
+  const { toast } = useToast();
+  const navigate = useNavigate();
+  const [isSigningOut, setIsSigningOut] = useState(false);
 
   const handleSignOut = async () => {
-    await signOut();
+    if (isSigningOut) return; // Prevent multiple sign-out attempts
+    
+    setIsSigningOut(true);
+    
+    try {
+      const { error } = await signOut();
+      
+      if (error) {
+        toast({
+          title: "Sign out failed",
+          description: "There was an issue signing you out. Please try again.",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Signed out successfully",
+          description: "You have been signed out of your account.",
+        });
+        // Navigate to home page after successful sign out
+        navigate('/');
+      }
+    } catch (err) {
+      console.error('Sign out error:', err);
+      toast({
+        title: "Sign out failed",
+        description: "There was an unexpected error. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSigningOut(false);
+    }
   };
 
   return (
@@ -69,9 +104,13 @@ const Navigation = () => {
                       {user.email}
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={handleSignOut} className="gap-2">
+                    <DropdownMenuItem 
+                      onClick={handleSignOut} 
+                      className="gap-2"
+                      disabled={isSigningOut}
+                    >
                       <LogOut className="h-4 w-4" />
-                      Sign Out
+                      {isSigningOut ? "Signing out..." : "Sign Out"}
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>

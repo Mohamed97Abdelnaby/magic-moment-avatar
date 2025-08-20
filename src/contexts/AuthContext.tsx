@@ -8,7 +8,7 @@ interface AuthContextType {
   loading: boolean;
   signUp: (email: string, password: string, firstName?: string, lastName?: string) => Promise<{ error: any }>;
   signIn: (email: string, password: string) => Promise<{ error: any }>;
-  signOut: () => Promise<void>;
+  signOut: () => Promise<{ error: any }>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -71,8 +71,28 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     return { error };
   };
 
-  const signOut = async () => {
-    await supabase.auth.signOut();
+  const signOut = async (): Promise<{ error: any }> => {
+    try {
+      // Clear the session state immediately to prevent race conditions
+      setUser(null);
+      setSession(null);
+      
+      // Attempt to sign out from Supabase
+      const { error } = await supabase.auth.signOut();
+      
+      if (error) {
+        console.error('Sign out error:', error);
+        // If sign out fails, we still consider it successful locally
+        // since the session might already be expired/invalid
+        return { error: null };
+      }
+      
+      return { error: null };
+    } catch (err) {
+      console.error('Sign out exception:', err);
+      // Even if there's an exception, clear local state
+      return { error: null };
+    }
   };
 
   const value = {
