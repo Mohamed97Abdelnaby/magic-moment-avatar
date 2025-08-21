@@ -164,12 +164,63 @@ const KioskInterface = ({ isDemo = false, demoSettings, eventId }: KioskInterfac
     "In the dance of pixels and imagination, magic happens..."
   ];
 
+  // Avatar styles with associated color themes
   const allAvatarStyles = [
-    { id: "farmer", name: "Egyptian Farmer", preview: "🌾", description: "Traditional Rural Life" },
-    { id: "pharaonic", name: "Ancient Pharaoh", preview: "👑", description: "Royal Dynasty Style" },
-    { id: "basha", name: "El Basha Style", preview: "🎩", description: "Elite Noble Fashion" },
-    { id: "beach", name: "Beach Vibes", preview: "🏖️", description: "Summer Mediterranean" },
-    { id: "pixar", name: "Pixar Style", preview: "🎭", description: "3D Animated Magic" },
+    { 
+      id: "farmer", 
+      name: "Egyptian Farmer", 
+      preview: "🌾", 
+      description: "Traditional Rural Life",
+      theme: {
+        textColorHsl: "35 95% 85%", // Warm golden text
+        backgroundColor: "#2a4d3a", // Deep green
+        overlayOpacity: 0.4
+      }
+    },
+    { 
+      id: "pharaonic", 
+      name: "Ancient Pharaoh", 
+      preview: "👑", 
+      description: "Royal Dynasty Style",
+      theme: {
+        textColorHsl: "45 100% 90%", // Rich golden text
+        backgroundColor: "#1a1a3e", // Deep royal blue
+        overlayOpacity: 0.5
+      }
+    },
+    { 
+      id: "basha", 
+      name: "El Basha Style", 
+      preview: "🎩", 
+      description: "Elite Noble Fashion",
+      theme: {
+        textColorHsl: "0 0% 95%", // Elegant white
+        backgroundColor: "#2d1b3d", // Deep purple
+        overlayOpacity: 0.45
+      }
+    },
+    { 
+      id: "beach", 
+      name: "Beach Vibes", 
+      preview: "🏖️", 
+      description: "Summer Mediterranean",
+      theme: {
+        textColorHsl: "200 100% 95%", // Light blue-white
+        backgroundColor: "#1e3a8a", // Ocean blue
+        overlayOpacity: 0.35
+      }
+    },
+    { 
+      id: "pixar", 
+      name: "Pixar Style", 
+      preview: "🎭", 
+      description: "3D Animated Magic",
+      theme: {
+        textColorHsl: "0 0% 100%", // Pure white
+        backgroundColor: "#7c3aed", // Vibrant purple
+        overlayOpacity: 0.4
+      }
+    },
   ];
 
   // Filter avatar styles based on event selection or show all in demo mode
@@ -255,6 +306,24 @@ useEffect(() => {
 
   const handleStyleSelect = (styleId: string) => {
     setSelectedStyle(styleId);
+    
+    // Apply the theme colors from the selected style
+    const selectedStyleData = allAvatarStyles.find(style => style.id === styleId);
+    if (selectedStyleData?.theme) {
+      const updatedScreens = { ...screens };
+      
+      // Update all screen themes with the selected style colors
+      Object.keys(updatedScreens).forEach(screenKey => {
+        updatedScreens[screenKey as keyof ScreenSettings] = {
+          ...updatedScreens[screenKey as keyof ScreenSettings],
+          textColorHsl: selectedStyleData.theme.textColorHsl,
+          backgroundColor: selectedStyleData.theme.backgroundColor,
+          overlayOpacity: selectedStyleData.theme.overlayOpacity,
+        };
+      });
+      
+      setScreens(updatedScreens);
+    }
   };
 
   const handleStartCamera = () => {
