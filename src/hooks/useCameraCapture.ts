@@ -24,13 +24,20 @@ export const useCameraCapture = (): CameraCaptureHook => {
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
 
   const stopCamera = useCallback(() => {
+    console.log('🛑 Stopping camera and cleaning up...');
     if (streamRef.current) {
-      streamRef.current.getTracks().forEach(track => track.stop());
+      console.log('📺 Stopping media tracks:', streamRef.current.getTracks().length);
+      streamRef.current.getTracks().forEach(track => {
+        track.stop();
+        console.log('🔌 Stopped track:', track.kind, track.label);
+      });
       streamRef.current = null;
     }
     setIsStreamActive(false);
     if (videoRef.current) {
+      console.log('📺 Clearing video element...');
       videoRef.current.srcObject = null;
+      videoRef.current.load(); // Force reload to clear any cached stream
     }
   }, []);
 
@@ -102,6 +109,22 @@ export const useCameraCapture = (): CameraCaptureHook => {
         
         video.srcObject = stream;
         streamRef.current = stream;
+        
+        // Force video to load and display immediately
+        video.load();
+        console.log('📺 Stream assigned to video element, forcing load...');
+        
+        // Immediately try to play without waiting for events
+        console.log('📺 Forcing immediate video play attempt...');
+        try {
+          const playPromise = video.play();
+          if (playPromise) {
+            await playPromise;
+            console.log('✅ Immediate play succeeded');
+          }
+        } catch (immediatePlayError) {
+          console.log('⚠️ Immediate play failed, will wait for events:', immediatePlayError);
+        }
         
         // Enhanced video readiness validation with better play handling
         await new Promise<void>((resolve, reject) => {
