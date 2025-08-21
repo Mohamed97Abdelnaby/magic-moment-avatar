@@ -5,8 +5,9 @@ import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import Navigation from '@/components/Navigation';
-import { Plus, Calendar, MapPin, Palette, Eye, Trash2 } from 'lucide-react';
+import { Plus, Calendar, MapPin, Palette, Eye, Trash2, Sparkles } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 interface Event {
@@ -28,6 +29,23 @@ const MyEvents = () => {
   const { toast } = useToast();
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
+  const [isDetailsOpen, setIsDetailsOpen] = useState(false);
+
+  // Avatar styles mapping
+  const avatarStylesMap = {
+    farmer: { name: "Egyptian Farmer", description: "Traditional Rural Life", preview: "🌾" },
+    pharaonic: { name: "Ancient Pharaoh", description: "Royal Dynasty Style", preview: "👑" },
+    basha: { name: "El Basha Style", description: "Elite Noble Fashion", preview: "🎩" },
+    beach: { name: "Beach Vibes", description: "Summer Mediterranean", preview: "🏖️" },
+    pixar: { name: "Pixar Style", description: "3D Animated Magic", preview: "🎭" },
+    // Legacy styles (for older events)
+    cyberpunk: { name: "Cyberpunk", description: "Futuristic Neon Style", preview: "🤖" },
+    sketch: { name: "Sketch Art", description: "Pencil Drawing Style", preview: "✏️" },
+    anime: { name: "Anime", description: "Japanese Animation Style", preview: "🎌" },
+    oil: { name: "Oil Painting", description: "Classical Painted Portrait", preview: "🎨" },
+    cartoon: { name: "90s Cartoon", description: "Retro Animation Style", preview: "🎪" },
+  } as const;
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -71,6 +89,11 @@ const MyEvents = () => {
 
   const handleViewEvent = (eventId: string) => {
     navigate(`/setup?event=${eventId}`);
+  };
+
+  const handleEventClick = (event: Event) => {
+    setSelectedEvent(event);
+    setIsDetailsOpen(true);
   };
 
   const handleDeleteEvent = async (eventId: string, eventName: string) => {
@@ -156,11 +179,17 @@ const MyEvents = () => {
           ) : (
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
               {events.map((event) => (
-                <Card key={event.id} className="group hover:shadow-lg transition-shadow">
+                <Card 
+                  key={event.id} 
+                  className="group hover:shadow-lg transition-shadow cursor-pointer"
+                  onClick={() => handleEventClick(event)}
+                >
                   <CardHeader>
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
-                        <CardTitle className="text-xl mb-1">{event.name}</CardTitle>
+                        <CardTitle className="text-xl mb-1 group-hover:text-primary transition-colors">
+                          {event.name}
+                        </CardTitle>
                         {event.location && (
                           <div className="flex items-center text-sm text-muted-foreground mb-2">
                             <MapPin className="h-4 w-4 mr-1" />
@@ -184,26 +213,43 @@ const MyEvents = () => {
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-4">
-                      {/* Avatar Styles */}
+                      {/* Avatar Styles Preview */}
                       <div>
-                        <p className="text-sm font-medium mb-2">Avatar Styles:</p>
+                        <p className="text-sm font-medium mb-2 flex items-center gap-1">
+                          <Sparkles className="h-4 w-4" />
+                          Avatar Styles ({event.avatar_styles.length})
+                        </p>
                         <div className="flex flex-wrap gap-1">
                           {event.avatar_styles.length > 0 ? (
-                            event.avatar_styles.map((style, index) => (
-                              <Badge key={index} variant="secondary" className="text-xs">
-                                {style}
-                              </Badge>
-                            ))
+                            event.avatar_styles.slice(0, 3).map((style, index) => {
+                              const styleInfo = avatarStylesMap[style as keyof typeof avatarStylesMap];
+                              return (
+                                <Badge key={index} variant="secondary" className="text-xs gap-1">
+                                  {styleInfo?.preview || '🎨'} {styleInfo?.name || style}
+                                </Badge>
+                              );
+                            })
                           ) : (
                             <Badge variant="outline" className="text-xs">None selected</Badge>
                           )}
+                          {event.avatar_styles.length > 3 && (
+                            <Badge variant="outline" className="text-xs">
+                              +{event.avatar_styles.length - 3} more
+                            </Badge>
+                          )}
                         </div>
+                        <p className="text-xs text-muted-foreground mt-2">
+                          Click to view all themes and details
+                        </p>
                       </div>
 
                       {/* Actions */}
                       <div className="flex items-center gap-2 pt-2">
                         <Button 
-                          onClick={() => handleViewEvent(event.id)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleViewEvent(event.id);
+                          }}
                           size="sm" 
                           className="flex-1 gap-2"
                         >
@@ -211,7 +257,10 @@ const MyEvents = () => {
                           Edit
                         </Button>
                         <Button
-                          onClick={() => handleDeleteEvent(event.id, event.name)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDeleteEvent(event.id, event.name);
+                          }}
                           size="sm"
                           variant="outline"
                           className="px-3"
@@ -227,6 +276,130 @@ const MyEvents = () => {
           )}
         </div>
       </div>
+
+      {/* Event Details Modal */}
+      <Dialog open={isDetailsOpen} onOpenChange={setIsDetailsOpen}>
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-2xl flex items-center gap-2">
+              <Sparkles className="h-6 w-6 text-primary" />
+              {selectedEvent?.name}
+            </DialogTitle>
+            {selectedEvent?.location && (
+              <div className="flex items-center text-muted-foreground gap-1">
+                <MapPin className="h-4 w-4" />
+                {selectedEvent.location}
+              </div>
+            )}
+          </DialogHeader>
+          
+          {selectedEvent && (
+            <div className="space-y-6">
+              {/* Color Theme */}
+              <div>
+                <h3 className="font-semibold mb-3 flex items-center gap-2">
+                  <Palette className="h-5 w-5" />
+                  Color Theme
+                </h3>
+                <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-2">
+                    <div 
+                      className="w-8 h-8 rounded-full border border-border shadow-sm"
+                      style={{ backgroundColor: selectedEvent.primary_color }}
+                    />
+                    <span className="text-sm font-medium">Primary</span>
+                  </div>
+                  {selectedEvent.secondary_color && (
+                    <div className="flex items-center gap-2">
+                      <div 
+                        className="w-8 h-8 rounded-full border border-border shadow-sm"
+                        style={{ backgroundColor: selectedEvent.secondary_color }}
+                      />
+                      <span className="text-sm font-medium">Secondary</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Avatar Styles */}
+              <div>
+                <h3 className="font-semibold mb-3 flex items-center gap-2">
+                  <Sparkles className="h-5 w-5" />
+                  Chosen Avatar Styles ({selectedEvent.avatar_styles.length})
+                </h3>
+                {selectedEvent.avatar_styles.length > 0 ? (
+                  <div className="grid gap-4 md:grid-cols-2">
+                    {selectedEvent.avatar_styles.map((style, index) => {
+                      const styleInfo = avatarStylesMap[style as keyof typeof avatarStylesMap];
+                      return (
+                        <Card key={index} className="border-2 hover:border-primary/50 transition-colors">
+                          <CardContent className="p-4">
+                            <div className="flex items-start gap-3">
+                              <div className="text-3xl">{styleInfo?.preview || '🎨'}</div>
+                              <div className="flex-1">
+                                <h4 className="font-semibold text-base mb-1">
+                                  {styleInfo?.name || style}
+                                </h4>
+                                <p className="text-sm text-muted-foreground">
+                                  {styleInfo?.description || 'Custom avatar style'}
+                                </p>
+                              </div>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <Card className="border-dashed">
+                    <CardContent className="p-8 text-center">
+                      <div className="text-4xl mb-2">🎭</div>
+                      <p className="text-muted-foreground">No avatar styles selected for this event</p>
+                    </CardContent>
+                  </Card>
+                )}
+              </div>
+
+              {/* Event Info */}
+              <div className="bg-muted/50 rounded-lg p-4">
+                <h4 className="font-medium mb-2">Event Information</h4>
+                <div className="space-y-1 text-sm text-muted-foreground">
+                  <p>Created: {new Date(selectedEvent.created_at).toLocaleDateString()}</p>
+                  <p>Last Updated: {new Date(selectedEvent.updated_at).toLocaleDateString()}</p>
+                  <p>Status: {selectedEvent.is_active ? 'Active' : 'Inactive'}</p>
+                </div>
+              </div>
+
+              {/* Actions */}
+              <div className="flex gap-3 pt-4">
+                <Button 
+                  onClick={() => {
+                    handleViewEvent(selectedEvent.id);
+                    setIsDetailsOpen(false);
+                  }}
+                  className="flex-1"
+                >
+                  <Eye className="h-4 w-4 mr-2" />
+                  Edit Event
+                </Button>
+                <Button
+                  onClick={() => {
+                    navigator.clipboard.writeText(`${window.location.origin}/kiosk?event=${selectedEvent.id}`);
+                    toast({
+                      title: 'Link Copied!',
+                      description: 'Kiosk link copied to clipboard',
+                    });
+                  }}
+                  variant="outline"
+                  className="flex-1"
+                >
+                  Copy Kiosk Link
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
