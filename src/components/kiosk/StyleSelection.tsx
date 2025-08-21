@@ -76,12 +76,12 @@ const StyleSelection = ({
         <div className="absolute top-8 left-8 z-20">
           <Button
             onClick={() => navigate('/')}
-            variant="outline"
+            variant="ghost"
             size="lg"
-            className="flex items-center gap-2 text-lg px-6 py-3 rounded-xl backdrop-blur-sm bg-background/80 hover:bg-background/90 border-2 transition-all duration-300"
+            className="flex items-center gap-2 text-lg px-6 py-3 rounded-xl backdrop-blur-sm bg-white/10 hover:bg-white/20 border border-white/20 hover:border-white/40 transition-all duration-300"
             style={{ 
               color: textColor,
-              borderColor: textColor ? `${textColor} / 0.3` : undefined 
+              borderColor: textColor ? `${textColor.replace(')', ' / 0.3)')}` : 'rgba(255,255,255,0.3)'
             }}
           >
             <Home className="h-5 w-5" />
@@ -140,15 +140,23 @@ const StyleSelection = ({
         {selectedStyle && (
           <div className="animate-scale-in">
             <Button 
-              variant="default" 
+              variant="ghost"
               size="lg" 
               onClick={onStartCamera}
-              className="text-3xl px-20 py-10 rounded-2xl bg-primary hover:bg-primary/90 text-primary-foreground shadow-glow hover:shadow-neon transition-all duration-500 transform hover:scale-105 neon-glow"
+              className="text-3xl px-20 py-10 rounded-2xl backdrop-blur-md bg-white/15 hover:bg-white/25 border-2 border-white/30 hover:border-white/50 shadow-glow hover:shadow-neon transition-all duration-500 transform hover:scale-105"
+              style={{ 
+                color: textColor,
+                borderColor: textColor ? `${textColor.replace(')', ' / 0.4)')}` : 'rgba(255,255,255,0.4)',
+                backgroundColor: textColor ? `${textColor.replace(')', ' / 0.1)')}` : 'rgba(255,255,255,0.1)'
+              }}
             >
               <Camera className="h-10 w-10 mr-6" />
               Begin Your Journey
               <ArrowRight className="h-10 w-10 ml-6" />
-              <Heart className="h-8 w-8 ml-4 animate-pulse-soft text-accent" />
+              <Heart 
+                className="h-8 w-8 ml-4 animate-pulse-soft" 
+                style={{ color: textColor }}
+              />
             </Button>
           </div>
         )}
