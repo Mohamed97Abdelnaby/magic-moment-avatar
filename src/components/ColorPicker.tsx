@@ -1,16 +1,16 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { Badge } from "@/components/ui/badge";
 import { Palette, AlertTriangle } from "lucide-react";
-import {
-  HSLColor,
-  hexToHsl,
-  hslToHex,
-  checkAccessibility,
-  colorPalette,
+import { 
+  HSLColor, 
+  hexToHsl, 
+  hslToHex, 
+  checkAccessibility, 
+  colorPalette 
 } from "@/lib/colorUtils";
 
 interface ColorPickerProps {
@@ -21,55 +21,41 @@ interface ColorPickerProps {
   contrastBackground?: HSLColor;
 }
 
-const ColorPicker = ({
-  value,
-  onChange,
+const ColorPicker = ({ 
+  value, 
+  onChange, 
   label = "Choose Color",
   showAccessibilityCheck = false,
-  contrastBackground,
+  contrastBackground
 }: ColorPickerProps) => {
-  const [localColor, setLocalColor] = useState<HSLColor>(value);
   const [hexValue, setHexValue] = useState(hslToHex(value));
-  const debounceRef = useRef<number>();
 
-  // Sync local color with value from parent
   useEffect(() => {
-    setLocalColor(value);
     setHexValue(hslToHex(value));
   }, [value]);
-
-  // Debounced onChange update
-  const scheduleChange = (newColor: HSLColor) => {
-    setLocalColor(newColor);
-    clearTimeout(debounceRef.current);
-    debounceRef.current = window.setTimeout(() => {
-      onChange(newColor);
-    }, 150);
-  };
 
   const handleHexChange = (hex: string) => {
     setHexValue(hex);
     if (/^#[0-9A-F]{6}$/i.test(hex)) {
-      scheduleChange(hexToHsl(hex));
+      onChange(hexToHsl(hex));
     }
   };
 
   const handlePaletteClick = (hex: string) => {
-    scheduleChange(hexToHsl(hex));
+    onChange(hexToHsl(hex));
   };
 
   const handleSliderChange = (property: keyof HSLColor, newValue: number[]) => {
-    scheduleChange({
-      ...localColor,
-      [property]: newValue[0],
+    onChange({
+      ...value,
+      [property]: newValue[0]
     });
   };
 
-  // Accessibility check if needed
-  const accessibility =
-    showAccessibilityCheck && contrastBackground
-      ? checkAccessibility(localColor, contrastBackground)
-      : null;
+  // Calculate accessibility if background provided
+  const accessibility = showAccessibilityCheck && contrastBackground 
+    ? checkAccessibility(value, contrastBackground) 
+    : null;
 
   return (
     <Card className="bg-card/80 backdrop-blur border-border">
@@ -82,18 +68,16 @@ const ColorPicker = ({
       <CardContent className="space-y-6">
         {/* Color Preview */}
         <div className="flex items-center gap-4">
-          <div
+          <div 
             className="w-20 h-20 rounded-lg border-2 border-border shadow-soft"
-            style={{ backgroundColor: hslToHex(localColor) }}
+            style={{ backgroundColor: hslToHex(value) }}
           />
           <div className="flex-1">
             <Label htmlFor="hex-input">Hex Color</Label>
             <Input
               id="hex-input"
               value={hexValue}
-              onChange={(e) =>
-                handleHexChange(e.target.value.toUpperCase())
-              }
+              onChange={(e) => handleHexChange(e.target.value.toUpperCase())}
               placeholder="#3B82F6"
               className="font-mono bg-input/50 border-border"
             />
@@ -102,9 +86,7 @@ const ColorPicker = ({
 
         {/* Predefined Palette */}
         <div>
-          <Label className="text-sm font-medium mb-3 block">
-            Quick Colors
-          </Label>
+          <Label className="text-sm font-medium mb-3 block">Quick Colors</Label>
           <div className="grid grid-cols-10 gap-2">
             {colorPalette.map((color, index) => (
               <button
@@ -122,35 +104,37 @@ const ColorPicker = ({
         <div className="space-y-4">
           <div>
             <Label className="text-sm font-medium mb-2 block">
-              Hue: {localColor.h}°
+              Hue: {value.h}°
             </Label>
             <Slider
-              value={[localColor.h]}
-              onValueChange={(v) => handleSliderChange("h", v)}
+              value={[value.h]}
+              onValueChange={(v) => handleSliderChange('h', v)}
               max={360}
               step={1}
               className="w-full"
             />
           </div>
+
           <div>
             <Label className="text-sm font-medium mb-2 block">
-              Saturation: {localColor.s}%
+              Saturation: {value.s}%
             </Label>
             <Slider
-              value={[localColor.s]}
-              onValueChange={(v) => handleSliderChange("s", v)}
+              value={[value.s]}
+              onValueChange={(v) => handleSliderChange('s', v)}
               max={100}
               step={1}
               className="w-full"
             />
           </div>
+
           <div>
             <Label className="text-sm font-medium mb-2 block">
-              Lightness: {localColor.l}%
+              Lightness: {value.l}%
             </Label>
             <Slider
-              value={[localColor.l]}
-              onValueChange={(v) => handleSliderChange("l", v)}
+              value={[value.l]}
+              onValueChange={(v) => handleSliderChange('l', v)}
               max={100}
               step={1}
               className="w-full"
@@ -167,10 +151,7 @@ const ColorPicker = ({
                   ✓ {accessibility.rating}
                 </Badge>
               ) : (
-                <Badge
-                  variant="destructive"
-                  className="bg-red-100 text-red-800 flex items-center gap-1"
-                >
+                <Badge variant="destructive" className="bg-red-100 text-red-800 flex items-center gap-1">
                   <AlertTriangle className="h-3 w-3" />
                   {accessibility.rating}
                 </Badge>
