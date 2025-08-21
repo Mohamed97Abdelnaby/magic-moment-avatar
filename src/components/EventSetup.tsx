@@ -9,20 +9,25 @@ import { Palette, Image, ArrowRight, Eye } from "lucide-react";
 import ColorPicker from "@/components/ColorPicker";
 import ThemePreview from "@/components/ThemePreview";
 import ScreenAppearanceEditor from "@/components/ScreenAppearanceEditor";
-import { HSLColor, applyDynamicTheme, hslToHex } from "@/lib/colorUtils";
+import { HSLColor, hslToHex } from "@/lib/colorUtils";
+import { supabase } from "@/integrations/supabase/client";
 import { getDefaultScreenSettings, loadScreenSettings, saveScreenSettings, type ScreenKey, type ScreenSettings } from "@/lib/kioskSettings";
+import { useAuth } from "@/contexts/AuthContext";
+
 const EventSetup = () => {
+  const { user } = useAuth();
   const [selectedStyles, setSelectedStyles] = useState<string[]>([]);
   const [primaryColor, setPrimaryColor] = useState<HSLColor>({ h: 220, s: 100, l: 60 });
   const [secondaryColor, setSecondaryColor] = useState<HSLColor | null>(null);
   const [backgroundStyle, setBackgroundStyle] = useState<'solid' | 'gradient' | 'default'>('default');
   const [eventName, setEventName] = useState("");
   const [eventLocation, setEventLocation] = useState("");
+  const [eventId, setEventId] = useState<string | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
 
   // Screen appearance settings
   const [screenSettings, setScreenSettings] = useState<ScreenSettings>(getDefaultScreenSettings());
   const [previewScreen, setPreviewScreen] = useState<ScreenKey>('styles');
-  // Theme colors are now stored and applied only in kiosk interface
 
   // Load saved screen settings (with legacy migration)
   useEffect(() => {
@@ -44,6 +49,74 @@ const EventSetup = () => {
         ? prev.filter(id => id !== styleId)
         : [...prev, styleId]
     );
+  };
+
+  // Save event colors to database whenever they change
+  useEffect(() => {
+    const saveEventColors = async () => {
+      if (eventId && (primaryColor || secondaryColor)) {
+        setIsSaving(true);
+        try {
+          const { error } = await supabase
+            .from('events')
+            .update({
+              primary_color: `${primaryColor.h} ${primaryColor.s}% ${primaryColor.l}%`,
+              secondary_color: secondaryColor ? `${secondaryColor.h} ${secondaryColor.s}% ${secondaryColor.l}%` : null,
+              background_style: backgroundStyle,
+              avatar_styles: selectedStyles
+            })
+            .eq('id', eventId);
+
+          if (error) {
+            console.error('Error saving event colors:', error);
+          }
+        } catch (error) {
+          console.error('Error saving event colors:', error);
+        } finally {
+          setIsSaving(false);
+        }
+      }
+    };
+
+    const debounceTimer = setTimeout(saveEventColors, 500);
+    return () => clearTimeout(debounceTimer);
+  }, [eventId, primaryColor, secondaryColor, backgroundStyle, selectedStyles]);
+
+  const createEvent = async () => {
+    if (!eventName || selectedStyles.length === 0 || !user?.id) return;
+    
+    setIsSaving(true);
+    try {
+      const { data, error } = await supabase
+        .from('events')
+        .insert({
+          name: eventName,
+          location: eventLocation,
+          primary_color: `${primaryColor.h} ${primaryColor.s}% ${primaryColor.l}%`,
+          secondary_color: secondaryColor ? `${secondaryColor.h} ${secondaryColor.s}% ${secondaryColor.l}%` : null,
+          background_style: backgroundStyle,
+          avatar_styles: selectedStyles,
+          is_active: true,
+          user_id: user.id
+        })
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Error creating event:', error);
+        return;
+      }
+
+      if (data) {
+        setEventId(data.id);
+        // Redirect to kiosk with event ID
+        window.open(`/kiosk?event=${data.id}`, '_blank');
+      }
+    } catch (error) {
+      console.error('Error creating event:', error);
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
@@ -306,14 +379,15 @@ const EventSetup = () => {
               variant="hero" 
               size="lg" 
               className="text-xl px-12 py-6"
-              disabled={!eventName || selectedStyles.length === 0}
+              disabled={!eventName || selectedStyles.length === 0 || isSaving || !user?.id}
+              onClick={createEvent}
             >
-              Create Event Kiosk
+              {isSaving ? 'Creating...' : eventId ? 'Update Event' : 'Create Event Kiosk'}
               <ArrowRight className="h-6 w-6 ml-3" />
             </Button>
-            {(!eventName || selectedStyles.length === 0) && (
+            {(!eventName || selectedStyles.length === 0 || !user?.id) && (
               <p className="text-sm text-muted-foreground">
-                Please fill in event details and select at least one avatar style
+                {!user?.id ? 'Please log in to create an event' : 'Please fill in event details and select at least one avatar style'}
               </p>
             )}
           </div>

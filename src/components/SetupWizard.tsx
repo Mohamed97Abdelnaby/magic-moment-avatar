@@ -14,7 +14,7 @@ import SplitScreenStep from "@/components/SplitScreenStep";
 import SetupProgress from "@/components/SetupProgress";
 import EventDetailsForm from "@/components/EventDetailsForm";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { HSLColor, applyDynamicTheme, hexToHsl } from "@/lib/colorUtils";
+import { HSLColor, hexToHsl } from "@/lib/colorUtils";
 import { getDefaultScreenSettings, loadScreenSettings, saveScreenSettings, type ScreenKey, type ScreenSettings, type ScreenAppearance } from "@/lib/kioskSettings";
 import { getStepValidation, type StepValidation } from "@/lib/validation";
 

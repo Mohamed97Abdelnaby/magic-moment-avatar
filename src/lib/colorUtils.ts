@@ -160,24 +160,8 @@ export function checkAccessibility(foreground: HSLColor, background: HSLColor) {
   };
 }
 
-// Apply dynamic theme to CSS custom properties
-export function applyDynamicTheme(primaryColor: HSLColor, secondaryColor?: HSLColor) {
-  const root = document.documentElement;
-  const primaryVariants = generateColorVariants(primaryColor);
-  const secondaryVariants = secondaryColor ? generateColorVariants(secondaryColor) : primaryVariants;
-
-  // Apply primary color variants
-  root.style.setProperty('--primary', `${primaryColor.h} ${primaryColor.s}% ${primaryColor.l}%`);
-  root.style.setProperty('--primary-foreground', `${primaryVariants[50].h} ${primaryVariants[50].s}% ${primaryVariants[50].l}%`);
-  
-  // Apply secondary/accent colors
-  root.style.setProperty('--accent', `${secondaryColor?.h || primaryColor.h} ${secondaryColor?.s || primaryColor.s}% ${Math.min(95, (secondaryColor?.l || primaryColor.l) + 25)}%`);
-  root.style.setProperty('--accent-foreground', `${primaryColor.h} ${primaryColor.s}% ${Math.max(15, primaryColor.l - 25)}%`);
-  
-  // Update muted colors based on primary
-  root.style.setProperty('--muted', `${primaryColor.h} ${Math.max(5, primaryColor.s - 20)}% ${Math.min(95, primaryColor.l + 30)}%`);
-  root.style.setProperty('--muted-foreground', `${primaryColor.h} ${Math.max(10, primaryColor.s - 10)}% ${Math.max(25, primaryColor.l - 20)}%`);
-}
+// Legacy function - no longer used. Event colors are now applied via applyScopedEventTheme in KioskInterface
+// export function applyDynamicTheme() - removed to prevent accidental global theme changes
 
 // Predefined color palette
 export const colorPalette = [

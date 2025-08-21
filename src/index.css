@@ -232,6 +232,49 @@ All colors MUST be HSL.
 .kiosk-isolated {
   background: inherit !important;
   color: inherit;
+
+  /* Event-scoped kiosk theme variables - will be set dynamically via applyScopedEventTheme */
+  --kiosk-primary: var(--primary);
+  --kiosk-primary-foreground: var(--primary-foreground);
+  --kiosk-accent: var(--accent);
+  --kiosk-accent-foreground: var(--accent-foreground);
+  --kiosk-muted: var(--muted);
+  --kiosk-muted-foreground: var(--muted-foreground);
+  --kiosk-gradient-primary: var(--gradient-primary);
+  --kiosk-gradient-secondary: var(--gradient-primary);
+}
+
+/* Apply kiosk theme to relevant elements within the kiosk container */
+.kiosk-isolated .bg-primary {
+  background-color: hsl(var(--kiosk-primary)) !important;
+}
+
+.kiosk-isolated .text-primary {
+  color: hsl(var(--kiosk-primary)) !important;
+}
+
+.kiosk-isolated .border-primary {
+  border-color: hsl(var(--kiosk-primary)) !important;
+}
+
+.kiosk-isolated .bg-accent {
+  background-color: hsl(var(--kiosk-accent)) !important;
+}
+
+.kiosk-isolated .text-accent {
+  color: hsl(var(--kiosk-accent)) !important;
+}
+
+.kiosk-isolated .border-accent {
+  border-color: hsl(var(--kiosk-accent)) !important;
+}
+
+.kiosk-isolated .gradient-primary {
+  background: var(--kiosk-gradient-primary) !important;
+}
+
+.kiosk-isolated .gradient-secondary {
+  background: var(--kiosk-gradient-secondary) !important;
 }
 
 /* Advanced Keyframe Animations */
