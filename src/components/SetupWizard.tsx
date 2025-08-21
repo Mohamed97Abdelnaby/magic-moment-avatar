@@ -84,10 +84,10 @@ const SetupWizard = () => {
     [step, eventName, eventLocation, selectedStyles]
   );
 
-  // Apply theme live
-  useEffect(() => {
-    applyDynamicTheme(primaryColor, secondaryColor || undefined);
-  }, [primaryColor, secondaryColor]);
+  // Theme application removed - colors only apply in kiosk context
+  // useEffect(() => {
+  //   applyDynamicTheme(primaryColor, secondaryColor || undefined);
+  // }, [primaryColor, secondaryColor]);
 
   // Authentication check and redirect
   useEffect(() => {
