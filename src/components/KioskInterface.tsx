@@ -230,9 +230,16 @@ useEffect(() => {
       return;
     }
 
+    if (!whatsappForm.instanceId.trim()) {
+      toast.error("Please enter an instance ID");
+      return;
+    }
+
+    console.log('Starting WhatsApp send process...');
     setIsSendingWhatsApp(true);
 
     try {
+      console.log('Invoking send-whatsapp-image function...');
       const { data, error } = await supabase.functions.invoke('send-whatsapp-image', {
         body: {
           phoneNumber: whatsappForm.phoneNumber,
@@ -242,19 +249,32 @@ useEffect(() => {
         }
       });
 
+      console.log('Function response:', { data, error });
+
       if (error) {
+        console.error('Supabase function error:', error);
         throw error;
       }
 
-      if (data.success) {
-        toast.success("Photo sent successfully via WhatsApp! 🎉");
+      if (data?.success) {
+        console.log('Message sent successfully:', data);
+        toast.success(`Photo sent successfully via WhatsApp! 🎉${data.messageId ? ` (ID: ${data.messageId})` : ''}`);
         setIsWhatsAppDialogOpen(false);
+        // Reset form
+        setWhatsappForm({
+          phoneNumber: '',
+          message: '',
+          instanceId: ''
+        });
       } else {
-        throw new Error(data.error || "Failed to send photo");
+        console.error('Send failed:', data);
+        const errorMsg = data?.error || data?.details || "Failed to send photo";
+        throw new Error(errorMsg);
       }
     } catch (error) {
       console.error('WhatsApp send error:', error);
-      toast.error(error.message || "Failed to send photo via WhatsApp");
+      const errorMessage = error.message || error.error_description || "Failed to send photo via WhatsApp";
+      toast.error(`Error: ${errorMessage}`);
     } finally {
       setIsSendingWhatsApp(false);
     }
