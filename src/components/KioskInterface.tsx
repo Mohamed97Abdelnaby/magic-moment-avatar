@@ -243,6 +243,7 @@ useEffect(() => {
   if (!isDemo && eventId) {
     const loadEventData = async () => {
       try {
+        console.log('Loading event data for eventId:', eventId);
         const { data: eventData, error } = await supabase
           .from('events')
           .select('avatar_styles, primary_color, secondary_color')
@@ -250,6 +251,7 @@ useEffect(() => {
           .single();
 
         if (!error && eventData) {
+          console.log('Event data loaded:', eventData);
           // Load avatar styles
           if (eventData.avatar_styles) {
             const validStyles = eventData.avatar_styles.filter((style: string) => 
@@ -261,11 +263,15 @@ useEffect(() => {
           // Load event colors using the updated parseHslString function
           const primaryColor = eventData.primary_color ? parseHslString(eventData.primary_color) : null;
           const secondaryColor = eventData.secondary_color ? parseHslString(eventData.secondary_color) : null;
+          console.log('Parsed colors:', { primaryColor, secondaryColor });
           setEventColors({ primary: primaryColor, secondary: secondaryColor });
 
-          // Apply scoped theme if colors exist
+          // Apply scoped theme if colors exist - delay to ensure DOM is ready
           if (primaryColor) {
-            applyScopedEventTheme(primaryColor, secondaryColor);
+            setTimeout(() => {
+              console.log('Applying scoped event theme...');
+              applyScopedEventTheme(primaryColor, secondaryColor);
+            }, 100);
           }
         }
       } catch (error) {
@@ -282,7 +288,11 @@ useEffect(() => {
 // Apply event theme scoped to kiosk container only
 const applyScopedEventTheme = (primaryColor: HSLColor, secondaryColor?: HSLColor | null) => {
   const kioskContainer = document.querySelector('.kiosk-isolated');
-  if (!kioskContainer) return;
+  console.log('applyScopedEventTheme called:', { primaryColor, secondaryColor, kioskContainer });
+  if (!kioskContainer) {
+    console.error('No .kiosk-isolated container found!');
+    return;
+  }
 
   const primaryVariants = generateColorVariants(primaryColor);
   const secondaryVariants = secondaryColor ? generateColorVariants(secondaryColor) : primaryVariants;
@@ -291,13 +301,18 @@ const applyScopedEventTheme = (primaryColor: HSLColor, secondaryColor?: HSLColor
   const style = kioskContainer as HTMLElement;
   
   // Primary colors
-  style.style.setProperty('--kiosk-primary', `${primaryColor.h} ${primaryColor.s}% ${primaryColor.l}%`);
-  style.style.setProperty('--kiosk-primary-foreground', `${primaryVariants[50].h} ${primaryVariants[50].s}% ${primaryVariants[50].l}%`);
+  const primaryHsl = `${primaryColor.h} ${primaryColor.s}% ${primaryColor.l}%`;
+  const primaryForegroundHsl = `${primaryVariants[50].h} ${primaryVariants[50].s}% ${primaryVariants[50].l}%`;
+  
+  console.log('Setting kiosk theme variables:', { primaryHsl, primaryForegroundHsl });
+  
+  style.style.setProperty('--kiosk-primary', primaryHsl);
+  style.style.setProperty('--kiosk-primary-foreground', primaryForegroundHsl);
   
   // Secondary colors (fallback to primary if no secondary)
   const secColor = secondaryColor || primaryColor;
   style.style.setProperty('--kiosk-secondary', `${secColor.h} ${secColor.s}% ${secColor.l}%`);
-  style.style.setProperty('--kiosk-secondary-foreground', `${primaryVariants[50].h} ${primaryVariants[50].s}% ${primaryVariants[50].l}%`);
+  style.style.setProperty('--kiosk-secondary-foreground', primaryForegroundHsl);
   
   // Accent colors (lighter version of primary)
   style.style.setProperty('--kiosk-accent', `${primaryColor.h} ${primaryColor.s}% ${Math.min(95, primaryColor.l + 25)}%`);
@@ -321,6 +336,8 @@ const applyScopedEventTheme = (primaryColor: HSLColor, secondaryColor?: HSLColor
   if (secondaryColor) {
     style.style.setProperty('--kiosk-gradient-secondary', `linear-gradient(135deg, hsl(${primaryColor.h} ${primaryColor.s}% ${primaryColor.l}%), hsl(${secondaryColor.h} ${secondaryColor.s}% ${secondaryColor.l}%))`);
   }
+  
+  console.log('Kiosk theme applied successfully');
 };
 
 // Load per-screen settings (only if not in demo mode)
