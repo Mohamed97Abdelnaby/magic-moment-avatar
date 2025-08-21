@@ -1,11 +1,12 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Camera, ArrowLeft, ArrowRight, RotateCcw, Send, Printer, Sparkles, Heart } from "lucide-react";
+import { Camera, ArrowLeft, ArrowRight, RotateCcw, Send, Printer, Sparkles, Heart, Home } from "lucide-react";
 import AIRobotDrawing from "./AIRobotDrawing";
 import QuoteDisplay from "./QuoteDisplay";
 import CameraCapture from "./CameraCapture";
@@ -92,6 +93,7 @@ const NeuralNetwork = () => {
 };
 
 const KioskInterface = ({ isDemo = false, demoSettings, eventId }: KioskInterfaceProps = {}) => {
+  const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState<'styles' | 'camera' | 'photo-preview' | 'countdown' | 'loading' | 'result'>('styles');
   const [selectedStyle, setSelectedStyle] = useState<string>('');
   const [countdown, setCountdown] = useState(3);
@@ -473,6 +475,23 @@ useEffect(() => {
             )}
 
             <div className="relative z-10 text-center">
+              {/* Back Button */}
+              <div className="absolute top-8 left-8 z-20">
+                <Button
+                  onClick={() => navigate('/')}
+                  variant="outline"
+                  size="lg"
+                  className="flex items-center gap-2 text-lg px-6 py-3 rounded-xl backdrop-blur-sm bg-background/80 hover:bg-background/90 border-2 transition-all duration-300"
+                  style={{ 
+                    color: screens.styles.textColorHsl ? `hsl(${screens.styles.textColorHsl})` : undefined,
+                    borderColor: screens.styles.textColorHsl ? `hsl(${screens.styles.textColorHsl} / 0.3)` : undefined 
+                  }}
+                >
+                  <Home className="h-5 w-5" />
+                  Back to Home
+                </Button>
+              </div>
+
               <ParticleField count={15} />
               
             <div className="animate-fade-in-up">
