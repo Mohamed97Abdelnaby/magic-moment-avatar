@@ -21,9 +21,15 @@ const LiveKioskPreview = memo(({
   eventName,
   currentScreenKey = 'styles'
 }: LiveKioskPreviewProps) => {
+  // Get the current screen's appearance settings
+  const currentScreenSettings = screenSettings[currentScreenKey] || screenSettings.styles;
+  const backgroundImage = currentScreenSettings.backgroundImageDataUrl;
+  const backgroundColor = currentScreenSettings.backgroundColor || '#1a1a2e';
+  const textColor = currentScreenSettings.textColorHex || '#ffffff';
+  const overlayOpacity = currentScreenSettings.overlayOpacity || 0.6;
+  
   const primaryHex = hslToHex(primaryColor);
   const secondaryHex = secondaryColor ? hslToHex(secondaryColor) : primaryHex;
-  const currentScreen = screenSettings[currentScreenKey as keyof typeof screenSettings];
   
   // Create CSS variables for preview
   const previewStyle = {
@@ -45,8 +51,6 @@ const LiveKioskPreview = memo(({
     }
     return 'bg-background';
   };
-
-  const textColor = currentScreen.textColorHex || `hsl(var(--preview-primary))`;
 
   const getScreenTitle = (screenKey: string) => {
     switch (screenKey) {
@@ -276,9 +280,10 @@ const LiveKioskPreview = memo(({
           className={`p-6 rounded-lg border-2 border-border min-h-[400px] relative ${getBackgroundClass()}`}
           style={{
             ...previewStyle,
-            ...(currentScreen.backgroundImageDataUrl
+            backgroundColor: !backgroundImage ? backgroundColor : undefined,
+            ...(backgroundImage
               ? {
-                  backgroundImage: `${currentScreen.overlayOpacity ? `linear-gradient(hsla(0 0% 0% / ${currentScreen.overlayOpacity}), hsla(0 0% 0% / ${currentScreen.overlayOpacity})), ` : ''}url(${currentScreen.backgroundImageDataUrl})`,
+                  backgroundImage: `${overlayOpacity ? `linear-gradient(hsla(0 0% 0% / ${overlayOpacity}), hsla(0 0% 0% / ${overlayOpacity})), ` : ''}url(${backgroundImage})`,
                   backgroundSize: 'cover',
                   backgroundPosition: 'center',
                 }
@@ -307,7 +312,7 @@ const LiveKioskPreview = memo(({
                 className="text-3xl font-bold mb-2"
                 style={{ color: textColor }}
               >
-                {currentScreen.title || getScreenTitle(currentScreenKey)}
+                {currentScreenSettings.title || getScreenTitle(currentScreenKey)}
               </h1>
               <p 
                 className="text-lg opacity-90" 

@@ -7,14 +7,16 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowLeft, ArrowRight, CheckCircle2, Palette, Sparkles, Eye } from "lucide-react";
+import { ArrowLeft, ArrowRight, CheckCircle2, Palette, Sparkles, Eye, AlertTriangle } from "lucide-react";
 import ColorPicker from "@/components/ColorPicker";
 import ScreenAppearanceEditor from "@/components/ScreenAppearanceEditor";
 import SplitScreenStep from "@/components/SplitScreenStep";
 import SetupProgress from "@/components/SetupProgress";
 import EventDetailsForm from "@/components/EventDetailsForm";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { HSLColor, applyDynamicTheme } from "@/lib/colorUtils";
 import { getDefaultScreenSettings, loadScreenSettings, saveScreenSettings, type ScreenKey, type ScreenSettings, type ScreenAppearance } from "@/lib/kioskSettings";
+import { getStepValidation, type StepValidation } from "@/lib/validation";
 
 const calmBlue: HSLColor = { h: 217, s: 90, l: 61 };
 
@@ -75,6 +77,12 @@ const SetupWizard = () => {
   const [backgroundStyle, setBackgroundStyle] = useState<'solid' | 'gradient' | 'default'>("default");
   const [screenSettings, setScreenSettings] = useState<ScreenSettings>(getDefaultScreenSettings());
   const [previewScreen, setPreviewScreen] = useState<ScreenKey>('styles');
+
+  // Get current step validation
+  const currentStepValidation: StepValidation = useMemo(() => 
+    getStepValidation(step, eventName, eventLocation, selectedStyles),
+    [step, eventName, eventLocation, selectedStyles]
+  );
 
   // Apply theme live
   useEffect(() => {
@@ -150,6 +158,8 @@ const SetupWizard = () => {
             if (setting.screen_key in loadedSettings) {
               loadedSettings[setting.screen_key as ScreenKey] = {
                 textColorHex: setting.text_color || '#ffffff',
+                textColorHsl: undefined,
+                backgroundColor: '#1a1a2e',
                 backgroundImageDataUrl: setting.background_image || null,
                 overlayOpacity: Number(setting.overlay_opacity) || 0.6,
                 title: setting.title || ''
@@ -213,8 +223,25 @@ const SetupWizard = () => {
     debouncedSave();
   }, [debouncedSave]);
 
-  const next = () => { setDir("forward"); setStep((s) => Math.min(StepsTotal - 1, s + 1)); };
-  const back = () => { setDir("backward"); setStep((s) => Math.max(0, s - 1)); };
+  const next = () => {
+    // Check if current step is valid before proceeding
+    if (!currentStepValidation.canProceed) {
+      toast({
+        title: "Please complete required fields",
+        description: currentStepValidation.errors[0],
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    setDir("forward");
+    setStep((s) => Math.min(StepsTotal - 1, s + 1));
+  };
+  
+  const back = () => { 
+    setDir("backward"); 
+    setStep((s) => Math.max(0, s - 1)); 
+  };
 
   const avatarStyles = [
     { id: "pixar", name: "Pixar Style", description: "3D animated character style" },
@@ -596,6 +623,16 @@ const SetupWizard = () => {
 
         {renderStep()}
 
+        {/* Validation Messages */}
+        {currentStepValidation.errors.length > 0 && (
+          <Alert variant="destructive" className="mb-4">
+            <AlertTriangle className="h-4 w-4" />
+            <AlertDescription>
+              {currentStepValidation.errors.join(", ")}
+            </AlertDescription>
+          </Alert>
+        )}
+
         {/* Nav */}
         <div className="mt-8 flex items-center justify-between">
           <Button variant="ghost" onClick={back} disabled={step === 0}>
@@ -603,7 +640,10 @@ const SetupWizard = () => {
           </Button>
           <div className="flex items-center gap-2">
             {step < StepsTotal - 1 ? (
-              <Button onClick={next}>
+              <Button 
+                onClick={next}
+                disabled={!currentStepValidation.canProceed}
+              >
                 Next <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
             ) : (

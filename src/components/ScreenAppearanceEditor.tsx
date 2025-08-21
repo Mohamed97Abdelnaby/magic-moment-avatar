@@ -60,6 +60,14 @@ const ScreenAppearanceEditor = memo(({ label, value, onChange, showTitle = true 
     onChange({ ...value, overlayOpacity: Math.max(0, Math.min(0.8, (vals?.[0] ?? 0) / 100)) });
   }, [value, onChange]);
 
+  const handleBackgroundColorChange = useCallback((hsl: HSLColor) => {
+    onChange({ ...value, backgroundColor: hslToHex(hsl) });
+  }, [value, onChange]);
+
+  const currentBackgroundHsl = useMemo<HSLColor>(() => {
+    return value.backgroundColor ? hexToHsl(value.backgroundColor) : { h: 225, s: 30, l: 15 };
+  }, [value.backgroundColor]);
+
   return (
     <div className="space-y-6">
         {showTitle && (
@@ -80,10 +88,21 @@ const ScreenAppearanceEditor = memo(({ label, value, onChange, showTitle = true 
             value={currentHsl}
             onChange={handleColorChange}
             label="Text Color"
-            showAccessibilityCheck={!!value.backgroundImageDataUrl}
-            contrastBackground={value.backgroundImageDataUrl ? { h: 0, s: 0, l: 0 } : { h: 0, s: 0, l: 100 }}
+            showAccessibilityCheck={true}
+            contrastBackground={value.backgroundColor ? hexToHsl(value.backgroundColor) : currentBackgroundHsl}
           />
         </div>
+
+        {!value.backgroundImageDataUrl && (
+          <div>
+            <ColorPicker
+              value={currentBackgroundHsl}
+              onChange={handleBackgroundColorChange}
+              label="Background Color"
+              showAccessibilityCheck={false}
+            />
+          </div>
+        )}
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="space-y-2">

@@ -8,6 +8,7 @@ export interface ScreenAppearance {
   textColorHex?: string; // e.g. #FFFFFF
   textColorHsl?: string; // e.g. "0 0% 100%"
   backgroundImageDataUrl?: string | null;
+  backgroundColor?: string; // e.g. #000000
   overlayOpacity?: number; // 0-0.8
 }
 
@@ -21,6 +22,7 @@ export function getDefaultAppearance(): ScreenAppearance {
     textColorHex: hslToHex(DEFAULT_TEXT_COLOR),
     textColorHsl: `${DEFAULT_TEXT_COLOR.h} ${DEFAULT_TEXT_COLOR.s}% ${DEFAULT_TEXT_COLOR.l}%`,
     backgroundImageDataUrl: null,
+    backgroundColor: '#1a1a2e',
     overlayOpacity: 0.45,
   };
 }
