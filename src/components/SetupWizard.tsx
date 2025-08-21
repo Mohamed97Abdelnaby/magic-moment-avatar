@@ -1,5 +1,8 @@
 import { useEffect, useMemo, useState, useCallback, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
+import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
@@ -45,14 +48,23 @@ const AnimatedBackdrop = () => (
 
 const SetupWizard = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const { user, loading: authLoading } = useAuth();
+  const { toast } = useToast();
+
+  // Get event ID from URL params for editing
+  const eventId = searchParams.get('event');
+  const isEditing = !!eventId;
 
   // SEO title
   useEffect(() => {
-    document.title = "Event Setup Wizard – Calm Dark Blue";
-  }, []);
+    document.title = isEditing ? "Edit Event – Calm Dark Blue" : "Event Setup Wizard – Calm Dark Blue";
+  }, [isEditing]);
 
   const [step, setStep] = useState(0);
   const [dir, setDir] = useState<Dir>("forward");
+  const [loading, setLoading] = useState(false);
+  const [initialLoadComplete, setInitialLoadComplete] = useState(false);
 
   // Core state (mirrors EventSetup to preserve functionality)
   const [eventName, setEventName] = useState("");
@@ -69,10 +81,108 @@ const SetupWizard = () => {
     applyDynamicTheme(primaryColor, secondaryColor || undefined);
   }, [primaryColor, secondaryColor]);
 
-  // Load saved screen settings
+  // Authentication check and redirect
   useEffect(() => {
-    setScreenSettings(loadScreenSettings());
-  }, []);
+    if (!authLoading && !user) {
+      toast({
+        title: "Authentication Required",
+        description: "Please sign in to create or edit events",
+        variant: "destructive"
+      });
+      navigate('/auth');
+    }
+  }, [authLoading, user, navigate, toast]);
+
+  // Load existing event data when editing
+  useEffect(() => {
+    const loadEventData = async () => {
+      if (!eventId || !user || initialLoadComplete) return;
+      
+      setLoading(true);
+      try {
+        // Load event data
+        const { data: eventData, error: eventError } = await supabase
+          .from('events')
+          .select('*')
+          .eq('id', eventId)
+          .eq('user_id', user.id)
+          .single();
+
+        if (eventError) {
+          toast({
+            title: "Event Not Found",
+            description: "Event not found or you don't have permission to edit it",
+            variant: "destructive"
+          });
+          navigate('/my-events');
+          return;
+        }
+
+        // Populate form with event data
+        setEventName(eventData.name);
+        setEventLocation(eventData.location || "");
+        setSelectedStyles(eventData.avatar_styles || []);
+        setPrimaryColor({
+          h: parseInt(eventData.primary_color.split(',')[0]),
+          s: parseInt(eventData.primary_color.split(',')[1]),
+          l: parseInt(eventData.primary_color.split(',')[2])
+        });
+        
+        if (eventData.secondary_color) {
+          setSecondaryColor({
+            h: parseInt(eventData.secondary_color.split(',')[0]),
+            s: parseInt(eventData.secondary_color.split(',')[1]),
+            l: parseInt(eventData.secondary_color.split(',')[2])
+          });
+        }
+        
+        setBackgroundStyle(eventData.background_style as 'solid' | 'gradient' | 'default' || 'default');
+
+        // Load screen settings
+        const { data: screenData, error: screenError } = await supabase
+          .from('event_screen_settings')
+          .select('*')
+          .eq('event_id', eventId);
+
+        if (!screenError && screenData) {
+          const loadedSettings = { ...getDefaultScreenSettings() };
+          screenData.forEach(setting => {
+            if (setting.screen_key in loadedSettings) {
+              loadedSettings[setting.screen_key as ScreenKey] = {
+                textColorHex: setting.text_color || '#ffffff',
+                backgroundImageDataUrl: setting.background_image || null,
+                overlayOpacity: Number(setting.overlay_opacity) || 0.6,
+                title: setting.title || ''
+              };
+            }
+          });
+          setScreenSettings(loadedSettings);
+        }
+
+        setInitialLoadComplete(true);
+      } catch (error) {
+        console.error('Error loading event:', error);
+        toast({
+          title: "Load Failed",
+          description: "Failed to load event data",
+          variant: "destructive"
+        });
+        navigate('/my-events');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadEventData();
+  }, [eventId, user, initialLoadComplete, navigate, toast]);
+
+  // Load saved screen settings for new events
+  useEffect(() => {
+    if (!isEditing && !initialLoadComplete) {
+      setScreenSettings(loadScreenSettings());
+      setInitialLoadComplete(true);
+    }
+  }, [isEditing, initialLoadComplete]);
 
   // Debounced localStorage save
   const saveTimeoutRef = useRef<NodeJS.Timeout>();
@@ -130,25 +240,118 @@ const SetupWizard = () => {
 
   const canFinish = eventName.trim().length > 0 && selectedStyles.length > 0;
 
-  const handleFinish = useCallback(() => {
-    // Save complete setup configuration
-    const setupConfig = {
-      eventName,
-      eventLocation,
-      selectedStyles,
-      primaryColor,
-      secondaryColor,
-      backgroundStyle,
-      screenSettings,
-      setupCompleted: true,
-      setupDate: new Date().toISOString()
-    };
-    
-    localStorage.setItem('kioskSetupConfig', JSON.stringify(setupConfig));
-    
-    // Navigate to kiosk
-    navigate('/kiosk');
-  }, [eventName, eventLocation, selectedStyles, primaryColor, secondaryColor, backgroundStyle, screenSettings, navigate]);
+  const handleFinish = useCallback(async () => {
+    if (!user) {
+      toast({
+        title: "Authentication Required",
+        description: "Please sign in to save your event",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setLoading(true);
+    try {
+      // Prepare event data
+      const eventData = {
+        name: eventName,
+        location: eventLocation,
+        primary_color: `${primaryColor.h},${primaryColor.s},${primaryColor.l}`,
+        secondary_color: secondaryColor ? `${secondaryColor.h},${secondaryColor.s},${secondaryColor.l}` : null,
+        background_style: backgroundStyle,
+        avatar_styles: selectedStyles,
+        user_id: user.id
+      };
+
+      let savedEventId = eventId;
+
+      if (isEditing) {
+        // Update existing event
+        const { error: updateError } = await supabase
+          .from('events')
+          .update(eventData)
+          .eq('id', eventId)
+          .eq('user_id', user.id);
+
+        if (updateError) throw updateError;
+        toast({
+          title: "Success",
+          description: "Event updated successfully!"
+        });
+      } else {
+        // Create new event
+        const { data: newEvent, error: insertError } = await supabase
+          .from('events')
+          .insert([eventData])
+          .select('id')
+          .single();
+
+        if (insertError) throw insertError;
+        savedEventId = newEvent.id;
+        toast({
+          title: "Success",
+          description: "Event created successfully!"
+        });
+      }
+
+      // Save screen settings
+      await saveScreenSettingsToDatabase(savedEventId, screenSettings);
+
+      // Also save to localStorage for kiosk functionality
+      const setupConfig = {
+        eventName,
+        eventLocation,
+        selectedStyles,
+        primaryColor,
+        secondaryColor,
+        backgroundStyle,
+        screenSettings,
+        setupCompleted: true,
+        setupDate: new Date().toISOString(),
+        eventId: savedEventId
+      };
+      
+      localStorage.setItem('kioskSetupConfig', JSON.stringify(setupConfig));
+      
+      // Navigate to kiosk with event context
+      navigate(`/kiosk?event=${savedEventId}`);
+    } catch (error) {
+      console.error('Error saving event:', error);
+      toast({
+        title: "Save Failed",
+        description: isEditing ? "Failed to update event" : "Failed to create event",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
+    }
+  }, [eventName, eventLocation, selectedStyles, primaryColor, secondaryColor, backgroundStyle, screenSettings, navigate, user, toast, isEditing, eventId]);
+
+  const saveScreenSettingsToDatabase = async (eventId: string, settings: ScreenSettings) => {
+    // Delete existing screen settings for this event
+    await supabase
+      .from('event_screen_settings')
+      .delete()
+      .eq('event_id', eventId);
+
+    // Insert new screen settings
+    const screenSettingsData = Object.entries(settings).map(([screenKey, setting]) => ({
+      event_id: eventId,
+      screen_key: screenKey,
+      text_color: setting.textColorHex,
+      background_image: setting.backgroundImageDataUrl || null,
+      overlay_opacity: setting.overlayOpacity,
+      title: setting.title || null
+    }));
+
+    if (screenSettingsData.length > 0) {
+      const { error } = await supabase
+        .from('event_screen_settings')
+        .insert(screenSettingsData);
+
+      if (error) throw error;
+    }
+  };
 
   const StepContainer = ({ children }: { children: React.ReactNode }) => (
     <section
@@ -340,10 +543,10 @@ const SetupWizard = () => {
               variant="hero" 
               size="lg" 
               className="text-xl px-12 py-6" 
-              disabled={!canFinish}
+              disabled={!canFinish || loading}
               onClick={handleFinish}
             >
-              Create Event Kiosk
+              {loading ? "Saving..." : isEditing ? "Update Event" : "Create Event Kiosk"}
               <ArrowRight className="h-6 w-6 ml-3" />
             </Button>
             {!canFinish && (
@@ -369,6 +572,21 @@ const SetupWizard = () => {
       default: return null;
     }
   };
+
+  // Show loading screen during initial data load
+  if (authLoading || (isEditing && !initialLoadComplete)) {
+    return (
+      <main className="min-h-screen bg-background relative flex items-center justify-center">
+        <AnimatedBackdrop />
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">
+            {authLoading ? "Checking authentication..." : "Loading event data..."}
+          </p>
+        </div>
+      </main>
+    );
+  }
 
   return (
     <main className="min-h-screen bg-background relative">

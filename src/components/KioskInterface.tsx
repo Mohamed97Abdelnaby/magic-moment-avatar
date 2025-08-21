@@ -17,6 +17,7 @@ import { toast } from "sonner";
 interface KioskInterfaceProps {
   isDemo?: boolean;
   demoSettings?: ScreenSettings;
+  eventId?: string;
 }
 
 const ParticleField = ({ count = 12 }: { count?: number }) => {
@@ -90,7 +91,7 @@ const NeuralNetwork = () => {
   );
 };
 
-const KioskInterface = ({ isDemo = false, demoSettings }: KioskInterfaceProps = {}) => {
+const KioskInterface = ({ isDemo = false, demoSettings, eventId }: KioskInterfaceProps = {}) => {
   const [currentStep, setCurrentStep] = useState<'styles' | 'camera' | 'photo-preview' | 'countdown' | 'loading' | 'result'>('styles');
   const [selectedStyle, setSelectedStyle] = useState<string>('');
   const [countdown, setCountdown] = useState(3);
@@ -176,9 +177,47 @@ useEffect(() => {
 // Load per-screen settings (only if not in demo mode)
 useEffect(() => {
   if (!isDemo) {
-    setScreens(loadScreenSettings());
+    if (eventId) {
+      // Load event-specific settings from database
+      const loadEventSettings = async () => {
+        try {
+          // Load screen settings for this event
+          const { data: screenData, error } = await supabase
+            .from('event_screen_settings')
+            .select('*')
+            .eq('event_id', eventId);
+
+          if (!error && screenData) {
+            const loadedSettings = { ...getDefaultScreenSettings() };
+            screenData.forEach(setting => {
+              if (setting.screen_key in loadedSettings) {
+                loadedSettings[setting.screen_key as keyof ScreenSettings] = {
+                  textColorHex: setting.text_color || '#ffffff',
+                  backgroundImageDataUrl: setting.background_image || null,
+                  overlayOpacity: Number(setting.overlay_opacity) || 0.6,
+                  title: setting.title || ''
+                };
+              }
+            });
+            setScreens(loadedSettings);
+          } else {
+            // Fallback to localStorage if no database settings found
+            setScreens(loadScreenSettings());
+          }
+        } catch (error) {
+          console.error('Error loading event settings:', error);
+          // Fallback to localStorage on error
+          setScreens(loadScreenSettings());
+        }
+      };
+      
+      loadEventSettings();
+    } else {
+      // Load from localStorage if no eventId
+      setScreens(loadScreenSettings());
+    }
   }
-}, [isDemo]);
+}, [isDemo, eventId]);
 
   const handleStyleSelect = (styleId: string) => {
     setSelectedStyle(styleId);
