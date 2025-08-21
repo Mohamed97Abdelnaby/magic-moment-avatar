@@ -255,6 +255,10 @@ useEffect(() => {
 
   const handleStyleSelect = (styleId: string) => {
     setSelectedStyle(styleId);
+    // Auto-proceed to camera after selecting style
+    setTimeout(() => {
+      setCurrentStep('camera');
+    }, 500); // Small delay for visual feedback
   };
 
   const handleStartCamera = () => {
