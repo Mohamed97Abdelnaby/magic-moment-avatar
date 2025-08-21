@@ -14,7 +14,7 @@ import SplitScreenStep from "@/components/SplitScreenStep";
 import SetupProgress from "@/components/SetupProgress";
 import EventDetailsForm from "@/components/EventDetailsForm";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { HSLColor, applyDynamicTheme } from "@/lib/colorUtils";
+import { HSLColor, applyDynamicTheme, hexToHsl } from "@/lib/colorUtils";
 import { getDefaultScreenSettings, loadScreenSettings, saveScreenSettings, type ScreenKey, type ScreenSettings, type ScreenAppearance } from "@/lib/kioskSettings";
 import { getStepValidation, type StepValidation } from "@/lib/validation";
 
@@ -156,9 +156,12 @@ const SetupWizard = () => {
           const loadedSettings = { ...getDefaultScreenSettings() };
           screenData.forEach(setting => {
             if (setting.screen_key in loadedSettings) {
+              const textColorHex = setting.text_color || '#ffffff';
+              const hslColor = hexToHsl(textColorHex);
+              
               loadedSettings[setting.screen_key as ScreenKey] = {
-                textColorHex: setting.text_color || '#ffffff',
-                textColorHsl: undefined,
+                textColorHex,
+                textColorHsl: `${hslColor.h} ${hslColor.s}% ${hslColor.l}%`,
                 backgroundColor: setting.background_color || '#1a1a2e',
                 backgroundImageDataUrl: setting.background_image || null,
                 overlayOpacity: Number(setting.overlay_opacity) || 0.6,
