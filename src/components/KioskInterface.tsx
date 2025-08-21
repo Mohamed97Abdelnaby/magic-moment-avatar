@@ -592,7 +592,7 @@ useEffect(() => {
     const screen = screens[screenKey];
     
     // Priority 1: Screen-specific text color (highest priority)
-    if (screen?.textColorHsl) {
+    if (screen?.textColorHsl && screen.textColorHsl.trim() !== '') {
       return `hsl(${screen.textColorHsl})`;
     }
     
@@ -1022,7 +1022,7 @@ useEffect(() => {
     }
     
     // Priority 2: Screen-specific background color
-    if (currentScreen.backgroundColor) {
+    if (currentScreen.backgroundColor && currentScreen.backgroundColor.trim() !== '') {
       return {
         backgroundColor: currentScreen.backgroundColor,
         backgroundImage: undefined,
@@ -1032,27 +1032,15 @@ useEffect(() => {
       };
     }
     
-    // Priority 3: Event primary/secondary colors (for event mode only)
-    if (!isDemo && eventColors.primary) {
-      const primary = eventColors.primary;
-      const secondary = eventColors.secondary;
-      
-      // Create a dark gradient background using event colors
-      if (secondary) {
-        return {
-          background: `linear-gradient(135deg, hsl(${primary.h} ${primary.s}% ${Math.min(25, primary.l)}%), hsl(${secondary.h} ${secondary.s}% ${Math.min(25, secondary.l)}%))`,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          backgroundRepeat: 'no-repeat'
-        };
-      } else {
-        return {
-          backgroundColor: `hsl(${primary.h} ${primary.s}% ${Math.min(25, primary.l)}%)`,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          backgroundRepeat: 'no-repeat'
-        };
-      }
+    // Priority 3: Event secondary color as background (for event mode only)
+    if (!isDemo && eventColors.secondary) {
+      return {
+        backgroundColor: `hsl(${eventColors.secondary.h} ${eventColors.secondary.s}% ${Math.min(25, eventColors.secondary.l)}%)`,
+        backgroundImage: undefined,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat'
+      };
     }
     
     // Priority 4: System default (fallback)

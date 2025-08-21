@@ -19,10 +19,10 @@ const DEFAULT_TEXT_COLOR: HSLColor = { h: 0, s: 0, l: 100 };
 export function getDefaultAppearance(): ScreenAppearance {
   return {
     title: undefined,
-    textColorHex: hslToHex(DEFAULT_TEXT_COLOR),
-    textColorHsl: `${DEFAULT_TEXT_COLOR.h} ${DEFAULT_TEXT_COLOR.s}% ${DEFAULT_TEXT_COLOR.l}%`,
+    textColorHex: undefined,
+    textColorHsl: undefined,
     backgroundImageDataUrl: null,
-    backgroundColor: '#1a1a2e',
+    backgroundColor: undefined,
     overlayOpacity: 0.45,
   };
 }
