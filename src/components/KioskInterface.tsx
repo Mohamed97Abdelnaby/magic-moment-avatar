@@ -97,6 +97,9 @@ const KioskInterface = ({ isDemo = false, demoSettings }: KioskInterfaceProps = 
   const [showConfetti, setShowConfetti] = useState(false);
   const [stageAnimationKey, setStageAnimationKey] = useState(0);
   const [capturedPhoto, setCapturedPhoto] = useState<string | null>(null);
+  const [generatedAvatar, setGeneratedAvatar] = useState<string | null>(null);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [generationError, setGenerationError] = useState<string | null>(null);
   const [isWhatsAppDialogOpen, setIsWhatsAppDialogOpen] = useState(false);
   const [whatsappForm, setWhatsappForm] = useState({
     phoneNumber: '',
@@ -158,12 +161,12 @@ const KioskInterface = ({ isDemo = false, demoSettings }: KioskInterfaceProps = 
   ];
 
   const avatarStyles = [
+    { id: "farmer", name: "Egyptian Farmer", preview: "🌾", description: "Traditional Rural Life" },
+    { id: "pharaonic", name: "Ancient Pharaoh", preview: "👑", description: "Royal Dynasty Style" },
+    { id: "basha", name: "El Basha Style", preview: "🎩", description: "Elite Noble Fashion" },
+    { id: "beach", name: "Beach Vibes", preview: "🏖️", description: "Summer Mediterranean" },
     { id: "pixar", name: "Pixar Style", preview: "🎭", description: "3D Animated Magic" },
-    { id: "cyberpunk", name: "Cyberpunk", preview: "🤖", description: "Futuristic Neon" },
     { id: "cartoon", name: "90s Cartoon", preview: "🎨", description: "Retro Animation" },
-    { id: "sketch", name: "Sketch Art", preview: "✏️", description: "Hand-drawn Style" },
-    { id: "anime", name: "Anime", preview: "👾", description: "Japanese Animation" },
-    { id: "oil", name: "Oil Painting", preview: "🖼️", description: "Classical Art" },
   ];
 
 useEffect(() => {
@@ -199,19 +202,51 @@ useEffect(() => {
         if (prev <= 1) {
           clearInterval(countdownInterval);
           setCurrentStep('loading');
-          
-          // Simulate AI generation
-          setTimeout(() => {
-            setCurrentStep('result');
-            setShowConfetti(true);
-            setTimeout(() => setShowConfetti(false), 4000);
-          }, 3000);
-          
+          generateAvatar();
           return 0;
         }
         return prev - 1;
       });
     }, 1000);
+  };
+
+  const generateAvatar = async () => {
+    if (!capturedPhoto || !selectedStyle) {
+      setGenerationError('Missing photo or style selection');
+      setCurrentStep('result');
+      return;
+    }
+
+    setIsGenerating(true);
+    setGenerationError(null);
+
+    try {
+      console.log('Starting avatar generation...');
+      const { data, error } = await supabase.functions.invoke('generate-avatar', {
+        body: {
+          image: capturedPhoto,
+          style: selectedStyle
+        }
+      });
+
+      if (error) {
+        console.error('Avatar generation error:', error);
+        setGenerationError('Failed to generate avatar. Please try again.');
+      } else if (data?.generatedImage) {
+        console.log('Avatar generated successfully');
+        setGeneratedAvatar(data.generatedImage);
+        setShowConfetti(true);
+        setTimeout(() => setShowConfetti(false), 4000);
+      } else {
+        setGenerationError('No avatar was generated. Please try again.');
+      }
+    } catch (error) {
+      console.error('Avatar generation failed:', error);
+      setGenerationError('Failed to generate avatar. Please try again.');
+    } finally {
+      setIsGenerating(false);
+      setCurrentStep('result');
+    }
   };
 
   const handleRetakePhoto = () => {
@@ -234,12 +269,17 @@ useEffect(() => {
     setIsSendingWhatsApp(true);
 
     try {
+      console.log('Preparing image for WhatsApp...');
+      
+      // Use the generated avatar if available, otherwise fallback to original photo
+      const imageToSend = generatedAvatar || capturedPhoto;
+
       console.log('Invoking send-whatsapp-image function...');
       const { data, error } = await supabase.functions.invoke('send-whatsapp-image', {
         body: {
           phoneNumber: whatsappForm.phoneNumber,
           message: whatsappForm.message,
-          imageData: capturedPhoto,
+          imageData: imageToSend,
           instanceId: whatsappForm.instanceId
         }
       });
@@ -280,6 +320,8 @@ useEffect(() => {
     setSelectedStyle('');
     setShowConfetti(false);
     setCapturedPhoto(null);
+    setGeneratedAvatar(null);
+    setGenerationError(null);
   };
 
   const renderContent = () => {
@@ -536,9 +578,26 @@ useEffect(() => {
             
             <div className="animate-fade-in-up relative z-10">
               <h1 className="text-8xl font-bold mb-12 animate-bounce-in" style={{ color: screens.result.textColorHsl ? `hsl(${screens.result.textColorHsl})` : undefined }}>
-                {screens.result.title || 'Your Avatar is Ready! 🎉'}
+                {generationError ? 'Oops! Using your original photo 📸' : screens.result.title || 'Your Avatar is Ready! 🎉'}
               </h1>
+              {generationError && (
+                <p className="text-xl mb-8 text-yellow-300">
+                  {generationError}
+                </p>
+              )}
             </div>
+
+            {generationError && (
+              <div className="mb-8">
+                <Button
+                  onClick={generateAvatar}
+                  className="bg-yellow-600 hover:bg-yellow-700 text-white px-8 py-4 text-xl"
+                  disabled={isGenerating}
+                >
+                  {isGenerating ? 'Generating...' : 'Try AI Generation Again'}
+                </Button>
+              </div>
+            )}
             
             <div className="max-w-lg mx-auto mb-16 animate-flip-3d">
               <Card className="p-12 shadow-glow glass border-4 border-primary/20 relative overflow-hidden">
@@ -546,10 +605,10 @@ useEffect(() => {
                 
                 <div className="relative z-10">
                   <div className="aspect-square bg-muted rounded-3xl overflow-hidden mb-8 shadow-3d animate-pulse-glow">
-                    {capturedPhoto ? (
+                    {(generatedAvatar || capturedPhoto) ? (
                       <img 
-                        src={capturedPhoto} 
-                        alt="Your captured photo" 
+                        src={generatedAvatar || capturedPhoto} 
+                        alt={generatedAvatar ? "Your AI-generated avatar" : "Your captured photo"} 
                         className="w-full h-full object-cover animate-float"
                       />
                     ) : (
@@ -559,10 +618,10 @@ useEffect(() => {
                     )}
                   </div>
                   <p className="text-3xl font-semibold mb-4">
-                    {selectedStyle.charAt(0).toUpperCase() + selectedStyle.slice(1)} Style
+                    {generatedAvatar ? 'AI-Generated Egyptian Avatar' : `${selectedStyle.charAt(0).toUpperCase() + selectedStyle.slice(1)} Style`}
                   </p>
                   <p className="text-xl text-muted-foreground">
-                    Ready to share with the world!
+                    {generatedAvatar ? 'Your cultural transformation is complete!' : 'Ready to share with the world!'}
                   </p>
                 </div>
                 
@@ -597,10 +656,11 @@ useEffect(() => {
               <Button 
                 variant="default" 
                 size="lg"
+                onClick={() => window.print()}
                 className="text-2xl px-12 py-8 rounded-2xl shadow-glow hover:shadow-neon transition-all duration-500 transform hover:scale-105 neon-glow"
               >
                 <Printer className="h-8 w-8 mr-4" />
-                Print
+                Print Avatar
               </Button>
               
               <Dialog open={isWhatsAppDialogOpen} onOpenChange={setIsWhatsAppDialogOpen}>
@@ -616,7 +676,7 @@ useEffect(() => {
                 </DialogTrigger>
                 <DialogContent className="sm:max-w-md">
                   <DialogHeader>
-                    <DialogTitle>Send Photo via WhatsApp</DialogTitle>
+                    <DialogTitle>Send Avatar via WhatsApp</DialogTitle>
                   </DialogHeader>
                   <div className="space-y-4">
                     <div>
