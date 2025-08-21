@@ -73,8 +73,15 @@ export const useEnhancedCameraCapture = (): EnhancedCameraCaptureHook => {
         videoRef.current.srcObject = stream;
         streamRef.current = stream;
         
-        console.log("✅ Camera stream started.");
-        setIsStreamActive(true);
+        // Explicitly start video playback
+        try {
+          await videoRef.current.play();
+          console.log("✅ Camera stream started and playing.");
+          setIsStreamActive(true);
+        } catch (playError) {
+          console.log("⚠️ Video play failed, but stream is set:", playError);
+          setIsStreamActive(true); // Still set active as stream is available
+        }
       }
     } catch (err) {
       console.error("❌ Error accessing camera: ", err);

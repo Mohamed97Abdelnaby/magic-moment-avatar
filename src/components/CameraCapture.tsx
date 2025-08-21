@@ -129,7 +129,10 @@ const CameraCapture = ({ onPhotoCapture, onBack, textColor }: CameraCaptureProps
           <canvas
             ref={canvasRef}
             className="absolute inset-0 w-full h-full object-cover rounded-2xl"
-            style={{ display: capturedImage ? 'block' : 'none' }}
+            style={{ 
+              display: capturedImage ? 'block' : 'none',
+              transform: 'scaleX(-1)' // Mirror the captured image too
+            }}
           />
 
           {/* Countdown overlay */}
@@ -165,9 +168,6 @@ const CameraCapture = ({ onPhotoCapture, onBack, textColor }: CameraCaptureProps
           🔴 LIVE
         </div>
       </div>
-      
-      {/* Hidden canvas for photo capture */}
-      <canvas ref={canvasRef} className="hidden" />
       
       <div className="flex gap-8 justify-center">
         <Button
