@@ -1,74 +1,17 @@
-import { useRef, useState, useCallback } from 'react';
 
-export const useEnhancedCameraCapture = () => {
-  const videoRef = useRef<HTMLVideoElement | null>(null);
-  const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [isStreamActive, setIsStreamActive] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [countdown, setCountdown] = useState<number | null>(null);
-  const [isCounting, setIsCounting] = useState(false);
-  const [capturedImage, setCapturedImage] = useState<string | null>(null);
-  let stream: MediaStream | null = null;
+import { useRef, useEffect } from 'react';
+import { Button } from "@/components/ui/button";
+import { Camera, ArrowLeft } from "lucide-react";
+import { useEnhancedCameraCapture } from '@/hooks/useEnhancedCameraCapture';
 
-  const startCamera = useCallback(async () => {
-    try {
-      setIsLoading(true);
-      setError(null);
+interface CameraCaptureProps {
+  onPhotoCapture: (imageData: string) => void;
+  onBack: () => void;
+  textColor?: string;
+}
 
-      stream = await navigator.mediaDevices.getUserMedia({ video: true });
-      
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-        await videoRef.current.play().catch(console.error);
-        setIsStreamActive(true);
-      }
-    } catch (err) {
-      setError('Unable to access camera');
-      console.error('Camera error:', err);
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
-
-  const stopCamera = useCallback(() => {
-    if (stream) {
-      stream.getTracks().forEach(track => track.stop());
-      setIsStreamActive(false);
-    }
-  }, []);
-
-  const capturePhoto = useCallback(() => {
-    if (!videoRef.current || !canvasRef.current) return;
-    const canvas = canvasRef.current;
-    const video = videoRef.current;
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
-    const ctx = canvas.getContext('2d');
-    if (ctx) {
-      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-      const imageData = canvas.toDataURL('image/png');
-      setCapturedImage(imageData);
-    }
-  }, []);
-
-  const startTimerAndCapture = useCallback(() => {
-    setIsCounting(true);
-    let timer = 3;
-    setCountdown(timer);
-
-    const interval = setInterval(() => {
-      timer -= 1;
-      setCountdown(timer);
-      if (timer === 0) {
-        clearInterval(interval);
-        setIsCounting(false);
-        capturePhoto();
-      }
-    }, 1000);
-  }, [capturePhoto]);
-
-  return {
+const CameraCapture = ({ onPhotoCapture, onBack, textColor }: CameraCaptureProps) => {
+  const {
     videoRef,
     canvasRef,
     isLoading,
@@ -79,7 +22,116 @@ export const useEnhancedCameraCapture = () => {
     capturedImage,
     startCamera,
     stopCamera,
-    capturePhoto,
-    startTimerAndCapture
+    startTimerAndCapture,
+  } = useEnhancedCameraCapture();
+
+  useEffect(() => {
+    console.log('🎬 CameraCapture component mounted, starting enhanced camera...');
+    startCamera();
+    
+    return () => {
+      console.log('🛑 CameraCapture component unmounting, stopping camera...');
+      stopCamera();
+    };
+  }, [startCamera, stopCamera]);
+
+  useEffect(() => {
+    if (capturedImage) {
+      onPhotoCapture(capturedImage);
+    }
+  }, [capturedImage, onPhotoCapture]);
+
+  const handleCapture = () => {
+    if (isStreamActive && !isCounting) {
+      startTimerAndCapture();
+    }
   };
+
+  return (
+    <div className="text-center space-y-8">
+      <div className="space-y-4">
+        <h1 
+          className="text-6xl font-bold mb-4 animate-fade-in-up" 
+          style={{ color: textColor }}
+        >
+          Strike Your Pose! 📸
+        </h1>
+        <p 
+          className="text-2xl animate-fade-in-up" 
+          style={{ color: textColor, animationDelay: '0.2s' }}
+        >
+          Get ready for your close-up
+        </p>
+      </div>
+
+      <div className="relative max-w-2xl mx-auto">
+        <div className="aspect-video bg-black rounded-3xl overflow-hidden shadow-glow relative">
+          {/* Video Preview */}
+          <video
+            ref={videoRef}
+            className="w-full h-full object-cover scale-x-[-1]"
+            playsInline
+            muted
+            style={{ display: isStreamActive ? 'block' : 'none' }}
+          />
+          
+          {/* Hidden canvas for photo capture */}
+          <canvas ref={canvasRef} className="hidden" />
+          
+          {/* Loading State */}
+          {isLoading && (
+            <div className="absolute inset-0 flex items-center justify-center bg-black/50">
+              <div className="text-white text-xl">Starting camera...</div>
+            </div>
+          )}
+          
+          {/* Error State */}
+          {error && (
+            <div className="absolute inset-0 flex items-center justify-center bg-black/80">
+              <div className="text-white text-center p-8">
+                <p className="text-xl mb-4">📷 {error}</p>
+                <Button onClick={startCamera} variant="outline" className="text-black">
+                  Try Again
+                </Button>
+              </div>
+            </div>
+          )}
+          
+          {/* Countdown Overlay */}
+          {countdown !== null && isCounting && (
+            <div className="absolute inset-0 flex items-center justify-center bg-black/60">
+              <div className="text-white text-8xl font-bold animate-pulse">
+                {countdown}
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+
+      <div className="flex gap-6 justify-center">
+        <Button 
+          variant="outline" 
+          size="lg"
+          onClick={onBack}
+          className="text-2xl px-8 py-6 rounded-2xl glass"
+        >
+          <ArrowLeft className="h-6 w-6 mr-4" />
+          Back
+        </Button>
+        
+        <Button 
+          variant="default" 
+          size="lg"
+          onClick={handleCapture}
+          disabled={!isStreamActive || isCounting || isLoading}
+          className="text-2xl px-12 py-6 rounded-2xl shadow-glow hover:shadow-neon transition-all duration-500"
+        >
+          <Camera className="h-6 w-6 mr-4" />
+          {isCounting ? 'Get Ready!' : 'Capture Photo'}
+        </Button>
+      </div>
+    </div>
+  );
 };
+
+export default CameraCapture;
