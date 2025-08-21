@@ -22,10 +22,7 @@ const EventSetup = () => {
   // Screen appearance settings
   const [screenSettings, setScreenSettings] = useState<ScreenSettings>(getDefaultScreenSettings());
   const [previewScreen, setPreviewScreen] = useState<ScreenKey>('styles');
-  // Apply theme changes in real-time
-  useEffect(() => {
-    applyDynamicTheme(primaryColor, secondaryColor || undefined);
-  }, [primaryColor, secondaryColor]);
+  // Theme colors are now stored and applied only in kiosk interface
 
   // Load saved screen settings (with legacy migration)
   useEffect(() => {

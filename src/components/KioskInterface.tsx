@@ -14,6 +14,7 @@ import PhotoPreview from "./PhotoPreview";
 import { loadScreenSettings, getDefaultScreenSettings, type ScreenSettings } from "@/lib/kioskSettings";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { HSLColor, generateColorVariants, hexToHsl } from "@/lib/colorUtils";
 
 interface KioskInterfaceProps {
   isDemo?: boolean;
@@ -111,6 +112,10 @@ const KioskInterface = ({ isDemo = false, demoSettings, eventId }: KioskInterfac
   });
   const [isSendingWhatsApp, setIsSendingWhatsApp] = useState(false);
   const [eventSelectedStyles, setEventSelectedStyles] = useState<string[]>([]);
+  const [eventColors, setEventColors] = useState<{primary: HSLColor | null; secondary: HSLColor | null}>({
+    primary: null,
+    secondary: null
+  });
   const [screens, setScreens] = useState<ScreenSettings>(() => {
     if (isDemo && demoSettings) return demoSettings;
     if (isDemo) {
@@ -241,16 +246,28 @@ useEffect(() => {
       try {
         const { data: eventData, error } = await supabase
           .from('events')
-          .select('avatar_styles')
+          .select('avatar_styles, primary_color, secondary_color')
           .eq('id', eventId)
           .single();
 
-        if (!error && eventData?.avatar_styles) {
-          // Filter out legacy styles that don't have prompts
-          const validStyles = eventData.avatar_styles.filter((style: string) => 
-            ['farmer', 'pharaonic', 'basha', 'beach', 'pixar'].includes(style)
-          );
-          setEventSelectedStyles(validStyles);
+        if (!error && eventData) {
+          // Load avatar styles
+          if (eventData.avatar_styles) {
+            const validStyles = eventData.avatar_styles.filter((style: string) => 
+              ['farmer', 'pharaonic', 'basha', 'beach', 'pixar'].includes(style)
+            );
+            setEventSelectedStyles(validStyles);
+          }
+
+          // Load event colors
+          const primaryColor = eventData.primary_color ? parseHslString(eventData.primary_color) : null;
+          const secondaryColor = eventData.secondary_color ? parseHslString(eventData.secondary_color) : null;
+          setEventColors({ primary: primaryColor, secondary: secondaryColor });
+
+          // Apply scoped theme if colors exist
+          if (primaryColor) {
+            applyScopedEventTheme(primaryColor, secondaryColor);
+          }
         }
       } catch (error) {
         console.error('Error loading event data:', error);
@@ -259,6 +276,51 @@ useEffect(() => {
     loadEventData();
   }
 }, [isDemo, eventId]);
+
+// Parse HSL color string to HSLColor object
+const parseHslString = (hslString: string): HSLColor | null => {
+  if (!hslString) return null;
+  try {
+    // Handle formats like "220 100% 60%" or "hsl(220, 100%, 60%)"
+    const cleanStr = hslString.replace(/hsl\(|\)|%/g, '').trim();
+    const parts = cleanStr.split(/[,\s]+/).map(p => p.trim()).filter(p => p);
+    
+    if (parts.length >= 3) {
+      return {
+        h: parseInt(parts[0]) || 0,
+        s: parseInt(parts[1]) || 0,
+        l: parseInt(parts[2]) || 0
+      };
+    }
+  } catch (error) {
+    console.error('Error parsing HSL string:', hslString, error);
+  }
+  return null;
+};
+
+// Apply event theme scoped to kiosk container only
+const applyScopedEventTheme = (primaryColor: HSLColor, secondaryColor?: HSLColor | null) => {
+  const kioskContainer = document.querySelector('.kiosk-isolated');
+  if (!kioskContainer) return;
+
+  const primaryVariants = generateColorVariants(primaryColor);
+  const secondaryVariants = secondaryColor ? generateColorVariants(secondaryColor) : primaryVariants;
+
+  // Apply CSS custom properties scoped to kiosk container
+  const style = kioskContainer as HTMLElement;
+  style.style.setProperty('--kiosk-primary', `${primaryColor.h} ${primaryColor.s}% ${primaryColor.l}%`);
+  style.style.setProperty('--kiosk-primary-foreground', `${primaryVariants[50].h} ${primaryVariants[50].s}% ${primaryVariants[50].l}%`);
+  style.style.setProperty('--kiosk-accent', `${secondaryColor?.h || primaryColor.h} ${secondaryColor?.s || primaryColor.s}% ${Math.min(95, (secondaryColor?.l || primaryColor.l) + 25)}%`);
+  style.style.setProperty('--kiosk-accent-foreground', `${primaryColor.h} ${primaryColor.s}% ${Math.max(15, primaryColor.l - 25)}%`);
+  style.style.setProperty('--kiosk-muted', `${primaryColor.h} ${Math.max(5, primaryColor.s - 20)}% ${Math.min(95, primaryColor.l + 30)}%`);
+  style.style.setProperty('--kiosk-muted-foreground', `${primaryColor.h} ${Math.max(10, primaryColor.s - 10)}% ${Math.max(25, primaryColor.l - 20)}%`);
+  
+  // Add gradient variants
+  style.style.setProperty('--kiosk-gradient-primary', `linear-gradient(135deg, hsl(${primaryColor.h} ${primaryColor.s}% ${primaryColor.l}%), hsl(${primaryVariants[300].h} ${primaryVariants[300].s}% ${primaryVariants[300].l}%))`);
+  if (secondaryColor) {
+    style.style.setProperty('--kiosk-gradient-secondary', `linear-gradient(135deg, hsl(${primaryColor.h} ${primaryColor.s}% ${primaryColor.l}%), hsl(${secondaryColor.h} ${secondaryColor.s}% ${secondaryColor.l}%))`);
+  }
+};
 
 // Load per-screen settings (only if not in demo mode)
 useEffect(() => {
