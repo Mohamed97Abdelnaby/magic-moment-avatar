@@ -36,7 +36,7 @@ const PhotoPreview = ({ capturedPhoto, onRetake, onConfirm, textColor }: PhotoPr
               <img 
                 src={capturedPhoto} 
                 alt="Your captured photo" 
-                className="w-full h-full object-cover scale-x-[-1] animate-scale-in"
+                className="w-full h-full object-cover animate-scale-in"
               />
             </div>
           </div>
