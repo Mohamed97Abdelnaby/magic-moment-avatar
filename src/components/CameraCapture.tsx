@@ -45,6 +45,11 @@ const CameraCapture = ({ onPhotoCapture, onBack, textColor }: CameraCaptureProps
     }
   };
 
+  const handleBackClick = () => {
+    stopCamera(); // Stop camera before navigating
+    onBack();
+  };
+
   if (error) {
     return (
       <div className="text-center space-y-8">
@@ -64,7 +69,7 @@ const CameraCapture = ({ onPhotoCapture, onBack, textColor }: CameraCaptureProps
           <Button
             variant="outline"
             size="lg"
-            onClick={onBack}
+            onClick={handleBackClick}
             className="text-xl px-8 py-6"
           >
             <ArrowLeft className="h-6 w-6 mr-2" />
@@ -118,10 +123,11 @@ const CameraCapture = ({ onPhotoCapture, onBack, textColor }: CameraCaptureProps
             autoPlay
             playsInline
             muted
-            className="w-full h-full object-cover rounded-2xl bg-muted"
+            className="w-full h-full object-cover rounded-2xl"
             style={{ 
               transform: 'scaleX(-1)', // Mirror the video for selfie mode
-              backgroundColor: '#1a1a1a' // Fallback background to see if video loads
+              backgroundColor: '#1a1a1a', // Fallback background
+              display: capturedImage ? 'none' : 'block' // Hide when photo captured
             }}
           />
           
@@ -173,7 +179,7 @@ const CameraCapture = ({ onPhotoCapture, onBack, textColor }: CameraCaptureProps
         <Button
           variant="outline" 
           size="lg"
-          onClick={onBack}
+          onClick={handleBackClick}
           className="text-2xl px-12 py-8 rounded-2xl glass magnetic hover:shadow-3d transition-all duration-500"
         >
           <ArrowLeft className="h-8 w-8 mr-4" />

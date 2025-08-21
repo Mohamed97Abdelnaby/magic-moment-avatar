@@ -38,8 +38,9 @@ export const useEnhancedCameraCapture = (): EnhancedCameraCaptureHook => {
     }
     setIsCounting(false);
     setCountdown(null);
+    setCapturedImage(null);
     
-    // Stop media tracks
+    // Stop all media tracks
     if (streamRef.current) {
       console.log('📺 Stopping media tracks:', streamRef.current.getTracks().length);
       streamRef.current.getTracks().forEach(track => {
@@ -49,9 +50,10 @@ export const useEnhancedCameraCapture = (): EnhancedCameraCaptureHook => {
       streamRef.current = null;
     }
     
-    // Clear video element
+    // Clear video element completely
     if (videoRef.current) {
       console.log('📺 Clearing video element...');
+      videoRef.current.pause();
       videoRef.current.srcObject = null;
       videoRef.current.load();
     }
@@ -63,24 +65,32 @@ export const useEnhancedCameraCapture = (): EnhancedCameraCaptureHook => {
     console.log('🎥 Starting enhanced camera...');
     setIsLoading(true);
     setError(null);
+    setCapturedImage(null);
 
     try {
-      // Simple getUserMedia call like the original JavaScript
+      // Clean up any existing stream first
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach(track => track.stop());
+      }
+
+      // Use minimal constraints for maximum compatibility
       const stream = await navigator.mediaDevices.getUserMedia({ video: true });
       
       if (videoRef.current) {
-        // Direct assignment like the original code
+        // Direct assignment like the original JavaScript
         videoRef.current.srcObject = stream;
         streamRef.current = stream;
         
-        // Explicitly start video playback
+        // Explicitly start video playback for reliable preview
         try {
           await videoRef.current.play();
           console.log("✅ Camera stream started and playing.");
           setIsStreamActive(true);
         } catch (playError) {
-          console.log("⚠️ Video play failed, but stream is set:", playError);
-          setIsStreamActive(true); // Still set active as stream is available
+          console.log("⚠️ Video play failed, trying without await:", playError);
+          // Try play without await for some browsers
+          videoRef.current.play();
+          setIsStreamActive(true);
         }
       }
     } catch (err) {
@@ -100,33 +110,41 @@ export const useEnhancedCameraCapture = (): EnhancedCameraCaptureHook => {
       return null;
     }
 
+    if (video.videoWidth === 0 || video.videoHeight === 0) {
+      console.error('❌ Video not ready - no dimensions');
+      return null;
+    }
+
     const context = canvas.getContext('2d');
     if (!context) {
       console.error('❌ Canvas context not available');
       return null;
     }
 
-    // Set canvas dimensions to match video
+    // Set canvas dimensions to match video exactly
     canvas.width = video.videoWidth;
     canvas.height = video.videoHeight;
 
-    // Draw the current frame
-    context.drawImage(video, 0, 0, canvas.width, canvas.height);
-    
-    // Hide video and show canvas (like original code)
-    canvas.style.display = "block";
-    video.style.display = "none";
+    // Draw the current frame (mirrored like the video)
+    context.scale(-1, 1);
+    context.drawImage(video, -canvas.width, 0, canvas.width, canvas.height);
+    context.setTransform(1, 0, 0, 1, 0, 0); // Reset transform
     
     // Convert to image data
     const imageData = canvas.toDataURL('image/jpeg', 0.9);
     setCapturedImage(imageData);
     
-    console.log('📸 Photo captured successfully');
+    console.log('📸 Photo captured successfully', video.videoWidth + 'x' + video.videoHeight);
     return imageData;
   }, []);
 
   const startTimerAndCapture = useCallback(() => {
-    let seconds = 10;
+    if (!videoRef.current || !isStreamActive) {
+      console.error('❌ Cannot start timer - video not ready');
+      return;
+    }
+
+    let seconds = 3; // 3-second default as requested
     setCountdown(seconds);
     setIsCounting(true);
 
@@ -144,7 +162,7 @@ export const useEnhancedCameraCapture = (): EnhancedCameraCaptureHook => {
         capturePhoto();
       }
     }, 1000);
-  }, [capturePhoto]);
+  }, [capturePhoto, isStreamActive]);
 
   return {
     videoRef,
