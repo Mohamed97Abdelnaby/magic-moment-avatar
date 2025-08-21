@@ -587,6 +587,24 @@ useEffect(() => {
     setGenerationError(null);
   };
 
+  // Helper function to get text color with proper hierarchy
+  const getTextColor = (screenKey: keyof ScreenSettings) => {
+    const screen = screens[screenKey];
+    
+    // Priority 1: Screen-specific text color (highest priority)
+    if (screen?.textColorHsl) {
+      return `hsl(${screen.textColorHsl})`;
+    }
+    
+    // Priority 2: Event primary color (for event mode only)
+    if (!isDemo && eventColors.primary) {
+      return `hsl(${eventColors.primary.h} ${eventColors.primary.s}% ${eventColors.primary.l}%)`;
+    }
+    
+    // Priority 3: System default (use CSS custom properties)
+    return undefined; // Let CSS custom properties handle it
+  };
+
   const renderContent = () => {
     switch (currentStep) {
       case 'styles':
@@ -631,13 +649,14 @@ useEffect(() => {
               
             <div className="animate-fade-in-up">
               <h1
-                className="text-7xl font-bold mb-6 animate-scale-in text-primary"
+                className="text-7xl font-bold mb-6 animate-scale-in"
+                style={{ color: getTextColor('styles') || undefined }}
               >
                 {screens.styles.title || 'Choose your Avatar'}
               </h1>
               <p
-                className="text-3xl mb-16 animate-fade-in-up text-primary/80"
-                style={{ animationDelay: '0.2s' }}
+                className="text-3xl mb-16 animate-fade-in-up"
+                style={{ color: getTextColor('styles') || undefined, animationDelay: '0.2s' }}
               >
                 Select how you want your avatar to look
               </p>
@@ -662,8 +681,8 @@ useEffect(() => {
                         <div className="text-8xl mb-6 animate-float" style={{ animationDelay: `${index * 0.2}s` }}>
                           {style.preview}
                         </div>
-                        <h3 className="text-3xl font-bold mb-2 text-primary">{style.name}</h3>
-                        <p className="text-lg text-primary/60">{style.description}</p>
+                        <h3 className="text-3xl font-bold mb-2" style={{ color: getTextColor('styles') || undefined }}>{style.name}</h3>
+                        <p className="text-lg opacity-70" style={{ color: getTextColor('styles') || undefined }}>{style.description}</p>
                       </div>
                       
                       {selectedStyle === style.id && (
@@ -716,7 +735,7 @@ useEffect(() => {
               <CameraCapture
                 onPhotoCapture={handlePhotoCapture}
                 onBack={() => setCurrentStep('styles')}
-                textColor={screens.camera.textColorHsl ? `hsl(${screens.camera.textColorHsl})` : undefined}
+                textColor={getTextColor('camera')}
               />
             </div>
           </div>
@@ -746,7 +765,7 @@ useEffect(() => {
                 capturedPhoto={capturedPhoto!}
                 onRetake={handleRetakePhoto}
                 onConfirm={handleConfirmPhoto}
-                textColor={screens.camera.textColorHsl ? `hsl(${screens.camera.textColorHsl})` : undefined}
+                textColor={getTextColor('camera')}
               />
             </div>
           </div>
@@ -768,7 +787,7 @@ useEffect(() => {
             
             <div className="relative z-10 space-y-12">
               <div className="space-y-8 animate-fade-in-up">
-                <h1 className="text-5xl font-light mb-8" style={{ color: screens.countdown.textColorHsl ? `hsl(${screens.countdown.textColorHsl})` : undefined }}>
+                <h1 className="text-5xl font-light mb-8" style={{ color: getTextColor('countdown') || undefined }}>
                   {screens.countdown.title || 'Take a moment...'}
                 </h1>
                 
@@ -809,7 +828,7 @@ useEffect(() => {
             
             <div className="relative z-10 space-y-12">
               <div className="space-y-8 animate-watercolor-bloom">
-                <h1 className="text-4xl font-light" style={{ color: screens.loading.textColorHsl ? `hsl(${screens.loading.textColorHsl})` : undefined }}>
+                <h1 className="text-4xl font-light" style={{ color: getTextColor('loading') || undefined }}>
                   {screens.loading.title || 'Crafting your artistic vision...'}
                 </h1>
                 
@@ -856,7 +875,7 @@ useEffect(() => {
             <ParticleField count={25} />
             
             <div className="animate-fade-in-up relative z-10">
-              <h1 className="text-8xl font-bold mb-12 animate-bounce-in" style={{ color: screens.result.textColorHsl ? `hsl(${screens.result.textColorHsl})` : undefined }}>
+              <h1 className="text-8xl font-bold mb-12 animate-bounce-in" style={{ color: getTextColor('result') || undefined }}>
                 {generationError ? 'Oops! Using your original photo 📸' : screens.result.title || 'Your Avatar is Ready! 🎉'}
               </h1>
               {generationError && (
@@ -991,7 +1010,29 @@ useEffect(() => {
   
   // Use direct color values to avoid affecting global app theme
   const getIsolatedBackgroundStyle = () => {
-    // For event mode, use event colors for background
+    // Priority 1: Screen-specific background image (highest priority)
+    if (currentScreen.backgroundImageDataUrl) {
+      return {
+        backgroundColor: undefined,
+        backgroundImage: `url(${currentScreen.backgroundImageDataUrl})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat'
+      };
+    }
+    
+    // Priority 2: Screen-specific background color
+    if (currentScreen.backgroundColor) {
+      return {
+        backgroundColor: currentScreen.backgroundColor,
+        backgroundImage: undefined,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat'
+      };
+    }
+    
+    // Priority 3: Event primary/secondary colors (for event mode only)
     if (!isDemo && eventColors.primary) {
       const primary = eventColors.primary;
       const secondary = eventColors.secondary;
@@ -1013,22 +1054,10 @@ useEffect(() => {
         };
       }
     }
-
-    // Demo mode or fallback - use screen background image if available
-    if (currentScreen.backgroundImageDataUrl) {
-      return {
-        backgroundColor: undefined,
-        backgroundImage: `url(${currentScreen.backgroundImageDataUrl})`,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        backgroundRepeat: 'no-repeat'
-      };
-    }
     
-    // Use the screen's background color if available, otherwise use a neutral default
-    const backgroundColor = currentScreen.backgroundColor || '#1a1a2e'; // Dark neutral default
+    // Priority 4: System default (fallback)
     return {
-      backgroundColor: backgroundColor,
+      backgroundColor: '#1a1a2e', // Dark neutral default
       backgroundImage: undefined,
       backgroundSize: 'cover',
       backgroundPosition: 'center',
