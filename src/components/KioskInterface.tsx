@@ -4,6 +4,7 @@ import { Card } from "@/components/ui/card";
 import { Camera, ArrowLeft, ArrowRight, RotateCcw, Send, Printer, Sparkles, Heart } from "lucide-react";
 import AIRobotDrawing from "./AIRobotDrawing";
 import QuoteDisplay from "./QuoteDisplay";
+import CameraCapture from "./CameraCapture";
 import { loadScreenSettings, getDefaultScreenSettings, type ScreenSettings } from "@/lib/kioskSettings";
 
 interface KioskInterfaceProps {
@@ -88,6 +89,7 @@ const KioskInterface = ({ isDemo = false, demoSettings }: KioskInterfaceProps = 
   const [countdown, setCountdown] = useState(3);
   const [showConfetti, setShowConfetti] = useState(false);
   const [stageAnimationKey, setStageAnimationKey] = useState(0);
+  const [capturedPhoto, setCapturedPhoto] = useState<string | null>(null);
   const [screens, setScreens] = useState<ScreenSettings>(() => {
     if (isDemo && demoSettings) return demoSettings;
     if (isDemo) {
@@ -169,7 +171,8 @@ useEffect(() => {
     setCurrentStep('camera');
   };
 
-  const handleTakePhoto = () => {
+  const handlePhotoCapture = (imageData: string) => {
+    setCapturedPhoto(imageData);
     setCurrentStep('countdown');
     setCountdown(3);
     
@@ -197,6 +200,7 @@ useEffect(() => {
     setCurrentStep('styles');
     setSelectedStyle('');
     setShowConfetti(false);
+    setCapturedPhoto(null);
   };
 
   const renderContent = () => {
@@ -291,7 +295,7 @@ useEffect(() => {
 
       case 'camera':
         return (
-          <div className="text-center relative" key={`camera-${stageAnimationKey}`}>
+          <div className="relative min-h-screen overflow-hidden" key={`camera-${stageAnimationKey}`}>
             {screens.camera.backgroundImageDataUrl && (
               <div
                 className="absolute inset-0"
@@ -308,89 +312,12 @@ useEffect(() => {
 
             <ParticleField count={10} />
             
-            <div className="animate-fade-in-up relative z-10">
-              <h1 className="text-7xl font-bold mb-12 animate-pulse-glow" style={{ color: screens.camera.textColorHsl ? `hsl(${screens.camera.textColorHsl})` : undefined }}>
-                {screens.camera.title || 'Get Ready!'}
-              </h1>
-            </div>
-            
-            <div className="relative max-w-4xl mx-auto mb-16 animate-scale-in">
-              <div className="aspect-video bg-muted rounded-3xl border-4 border-accent flex items-center justify-center shadow-3d glass animate-camera-focus relative overflow-hidden">
-                {/* Camera focus rings */}
-                <div className="absolute inset-4 border-2 border-accent/30 rounded-2xl animate-pulse-soft" />
-                <div className="absolute inset-8 border-2 border-accent/20 rounded-xl animate-pulse-soft" style={{ animationDelay: '0.5s' }} />
-                <div className="absolute inset-12 border-2 border-accent/10 rounded-lg animate-pulse-soft" style={{ animationDelay: '1s' }} />
-                
-                {/* Rule of thirds grid */}
-                <div className="absolute inset-0 grid grid-cols-3 grid-rows-3 opacity-20">
-                  {Array.from({ length: 9 }).map((_, i) => (
-                    <div key={i} className="border border-accent/30" />
-                  ))}
-                </div>
-                
-                <Camera className="h-40 w-40 text-accent animate-pulse-glow relative z-10" />
-                
-                {/* Corner brackets */}
-                <div className="absolute top-4 left-4 w-8 h-8 border-t-4 border-l-4 border-accent animate-pulse-soft" />
-                <div className="absolute top-4 right-4 w-8 h-8 border-t-4 border-r-4 border-accent animate-pulse-soft" />
-                <div className="absolute bottom-4 left-4 w-8 h-8 border-b-4 border-l-4 border-accent animate-pulse-soft" />
-                <div className="absolute bottom-4 right-4 w-8 h-8 border-b-4 border-r-4 border-accent animate-pulse-soft" />
-              </div>
-              
-              <div className="absolute top-6 left-6 bg-red-500 text-white px-6 py-3 rounded-xl font-bold text-xl animate-pulse-soft neon-glow">
-                🔴 LIVE
-              </div>
-            </div>
-            
-            <div className="flex gap-8 justify-center relative z-10">
-              <div className="aspect-video bg-muted rounded-3xl border-4 border-accent flex items-center justify-center shadow-3d glass animate-camera-focus relative overflow-hidden">
-                {/* Camera focus rings */}
-                <div className="absolute inset-4 border-2 border-accent/30 rounded-2xl animate-pulse-soft" />
-                <div className="absolute inset-8 border-2 border-accent/20 rounded-xl animate-pulse-soft" style={{ animationDelay: '0.5s' }} />
-                <div className="absolute inset-12 border-2 border-accent/10 rounded-lg animate-pulse-soft" style={{ animationDelay: '1s' }} />
-                
-                {/* Rule of thirds grid */}
-                <div className="absolute inset-0 grid grid-cols-3 grid-rows-3 opacity-20">
-                  {Array.from({ length: 9 }).map((_, i) => (
-                    <div key={i} className="border border-accent/30" />
-                  ))}
-                </div>
-                
-                <Camera className="h-40 w-40 text-accent animate-pulse-glow relative z-10" />
-                
-                {/* Corner brackets */}
-                <div className="absolute top-4 left-4 w-8 h-8 border-t-4 border-l-4 border-accent animate-pulse-soft" />
-                <div className="absolute top-4 right-4 w-8 h-8 border-t-4 border-r-4 border-accent animate-pulse-soft" />
-                <div className="absolute bottom-4 left-4 w-8 h-8 border-b-4 border-l-4 border-accent animate-pulse-soft" />
-                <div className="absolute bottom-4 right-4 w-8 h-8 border-b-4 border-r-4 border-accent animate-pulse-soft" />
-              </div>
-              
-              <div className="absolute top-6 left-6 bg-red-500 text-white px-6 py-3 rounded-xl font-bold text-xl animate-pulse-soft neon-glow">
-                🔴 LIVE
-              </div>
-            </div>
-            
-            <div className="flex gap-8 justify-center">
-              <Button
-                variant="outline" 
-                size="lg"
-                onClick={() => setCurrentStep('styles')}
-                className="text-2xl px-12 py-8 rounded-2xl glass magnetic hover:shadow-3d transition-all duration-500"
-              >
-                <ArrowLeft className="h-8 w-8 mr-4" />
-                Back
-              </Button>
-              
-              <Button 
-                variant="default" 
-                size="lg"
-                onClick={handleTakePhoto}
-                className="text-3xl px-20 py-10 rounded-2xl shadow-glow hover:shadow-neon transition-all duration-500 transform hover:scale-105 neon-glow"
-              >
-                <Camera className="h-10 w-10 mr-6" />
-                Capture Magic
-                <Sparkles className="h-8 w-8 ml-4 animate-pulse-soft" />
-              </Button>
+            <div className="relative z-10">
+              <CameraCapture
+                onPhotoCapture={handlePhotoCapture}
+                onBack={() => setCurrentStep('styles')}
+                textColor={screens.camera.textColorHsl ? `hsl(${screens.camera.textColorHsl})` : undefined}
+              />
             </div>
           </div>
         );
