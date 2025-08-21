@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Camera, AlertCircle, RotateCcw, ArrowLeft, Sparkles } from "lucide-react";
-import { useCameraCapture } from "@/hooks/useCameraCapture";
+import { useEnhancedCameraCapture } from "@/hooks/useEnhancedCameraCapture";
 
 interface CameraCaptureProps {
   onPhotoCapture: (imageData: string) => void;
@@ -16,27 +16,32 @@ const CameraCapture = ({ onPhotoCapture, onBack, textColor }: CameraCaptureProps
     isLoading,
     error,
     isStreamActive,
+    countdown,
+    isCounting,
+    capturedImage,
     startCamera,
     stopCamera,
     capturePhoto,
-    retryCamera
-  } = useCameraCapture();
+    startTimerAndCapture
+  } = useEnhancedCameraCapture();
 
   useEffect(() => {
-    console.log('🎬 CameraCapture component mounted, starting camera...');
+    console.log('🎬 CameraCapture component mounted, starting enhanced camera...');
     startCamera();
     
-    // Cleanup on unmount - this MUST stop the camera
     return () => {
       console.log('🛑 CameraCapture component unmounting, stopping camera...');
       stopCamera();
     };
-  }, []); // Empty dependency array to prevent re-mounting
+  }, []);
 
   const handleCaptureClick = () => {
-    const imageData = capturePhoto();
-    if (imageData) {
-      onPhotoCapture(imageData);
+    if (capturedImage) {
+      // If we already have a captured image, send it
+      onPhotoCapture(capturedImage);
+    } else {
+      // Start countdown and auto-capture
+      startTimerAndCapture();
     }
   };
 
@@ -69,7 +74,7 @@ const CameraCapture = ({ onPhotoCapture, onBack, textColor }: CameraCaptureProps
           <Button
             variant="default"
             size="lg"
-            onClick={retryCamera}
+            onClick={startCamera}
             disabled={isLoading}
             className="text-xl px-8 py-6"
           >
@@ -118,33 +123,23 @@ const CameraCapture = ({ onPhotoCapture, onBack, textColor }: CameraCaptureProps
               transform: 'scaleX(-1)', // Mirror the video for selfie mode
               backgroundColor: '#1a1a1a' // Fallback background to see if video loads
             }}
-            onLoadStart={() => console.log('🎬 Video onLoadStart')}
-            onLoadedData={() => console.log('🎬 Video onLoadedData')}
-            onLoadedMetadata={(e) => {
-              const video = e.currentTarget;
-              console.log('🎬 Video onLoadedMetadata - dimensions:', video.videoWidth, 'x', video.videoHeight);
-            }}
-            onCanPlay={() => console.log('🎬 Video onCanPlay')}
-            onPlay={() => console.log('🎬 Video onPlay')}
-            onPlaying={() => console.log('🎬 Video onPlaying')}
-            onTimeUpdate={() => {
-              // Only log occasionally to avoid spam
-              if (videoRef.current && Math.floor(videoRef.current.currentTime) % 2 === 0) {
-                console.log('🎬 Video playing, currentTime:', videoRef.current.currentTime.toFixed(2));
-              }
-            }}
-            onError={(e) => {
-              console.error('🎬 Video error:', e);
-              console.error('🎬 Video error details:', e.currentTarget.error);
-            }}
-            onClick={() => {
-              // Fallback for autoplay issues - user can click to start
-              if (videoRef.current?.paused) {
-                console.log('🎬 User clicked - attempting to play video...');
-                videoRef.current.play().catch(console.error);
-              }
-            }}
           />
+          
+          {/* Canvas for photo capture */}
+          <canvas
+            ref={canvasRef}
+            className="absolute inset-0 w-full h-full object-cover rounded-2xl"
+            style={{ display: capturedImage ? 'block' : 'none' }}
+          />
+
+          {/* Countdown overlay */}
+          {isCounting && countdown && (
+            <div className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-2xl">
+              <div className="text-8xl font-bold text-white animate-pulse">
+                {countdown}
+              </div>
+            </div>
+          )}
           
           {/* Camera focus rings overlay */}
           <div className="absolute inset-4 border-2 border-accent/30 rounded-2xl animate-pulse-soft pointer-events-none" />
@@ -189,11 +184,11 @@ const CameraCapture = ({ onPhotoCapture, onBack, textColor }: CameraCaptureProps
           variant="default" 
           size="lg"
           onClick={handleCaptureClick}
-          disabled={!isStreamActive}
+          disabled={!isStreamActive || isCounting}
           className="text-3xl px-20 py-10 rounded-2xl shadow-glow hover:shadow-neon transition-all duration-500 transform hover:scale-105 neon-glow"
         >
           <Camera className="h-10 w-10 mr-6" />
-          Capture Magic
+          {capturedImage ? 'Use Photo' : isCounting ? 'Capturing...' : 'Capture Magic'}
           <Sparkles className="h-8 w-8 ml-4 animate-pulse-soft" />
         </Button>
       </div>
