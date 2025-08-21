@@ -159,7 +159,7 @@ const SetupWizard = () => {
               loadedSettings[setting.screen_key as ScreenKey] = {
                 textColorHex: setting.text_color || '#ffffff',
                 textColorHsl: undefined,
-                backgroundColor: '#1a1a2e',
+                backgroundColor: setting.background_color || '#1a1a2e',
                 backgroundImageDataUrl: setting.background_image || null,
                 overlayOpacity: Number(setting.overlay_opacity) || 0.6,
                 title: setting.title || ''
@@ -366,6 +366,7 @@ const SetupWizard = () => {
       event_id: eventId,
       screen_key: screenKey,
       text_color: setting.textColorHex,
+      background_color: setting.backgroundColor,
       background_image: setting.backgroundImageDataUrl || null,
       overlay_opacity: setting.overlayOpacity,
       title: setting.title || null

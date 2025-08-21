@@ -43,6 +43,7 @@ export type Database = {
       }
       event_screen_settings: {
         Row: {
+          background_color: string | null
           background_image: string | null
           created_at: string
           event_id: string
@@ -54,6 +55,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          background_color?: string | null
           background_image?: string | null
           created_at?: string
           event_id: string
@@ -65,6 +67,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          background_color?: string | null
           background_image?: string | null
           created_at?: string
           event_id?: string
