@@ -244,12 +244,11 @@ const SetupWizard = () => {
   };
 
   const avatarStyles = [
-    { id: "pixar", name: "Pixar Style", description: "3D animated character style" },
-    { id: "cyberpunk", name: "Cyberpunk", description: "Futuristic neon aesthetic" },
-    { id: "cartoon", name: "90s Cartoon", description: "Classic hand-drawn animation" },
-    { id: "sketch", name: "Sketch Art", description: "Pencil drawing style" },
-    { id: "oil", name: "Oil Painting", description: "Classical painted portrait" },
-    { id: "anime", name: "Anime", description: "Japanese animation style" },
+    { id: "farmer", name: "Egyptian Farmer", description: "Traditional Rural Life", preview: "🌾" },
+    { id: "pharaonic", name: "Ancient Pharaoh", description: "Royal Dynasty Style", preview: "👑" },
+    { id: "basha", name: "El Basha Style", description: "Elite Noble Fashion", preview: "🎩" },
+    { id: "beach", name: "Beach Vibes", description: "Summer Mediterranean", preview: "🏖️" },
+    { id: "pixar", name: "Pixar Style", description: "3D Animated Magic", preview: "🎭" },
   ];
 
   const toggleStyle = useCallback((styleId: string) => {
@@ -556,8 +555,13 @@ const SetupWizard = () => {
                   selectedStyles.includes(style.id) ? 'border-accent shadow-medium bg-accent/10' : 'border-border hover:border-muted-foreground'
                 }`}
               >
-                <h4 className="font-semibold mb-1">{style.name}</h4>
-                <p className="text-sm text-muted-foreground">{style.description}</p>
+                <div className="flex items-center space-y-3">
+                  <div className="text-4xl mr-4">{style.preview}</div>
+                  <div>
+                    <h4 className="font-semibold mb-1">{style.name}</h4>
+                    <p className="text-sm text-muted-foreground">{style.description}</p>
+                  </div>
+                </div>
               </button>
             ))}
           </div>
