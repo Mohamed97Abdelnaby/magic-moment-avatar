@@ -436,8 +436,18 @@ useEffect(() => {
                 <div className="absolute inset-0 gradient-glow animate-pulse-glow" />
                 
                 <div className="relative z-10">
-                  <div className="aspect-square bg-muted rounded-3xl flex items-center justify-center mb-8 shadow-3d animate-pulse-glow">
-                    <div className="text-[12rem] animate-float">🎭</div>
+                  <div className="aspect-square bg-muted rounded-3xl overflow-hidden mb-8 shadow-3d animate-pulse-glow">
+                    {capturedPhoto ? (
+                      <img 
+                        src={capturedPhoto} 
+                        alt="Your captured photo" 
+                        className="w-full h-full object-cover animate-float"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center">
+                        <div className="text-[12rem] animate-float">🎭</div>
+                      </div>
+                    )}
                   </div>
                   <p className="text-3xl font-semibold mb-4">
                     {selectedStyle.charAt(0).toUpperCase() + selectedStyle.slice(1)} Style
