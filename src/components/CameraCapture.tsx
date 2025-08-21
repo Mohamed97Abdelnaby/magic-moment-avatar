@@ -23,10 +23,12 @@ const CameraCapture = ({ onPhotoCapture, onBack, textColor }: CameraCaptureProps
   } = useCameraCapture();
 
   useEffect(() => {
+    console.log('🎬 CameraCapture component mounted, starting camera...');
     startCamera();
     
     // Cleanup on unmount
     return () => {
+      console.log('🛑 CameraCapture component unmounting, stopping camera...');
       stopCamera();
     };
   }, [startCamera, stopCamera]);

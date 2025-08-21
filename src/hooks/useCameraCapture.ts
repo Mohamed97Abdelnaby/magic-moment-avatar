@@ -35,14 +35,18 @@ export const useCameraCapture = (): CameraCaptureHook => {
   }, []);
 
   const startCamera = useCallback(async () => {
+    console.log('🎥 Starting camera...');
     setIsLoading(true);
     setError(null);
     
     try {
       // Check if camera is supported
+      console.log('📱 Checking camera support...');
       if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        console.error('❌ Camera API not supported');
         throw new Error('Camera access is not supported in this browser');
       }
+      console.log('✅ Camera API supported');
 
       let stream: MediaStream | null = null;
       
@@ -69,10 +73,12 @@ export const useCameraCapture = (): CameraCaptureHook => {
 
       for (const constraint of constraints) {
         try {
+          console.log('🔍 Trying camera constraint:', constraint);
           stream = await navigator.mediaDevices.getUserMedia(constraint);
+          console.log('✅ Camera stream obtained:', stream.getTracks());
           break;
         } catch (constraintError) {
-          console.warn('Camera constraint failed, trying next:', constraintError);
+          console.warn('❌ Camera constraint failed, trying next:', constraintError);
           continue;
         }
       }
@@ -129,8 +135,10 @@ export const useCameraCapture = (): CameraCaptureHook => {
         
         // Final validation before marking as active
         if (videoRef.current && videoRef.current.videoWidth > 0 && videoRef.current.videoHeight > 0) {
+          console.log('✅ Camera ready! Dimensions:', videoRef.current.videoWidth, 'x', videoRef.current.videoHeight);
           setIsStreamActive(true);
         } else {
+          console.error('❌ Video validation failed. Dimensions:', videoRef.current?.videoWidth, 'x', videoRef.current?.videoHeight);
           throw new Error('Video stream initialization failed - no valid video dimensions');
         }
       }
