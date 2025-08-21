@@ -69,7 +69,9 @@ serve(async (req) => {
     console.log('Sending request to UltraMsg API...');
     // Send image via UltraMsg API with token in URL (as required by UltraMsg)
     const apiUrl = `https://api.ultramsg.com/${instanceId}/messages/image?token=${encodeURIComponent(token)}`;
-    console.log('API URL:', apiUrl.replace(token, '***TOKEN***'));
+    console.log('API URL constructed:', apiUrl.replace(token, '***TOKEN***'));
+    console.log('Token length:', token?.length || 0);
+    console.log('Instance ID:', instanceId);
 
     // Try URL-encoded format first (common for UltraMsg)
     const params = new URLSearchParams();
@@ -79,6 +81,8 @@ serve(async (req) => {
       params.append('caption', message);
       console.log('Message caption added');
     }
+    
+    console.log('Request payload preview:', params.toString().slice(0, 200) + '...');
     
     const response = await fetch(apiUrl, {
       method: 'POST',
