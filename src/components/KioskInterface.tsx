@@ -108,6 +108,7 @@ const KioskInterface = ({ isDemo = false, demoSettings, eventId }: KioskInterfac
     instanceId: 'instance136415'
   });
   const [isSendingWhatsApp, setIsSendingWhatsApp] = useState(false);
+  const [eventSelectedStyles, setEventSelectedStyles] = useState<string[]>([]);
   const [screens, setScreens] = useState<ScreenSettings>(() => {
     if (isDemo && demoSettings) return demoSettings;
     if (isDemo) {
@@ -161,7 +162,7 @@ const KioskInterface = ({ isDemo = false, demoSettings, eventId }: KioskInterfac
     "In the dance of pixels and imagination, magic happens..."
   ];
 
-  const avatarStyles = [
+  const allAvatarStyles = [
     { id: "farmer", name: "Egyptian Farmer", preview: "🌾", description: "Traditional Rural Life" },
     { id: "pharaonic", name: "Ancient Pharaoh", preview: "👑", description: "Royal Dynasty Style" },
     { id: "basha", name: "El Basha Style", preview: "🎩", description: "Elite Noble Fashion" },
@@ -169,9 +170,41 @@ const KioskInterface = ({ isDemo = false, demoSettings, eventId }: KioskInterfac
     { id: "pixar", name: "Pixar Style", preview: "🎭", description: "3D Animated Magic" },
   ];
 
+  // Filter avatar styles based on event selection or show all in demo mode
+  const avatarStyles = isDemo ? allAvatarStyles : 
+    eventSelectedStyles.length > 0 ? 
+      allAvatarStyles.filter(style => eventSelectedStyles.includes(style.id)) : 
+      allAvatarStyles;
+
 useEffect(() => {
   setStageAnimationKey(prev => prev + 1);
 }, [currentStep]);
+
+// Load event data and selected avatar styles
+useEffect(() => {
+  if (!isDemo && eventId) {
+    const loadEventData = async () => {
+      try {
+        const { data: eventData, error } = await supabase
+          .from('events')
+          .select('avatar_styles')
+          .eq('id', eventId)
+          .single();
+
+        if (!error && eventData?.avatar_styles) {
+          // Filter out legacy styles that don't have prompts
+          const validStyles = eventData.avatar_styles.filter((style: string) => 
+            ['farmer', 'pharaonic', 'basha', 'beach', 'pixar'].includes(style)
+          );
+          setEventSelectedStyles(validStyles);
+        }
+      } catch (error) {
+        console.error('Error loading event data:', error);
+      }
+    };
+    loadEventData();
+  }
+}, [isDemo, eventId]);
 
 // Load per-screen settings (only if not in demo mode)
 useEffect(() => {
