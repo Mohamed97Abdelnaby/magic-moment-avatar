@@ -88,48 +88,87 @@ export const useCameraCapture = (): CameraCaptureHook => {
       }
 
       if (videoRef.current) {
-        videoRef.current.srcObject = stream;
+        const video = videoRef.current;
+        console.log('📺 Assigning stream to video element...');
+        
+        // Add video event listeners for debugging
+        video.addEventListener('loadstart', () => console.log('📺 Video loadstart'));
+        video.addEventListener('loadeddata', () => console.log('📺 Video loadeddata'));
+        video.addEventListener('loadedmetadata', () => console.log('📺 Video loadedmetadata, dimensions:', video.videoWidth, 'x', video.videoHeight));
+        video.addEventListener('canplay', () => console.log('📺 Video canplay, readyState:', video.readyState));
+        video.addEventListener('play', () => console.log('📺 Video started playing'));
+        video.addEventListener('pause', () => console.log('📺 Video paused'));
+        video.addEventListener('error', (e) => console.error('📺 Video error:', e));
+        
+        video.srcObject = stream;
         streamRef.current = stream;
         
-        // Enhanced video readiness validation
+        // Enhanced video readiness validation with better play handling
         await new Promise<void>((resolve, reject) => {
           const timeout = setTimeout(() => {
+            console.error('⏰ Camera initialization timeout');
             reject(new Error('Camera initialization timeout'));
-          }, 10000); // 10 second timeout
+          }, 15000); // Increased timeout to 15 seconds
 
-          if (videoRef.current) {
-            const handleCanPlay = () => {
-              if (videoRef.current) {
-                // Ensure video has valid dimensions
-                if (videoRef.current.videoWidth > 0 && videoRef.current.videoHeight > 0) {
-                  videoRef.current.play().then(() => {
-                    clearTimeout(timeout);
-                    resolve();
-                  }).catch(reject);
-                } else {
-                  // Wait a bit more for dimensions
-                  setTimeout(() => {
-                    if (videoRef.current && videoRef.current.videoWidth > 0 && videoRef.current.videoHeight > 0) {
-                      videoRef.current.play().then(() => {
-                        clearTimeout(timeout);
-                        resolve();
-                      }).catch(reject);
-                    } else {
-                      clearTimeout(timeout);
-                      reject(new Error('Video stream has no valid dimensions'));
-                    }
-                  }, 500);
-                }
-              }
-            };
-
-            videoRef.current.oncanplay = handleCanPlay;
-            videoRef.current.onloadedmetadata = handleCanPlay; // Fallback
+          const attemptPlay = async () => {
+            if (!video) return;
             
-            // Trigger loading if already ready
-            if (videoRef.current.readyState >= 3) { // HAVE_FUTURE_DATA
-              handleCanPlay();
+            console.log('🎬 Attempting to play video...');
+            console.log('📺 Video state - readyState:', video.readyState, 'dimensions:', video.videoWidth, 'x', video.videoHeight);
+            
+            try {
+              // Ensure we have valid video dimensions
+              if (video.videoWidth === 0 || video.videoHeight === 0) {
+                console.log('⏳ Waiting for video dimensions...');
+                return false;
+              }
+              
+              // Try to play the video
+              const playPromise = video.play();
+              if (playPromise !== undefined) {
+                await playPromise;
+                console.log('✅ Video play() succeeded');
+              }
+              
+              // Double-check the video is actually playing
+              if (!video.paused && video.currentTime > 0) {
+                console.log('✅ Video confirmed playing, currentTime:', video.currentTime);
+                clearTimeout(timeout);
+                resolve();
+                return true;
+              } else {
+                console.log('⚠️ Video play() succeeded but not actually playing yet...');
+                return false;
+              }
+            } catch (playError) {
+              console.error('❌ Video play() failed:', playError);
+              
+              // Try to handle autoplay policy issues
+              if (playError.name === 'NotAllowedError') {
+                console.log('🔄 Autoplay blocked, will try user interaction fallback');
+                // We'll handle this in the component with a click handler
+                clearTimeout(timeout);
+                resolve(); // Resolve anyway, user can click to start
+                return true;
+              }
+              throw playError;
             }
+          };
+
+          const handleVideoReady = async () => {
+            const success = await attemptPlay();
+            if (!success) {
+              // Retry after a short delay
+              setTimeout(handleVideoReady, 200);
+            }
+          };
+
+          video.addEventListener('loadedmetadata', handleVideoReady);
+          video.addEventListener('canplay', handleVideoReady);
+          
+          // Also try immediately if already ready
+          if (video.readyState >= 1) { // HAVE_METADATA
+            setTimeout(handleVideoReady, 100);
           }
         });
         

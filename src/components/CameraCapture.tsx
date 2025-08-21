@@ -113,8 +113,37 @@ const CameraCapture = ({ onPhotoCapture, onBack, textColor }: CameraCaptureProps
             autoPlay
             playsInline
             muted
-            className="w-full h-full object-cover rounded-2xl"
-            style={{ transform: 'scaleX(-1)' }} // Mirror the video for selfie mode
+            className="w-full h-full object-cover rounded-2xl bg-muted"
+            style={{ 
+              transform: 'scaleX(-1)', // Mirror the video for selfie mode
+              backgroundColor: '#1a1a1a' // Fallback background to see if video loads
+            }}
+            onLoadStart={() => console.log('🎬 Video onLoadStart')}
+            onLoadedData={() => console.log('🎬 Video onLoadedData')}
+            onLoadedMetadata={(e) => {
+              const video = e.currentTarget;
+              console.log('🎬 Video onLoadedMetadata - dimensions:', video.videoWidth, 'x', video.videoHeight);
+            }}
+            onCanPlay={() => console.log('🎬 Video onCanPlay')}
+            onPlay={() => console.log('🎬 Video onPlay')}
+            onPlaying={() => console.log('🎬 Video onPlaying')}
+            onTimeUpdate={() => {
+              // Only log occasionally to avoid spam
+              if (videoRef.current && Math.floor(videoRef.current.currentTime) % 2 === 0) {
+                console.log('🎬 Video playing, currentTime:', videoRef.current.currentTime.toFixed(2));
+              }
+            }}
+            onError={(e) => {
+              console.error('🎬 Video error:', e);
+              console.error('🎬 Video error details:', e.currentTarget.error);
+            }}
+            onClick={() => {
+              // Fallback for autoplay issues - user can click to start
+              if (videoRef.current?.paused) {
+                console.log('🎬 User clicked - attempting to play video...');
+                videoRef.current.play().catch(console.error);
+              }
+            }}
           />
           
           {/* Camera focus rings overlay */}
