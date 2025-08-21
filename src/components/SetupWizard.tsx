@@ -19,7 +19,6 @@ import { getDefaultScreenSettings, loadScreenSettings, saveScreenSettings, type 
 import { getStepValidation, type StepValidation } from "@/lib/validation";
 
 const calmBlue: HSLColor = { h: 217, s: 90, l: 61 };
-const whiteBackground: HSLColor = { h: 0, s: 0, l: 100 };
 
 const stepLabels = [
   "Welcome",
@@ -426,10 +425,10 @@ const SetupWizard = () => {
     </StepContainer>
   ), [handleEventNameChange, handleEventLocationChange]);
 
-  const ThemeColors = useMemo(() => (
+  const ThemeColors = () => (
     <StepContainer>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <ColorPicker value={primaryColor} onChange={setPrimaryColor} label="Primary Color" showAccessibilityCheck contrastBackground={whiteBackground} />
+        <ColorPicker value={primaryColor} onChange={setPrimaryColor} label="Primary Color" showAccessibilityCheck contrastBackground={{ h: 0, s: 0, l: 100 }} />
 
         <div className="space-y-4">
           <Card className="bg-card/80 backdrop-blur border-border">
@@ -442,7 +441,7 @@ const SetupWizard = () => {
                 <Label htmlFor="useSecondary">Use secondary color for gradients</Label>
               </div>
               {secondaryColor && (
-                <ColorPicker value={secondaryColor} onChange={setSecondaryColor} label="" showAccessibilityCheck contrastBackground={whiteBackground} />
+                <ColorPicker value={secondaryColor} onChange={setSecondaryColor} label="" showAccessibilityCheck contrastBackground={primaryColor} />
               )}
             </CardContent>
           </Card>
@@ -463,7 +462,7 @@ const SetupWizard = () => {
         </div>
       </div>
     </StepContainer>
-  ), [primaryColor, secondaryColor, backgroundStyle]);
+  );
 
   // Individual Screen Steps - Memoized for performance
   const StylesScreen = useMemo(() => (
@@ -598,7 +597,7 @@ const SetupWizard = () => {
     switch (step) {
       case 0: return <Welcome />;
       case 1: return EventDetails;
-      case 2: return ThemeColors;
+      case 2: return <ThemeColors />;
       case 3: return StylesScreen;
       case 4: return CameraScreen;
       case 5: return CountdownScreen;
