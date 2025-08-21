@@ -111,12 +111,6 @@ const KioskInterface = ({ isDemo = false, demoSettings, eventId }: KioskInterfac
   });
   const [isSendingWhatsApp, setIsSendingWhatsApp] = useState(false);
   const [eventSelectedStyles, setEventSelectedStyles] = useState<string[]>([]);
-  const [originalScreens, setOriginalScreens] = useState<ScreenSettings>(getDefaultScreenSettings());
-  const [temporaryTheme, setTemporaryTheme] = useState<{
-    textColorHsl?: string;
-    backgroundColor?: string;
-    overlayOpacity?: number;
-  } | null>(null);
   const [screens, setScreens] = useState<ScreenSettings>(() => {
     if (isDemo && demoSettings) return demoSettings;
     if (isDemo) {
@@ -235,22 +229,6 @@ const KioskInterface = ({ isDemo = false, demoSettings, eventId }: KioskInterfac
       allAvatarStyles.filter(style => eventSelectedStyles.includes(style.id)) : 
       allAvatarStyles;
 
-  // Function to merge original screens with temporary theme overlay
-  const getEffectiveScreens = (): ScreenSettings => {
-    if (!temporaryTheme) return screens;
-    
-    const effectiveScreens = { ...screens };
-    Object.keys(effectiveScreens).forEach(screenKey => {
-      effectiveScreens[screenKey as keyof ScreenSettings] = {
-        ...effectiveScreens[screenKey as keyof ScreenSettings],
-        ...(temporaryTheme.textColorHsl && { textColorHsl: temporaryTheme.textColorHsl }),
-        ...(temporaryTheme.backgroundColor && { backgroundColor: temporaryTheme.backgroundColor }),
-        ...(temporaryTheme.overlayOpacity !== undefined && { overlayOpacity: temporaryTheme.overlayOpacity }),
-      };
-    });
-    
-    return effectiveScreens;
-  };
 
 useEffect(() => {
   setStageAnimationKey(prev => prev + 1);
@@ -308,19 +286,16 @@ useEffect(() => {
               }
             });
             setScreens(loadedSettings);
-            setOriginalScreens(loadedSettings); // Preserve original
           } else {
             // Fallback to localStorage if no database settings found
             const localSettings = loadScreenSettings();
             setScreens(localSettings);
-            setOriginalScreens(localSettings); // Preserve original
           }
         } catch (error) {
           console.error('Error loading event settings:', error);
           // Fallback to localStorage on error
           const localSettings = loadScreenSettings();
           setScreens(localSettings);
-          setOriginalScreens(localSettings); // Preserve original
         }
       };
       
@@ -329,29 +304,12 @@ useEffect(() => {
       // Load from localStorage if no eventId
       const localSettings = loadScreenSettings();
       setScreens(localSettings);
-      setOriginalScreens(localSettings); // Preserve original
     }
-  } else {
-    // For demo mode, preserve the demo settings as original
-    setOriginalScreens(screens);
   }
 }, [isDemo, eventId]);
 
   const handleStyleSelect = (styleId: string) => {
     setSelectedStyle(styleId);
-    
-    // Apply the theme colors as temporary overlay (don't modify original screens)
-    const selectedStyleData = allAvatarStyles.find(style => style.id === styleId);
-    if (selectedStyleData?.theme) {
-      setTemporaryTheme({
-        textColorHsl: selectedStyleData.theme.textColorHsl,
-        backgroundColor: selectedStyleData.theme.backgroundColor,
-        overlayOpacity: selectedStyleData.theme.overlayOpacity,
-      });
-    } else {
-      // Clear temporary theme if no theme data
-      setTemporaryTheme(null);
-    }
   };
 
   const handleStartCamera = () => {
@@ -547,31 +505,27 @@ useEffect(() => {
     setCapturedPhoto(null);
     setGeneratedAvatar(null);
     setGenerationError(null);
-    // Reset temporary theme to restore original colors
-    setTemporaryTheme(null);
   };
 
   const renderContent = () => {
-    const effectiveScreens = getEffectiveScreens(); // Get merged settings with temporary theme
-    
     switch (currentStep) {
       case 'styles':
         return (
           <div className="relative min-h-screen overflow-hidden" key={`styles-${stageAnimationKey}`}>
-            {effectiveScreens.styles.backgroundImageDataUrl && (
+            {screens.styles.backgroundImageDataUrl && (
               <div
                 className="absolute inset-0"
                 style={{
-                  backgroundImage: `url(${effectiveScreens.styles.backgroundImageDataUrl})`,
+                  backgroundImage: `url(${screens.styles.backgroundImageDataUrl})`,
                   backgroundSize: 'cover',
                   backgroundPosition: 'center',
                 }}
               />
             )}
-            {typeof effectiveScreens.styles.overlayOpacity === 'number' && effectiveScreens.styles.backgroundImageDataUrl && (
+            {typeof screens.styles.overlayOpacity === 'number' && screens.styles.backgroundImageDataUrl && (
               <div
                 className="absolute inset-0"
-                style={{ background: `hsla(0 0% 0% / ${effectiveScreens.styles.overlayOpacity})` }}
+                style={{ background: `hsla(0 0% 0% / ${screens.styles.overlayOpacity})` }}
               />
             )}
 
@@ -584,8 +538,8 @@ useEffect(() => {
                   size="lg"
                   className="flex items-center gap-2 text-lg px-6 py-3 rounded-xl backdrop-blur-sm bg-background/80 hover:bg-background/90 border-2 transition-all duration-300"
                   style={{ 
-                    color: effectiveScreens.styles.textColorHsl ? `hsl(${effectiveScreens.styles.textColorHsl})` : undefined,
-                    borderColor: effectiveScreens.styles.textColorHsl ? `hsl(${effectiveScreens.styles.textColorHsl} / 0.3)` : undefined 
+                    color: screens.styles.textColorHsl ? `hsl(${screens.styles.textColorHsl})` : undefined,
+                    borderColor: screens.styles.textColorHsl ? `hsl(${screens.styles.textColorHsl} / 0.3)` : undefined 
                   }}
                 >
                   <Home className="h-5 w-5" />
@@ -598,13 +552,13 @@ useEffect(() => {
             <div className="animate-fade-in-up">
               <h1
                 className="text-7xl font-bold mb-6 animate-scale-in"
-                style={{ color: effectiveScreens.styles.textColorHsl ? `hsl(${effectiveScreens.styles.textColorHsl})` : undefined }}
+                style={{ color: screens.styles.textColorHsl ? `hsl(${screens.styles.textColorHsl})` : undefined }}
               >
-                {effectiveScreens.styles.title || 'Choose your Avatar'}
+                {screens.styles.title || 'Choose your Avatar'}
               </h1>
               <p
                 className="text-3xl mb-16 animate-fade-in-up"
-                style={{ color: effectiveScreens.styles.textColorHsl ? `hsl(${effectiveScreens.styles.textColorHsl})` : undefined, animationDelay: '0.2s' }}
+                style={{ color: screens.styles.textColorHsl ? `hsl(${screens.styles.textColorHsl})` : undefined, animationDelay: '0.2s' }}
               >
                 Select how you want your avatar to look
               </p>
@@ -663,18 +617,18 @@ useEffect(() => {
       case 'camera':
         return (
           <div className="relative min-h-screen overflow-hidden" key={`camera-${stageAnimationKey}`}>
-            {effectiveScreens.camera.backgroundImageDataUrl && (
+            {screens.camera.backgroundImageDataUrl && (
               <div
                 className="absolute inset-0"
                 style={{
-                  backgroundImage: `url(${effectiveScreens.camera.backgroundImageDataUrl})`,
+                  backgroundImage: `url(${screens.camera.backgroundImageDataUrl})`,
                   backgroundSize: 'cover',
                   backgroundPosition: 'center',
                 }}
               />
             )}
-            {typeof effectiveScreens.camera.overlayOpacity === 'number' && effectiveScreens.camera.backgroundImageDataUrl && (
-              <div className="absolute inset-0" style={{ background: `hsla(0 0% 0% / ${effectiveScreens.camera.overlayOpacity})` }} />
+            {typeof screens.camera.overlayOpacity === 'number' && screens.camera.backgroundImageDataUrl && (
+              <div className="absolute inset-0" style={{ background: `hsla(0 0% 0% / ${screens.camera.overlayOpacity})` }} />
             )}
 
             <ParticleField count={10} />
@@ -683,7 +637,7 @@ useEffect(() => {
               <CameraCapture
                 onPhotoCapture={handlePhotoCapture}
                 onBack={() => setCurrentStep('styles')}
-                textColor={effectiveScreens.camera.textColorHsl ? `hsl(${effectiveScreens.camera.textColorHsl})` : undefined}
+                textColor={screens.camera.textColorHsl ? `hsl(${screens.camera.textColorHsl})` : undefined}
               />
             </div>
           </div>
@@ -692,18 +646,18 @@ useEffect(() => {
       case 'photo-preview':
         return (
           <div className="relative min-h-screen overflow-hidden" key={`photo-preview-${stageAnimationKey}`}>
-            {effectiveScreens.camera.backgroundImageDataUrl && (
+            {screens.camera.backgroundImageDataUrl && (
               <div
                 className="absolute inset-0"
                 style={{
-                  backgroundImage: `url(${effectiveScreens.camera.backgroundImageDataUrl})`,
+                  backgroundImage: `url(${screens.camera.backgroundImageDataUrl})`,
                   backgroundSize: 'cover',
                   backgroundPosition: 'center',
                 }}
               />
             )}
-            {typeof effectiveScreens.camera.overlayOpacity === 'number' && effectiveScreens.camera.backgroundImageDataUrl && (
-              <div className="absolute inset-0" style={{ background: `hsla(0 0% 0% / ${effectiveScreens.camera.overlayOpacity})` }} />
+            {typeof screens.camera.overlayOpacity === 'number' && screens.camera.backgroundImageDataUrl && (
+              <div className="absolute inset-0" style={{ background: `hsla(0 0% 0% / ${screens.camera.overlayOpacity})` }} />
             )}
 
             <ParticleField count={10} />
@@ -713,7 +667,7 @@ useEffect(() => {
                 capturedPhoto={capturedPhoto!}
                 onRetake={handleRetakePhoto}
                 onConfirm={handleConfirmPhoto}
-                textColor={effectiveScreens.camera.textColorHsl ? `hsl(${effectiveScreens.camera.textColorHsl})` : undefined}
+                textColor={screens.camera.textColorHsl ? `hsl(${screens.camera.textColorHsl})` : undefined}
               />
             </div>
           </div>
@@ -722,11 +676,11 @@ useEffect(() => {
       case 'countdown':
         return (
           <div className="text-center relative min-h-screen flex items-center justify-center" key={`countdown-${stageAnimationKey}`}>
-            {effectiveScreens.countdown.backgroundImageDataUrl && (
-              <div className="absolute inset-0" style={{ backgroundImage: `url(${effectiveScreens.countdown.backgroundImageDataUrl})`, backgroundSize: 'cover', backgroundPosition: 'center' }} />
+            {screens.countdown.backgroundImageDataUrl && (
+              <div className="absolute inset-0" style={{ backgroundImage: `url(${screens.countdown.backgroundImageDataUrl})`, backgroundSize: 'cover', backgroundPosition: 'center' }} />
             )}
-            {typeof effectiveScreens.countdown.overlayOpacity === 'number' && effectiveScreens.countdown.backgroundImageDataUrl && (
-              <div className="absolute inset-0" style={{ background: `hsla(0 0% 0% / ${effectiveScreens.countdown.overlayOpacity})` }} />
+            {typeof screens.countdown.overlayOpacity === 'number' && screens.countdown.backgroundImageDataUrl && (
+              <div className="absolute inset-0" style={{ background: `hsla(0 0% 0% / ${screens.countdown.overlayOpacity})` }} />
             )}
             <ParticleField count={8} />
             
@@ -735,8 +689,8 @@ useEffect(() => {
             
             <div className="relative z-10 space-y-12">
               <div className="space-y-8 animate-fade-in-up">
-                <h1 className="text-5xl font-light mb-8" style={{ color: effectiveScreens.countdown.textColorHsl ? `hsl(${effectiveScreens.countdown.textColorHsl})` : undefined }}>
-                  {effectiveScreens.countdown.title || 'Take a moment...'}
+                <h1 className="text-5xl font-light mb-8" style={{ color: screens.countdown.textColorHsl ? `hsl(${screens.countdown.textColorHsl})` : undefined }}>
+                  {screens.countdown.title || 'Take a moment...'}
                 </h1>
                 
                 <QuoteDisplay 
@@ -763,11 +717,11 @@ useEffect(() => {
       case 'loading':
         return (
           <div className="text-center relative min-h-screen flex items-center justify-center" key={`loading-${stageAnimationKey}`}>
-            {effectiveScreens.loading.backgroundImageDataUrl && (
-              <div className="absolute inset-0" style={{ backgroundImage: `url(${effectiveScreens.loading.backgroundImageDataUrl})`, backgroundSize: 'cover', backgroundPosition: 'center' }} />
+            {screens.loading.backgroundImageDataUrl && (
+              <div className="absolute inset-0" style={{ backgroundImage: `url(${screens.loading.backgroundImageDataUrl})`, backgroundSize: 'cover', backgroundPosition: 'center' }} />
             )}
-            {typeof effectiveScreens.loading.overlayOpacity === 'number' && effectiveScreens.loading.backgroundImageDataUrl && (
-              <div className="absolute inset-0" style={{ background: `hsla(0 0% 0% / ${effectiveScreens.loading.overlayOpacity})` }} />
+            {typeof screens.loading.overlayOpacity === 'number' && screens.loading.backgroundImageDataUrl && (
+              <div className="absolute inset-0" style={{ background: `hsla(0 0% 0% / ${screens.loading.overlayOpacity})` }} />
             )}
             <ParticleField count={6} />
             
@@ -776,8 +730,8 @@ useEffect(() => {
             
             <div className="relative z-10 space-y-12">
               <div className="space-y-8 animate-watercolor-bloom">
-                <h1 className="text-4xl font-light" style={{ color: effectiveScreens.loading.textColorHsl ? `hsl(${effectiveScreens.loading.textColorHsl})` : undefined }}>
-                  {effectiveScreens.loading.title || 'Crafting your artistic vision...'}
+                <h1 className="text-4xl font-light" style={{ color: screens.loading.textColorHsl ? `hsl(${screens.loading.textColorHsl})` : undefined }}>
+                  {screens.loading.title || 'Crafting your artistic vision...'}
                 </h1>
                 
                 <QuoteDisplay 
@@ -814,17 +768,17 @@ useEffect(() => {
         return (
           <div className="text-center relative" key={`result-${stageAnimationKey}`}>
             {showConfetti && <ConfettiExplosion />}
-            {effectiveScreens.result.backgroundImageDataUrl && (
-              <div className="absolute inset-0" style={{ backgroundImage: `url(${effectiveScreens.result.backgroundImageDataUrl})`, backgroundSize: 'cover', backgroundPosition: 'center' }} />
+            {screens.result.backgroundImageDataUrl && (
+              <div className="absolute inset-0" style={{ backgroundImage: `url(${screens.result.backgroundImageDataUrl})`, backgroundSize: 'cover', backgroundPosition: 'center' }} />
             )}
-            {typeof effectiveScreens.result.overlayOpacity === 'number' && effectiveScreens.result.backgroundImageDataUrl && (
-              <div className="absolute inset-0" style={{ background: `hsla(0 0% 0% / ${effectiveScreens.result.overlayOpacity})` }} />
+            {typeof screens.result.overlayOpacity === 'number' && screens.result.backgroundImageDataUrl && (
+              <div className="absolute inset-0" style={{ background: `hsla(0 0% 0% / ${screens.result.overlayOpacity})` }} />
             )}
             <ParticleField count={25} />
             
             <div className="animate-fade-in-up relative z-10">
-              <h1 className="text-8xl font-bold mb-12 animate-bounce-in" style={{ color: effectiveScreens.result.textColorHsl ? `hsl(${effectiveScreens.result.textColorHsl})` : undefined }}>
-                {generationError ? 'Oops! Using your original photo 📸' : effectiveScreens.result.title || 'Your Avatar is Ready! 🎉'}
+              <h1 className="text-8xl font-bold mb-12 animate-bounce-in" style={{ color: screens.result.textColorHsl ? `hsl(${screens.result.textColorHsl})` : undefined }}>
+                {generationError ? 'Oops! Using your original photo 📸' : screens.result.title || 'Your Avatar is Ready! 🎉'}
               </h1>
               {generationError && (
                 <p className="text-xl mb-8 text-yellow-300">
