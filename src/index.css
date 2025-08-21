@@ -244,47 +244,50 @@ All colors MUST be HSL.
   --border: var(--kiosk-border, var(--border));
   --ring: var(--kiosk-ring, var(--kiosk-primary));
   --input: var(--kiosk-input, var(--input));
-  
-  /* Apply theme colors to all child elements */
-  .bg-primary { background-color: hsl(var(--kiosk-primary)); }
-  .text-primary { color: hsl(var(--kiosk-primary)); }
-  .border-primary { border-color: hsl(var(--kiosk-primary)); }
-  .hover\\:bg-primary:hover { background-color: hsl(var(--kiosk-primary)); }
-  .hover\\:text-primary:hover { color: hsl(var(--kiosk-primary)); }
-  
-  .bg-secondary { background-color: hsl(var(--kiosk-secondary, var(--kiosk-primary))); }
-  .text-secondary { color: hsl(var(--kiosk-secondary, var(--kiosk-primary))); }
-  .bg-secondary\\/80 { background-color: hsl(var(--kiosk-secondary, var(--kiosk-primary)) / 0.8); }
-  
-  .bg-accent { background-color: hsl(var(--kiosk-accent)); }
-  .text-accent { color: hsl(var(--kiosk-accent)); }
-  .border-accent { border-color: hsl(var(--kiosk-accent)); }
-  .hover\\:bg-accent:hover { background-color: hsl(var(--kiosk-accent)); }
-  
-  .bg-muted { background-color: hsl(var(--kiosk-muted)); }
-  .text-muted { color: hsl(var(--kiosk-muted)); }
-  .text-muted-foreground { color: hsl(var(--kiosk-muted-foreground)); }
-  .bg-muted\\/50 { background-color: hsl(var(--kiosk-muted) / 0.5); }
-  .bg-muted\\/80 { background-color: hsl(var(--kiosk-muted) / 0.8); }
-  
-  .bg-background { background-color: hsl(var(--kiosk-background, var(--background))); }
-  .text-foreground { color: hsl(var(--kiosk-foreground, var(--foreground))); }
-  .border-border { border-color: hsl(var(--kiosk-border, var(--border))); }
-  
-  /* Opacity variants */
-  .bg-primary\\/90 { background-color: hsl(var(--kiosk-primary) / 0.9); }
-  .bg-primary\\/80 { background-color: hsl(var(--kiosk-primary) / 0.8); }
-  .bg-primary\\/60 { background-color: hsl(var(--kiosk-primary) / 0.6); }
-  .bg-primary\\/20 { background-color: hsl(var(--kiosk-primary) / 0.2); }
-  .bg-primary\\/10 { background-color: hsl(var(--kiosk-primary) / 0.1); }
-  
-  .text-primary\\/90 { color: hsl(var(--kiosk-primary) / 0.9); }
-  .text-primary\\/80 { color: hsl(var(--kiosk-primary) / 0.8); }
-  .text-primary\\/60 { color: hsl(var(--kiosk-primary) / 0.6); }
-  
-  /* Hover states */
-  .hover\\:bg-primary\\/90:hover { background-color: hsl(var(--kiosk-primary) / 0.9); }
-  .hover\\:bg-primary\\/80:hover { background-color: hsl(var(--kiosk-primary) / 0.8); }
+}
+
+/* Apply kiosk theme to child elements using proper selectors */
+.kiosk-isolated .bg-primary { 
+  background-color: hsl(var(--kiosk-primary)) !important; 
+}
+.kiosk-isolated .text-primary { 
+  color: hsl(var(--kiosk-primary)) !important; 
+}
+.kiosk-isolated .border-primary { 
+  border-color: hsl(var(--kiosk-primary)) !important; 
+}
+.kiosk-isolated .bg-secondary { 
+  background-color: hsl(var(--kiosk-secondary, var(--kiosk-primary))) !important; 
+}
+.kiosk-isolated .text-secondary { 
+  color: hsl(var(--kiosk-secondary, var(--kiosk-primary))) !important; 
+}
+.kiosk-isolated .bg-accent { 
+  background-color: hsl(var(--kiosk-accent)) !important; 
+}
+.kiosk-isolated .text-accent { 
+  color: hsl(var(--kiosk-accent)) !important; 
+}
+.kiosk-isolated .border-accent { 
+  border-color: hsl(var(--kiosk-accent)) !important; 
+}
+.kiosk-isolated .bg-muted { 
+  background-color: hsl(var(--kiosk-muted)) !important; 
+}
+.kiosk-isolated .text-muted { 
+  color: hsl(var(--kiosk-muted)) !important; 
+}
+.kiosk-isolated .text-muted-foreground { 
+  color: hsl(var(--kiosk-muted-foreground)) !important; 
+}
+.kiosk-isolated .bg-background { 
+  background-color: hsl(var(--kiosk-background, var(--background))) !important; 
+}
+.kiosk-isolated .text-foreground { 
+  color: hsl(var(--kiosk-foreground, var(--foreground))) !important; 
+}
+.kiosk-isolated .border-border { 
+  border-color: hsl(var(--kiosk-border, var(--border))) !important; 
 }
 
 /* Advanced Keyframe Animations */
