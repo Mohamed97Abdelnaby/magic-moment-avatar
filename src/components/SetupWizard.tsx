@@ -620,11 +620,23 @@ const SetupWizard = () => {
     );
   }
 
+  const handleStepClick = (targetStep: number) => {
+    if (targetStep === step) return; // Already on this step
+    
+    setDir(targetStep > step ? "forward" : "backward");
+    setStep(targetStep);
+  };
+
   return (
     <main className="min-h-screen bg-background relative">
       <AnimatedBackdrop />
       <div className="container mx-auto px-6 py-10 max-w-5xl">
-        <SetupProgress total={StepsTotal} current={step} labels={stepLabels} />
+        <SetupProgress 
+          total={StepsTotal} 
+          current={step} 
+          labels={stepLabels} 
+          onStepClick={handleStepClick}
+        />
 
         {renderStep()}
 
