@@ -907,8 +907,29 @@ useEffect(() => {
     }
   };
 
+  // Get current screen's background settings
+  const currentScreen = screens[currentStep] || screens.styles;
+  const backgroundStyle = {
+    backgroundColor: currentScreen.backgroundImageDataUrl ? undefined : 'hsl(var(--muted))',
+    backgroundImage: currentScreen.backgroundImageDataUrl ? `url(${currentScreen.backgroundImageDataUrl})` : undefined,
+    backgroundSize: 'cover',
+    backgroundPosition: 'center',
+    backgroundRepeat: 'no-repeat'
+  };
+
   return (
-    <div className="min-h-screen bg-background relative overflow-hidden">
+    <div 
+      className="min-h-screen relative overflow-hidden" 
+      style={backgroundStyle}
+    >
+      {/* Overlay for background images */}
+      {currentScreen.backgroundImageDataUrl && (
+        <div 
+          className="absolute inset-0 bg-black"
+          style={{ opacity: currentScreen.overlayOpacity || 0.6 }}
+        />
+      )}
+      
       {/* Animated background gradient (kept as subtle base) */}
       <div className="absolute inset-0 gradient-subtle opacity-30" />
       
