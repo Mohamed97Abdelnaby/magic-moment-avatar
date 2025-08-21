@@ -1,12 +1,18 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { Camera, ArrowLeft, ArrowRight, RotateCcw, Send, Printer, Sparkles, Heart } from "lucide-react";
 import AIRobotDrawing from "./AIRobotDrawing";
 import QuoteDisplay from "./QuoteDisplay";
 import CameraCapture from "./CameraCapture";
 import PhotoPreview from "./PhotoPreview";
 import { loadScreenSettings, getDefaultScreenSettings, type ScreenSettings } from "@/lib/kioskSettings";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 interface KioskInterfaceProps {
   isDemo?: boolean;
@@ -91,6 +97,13 @@ const KioskInterface = ({ isDemo = false, demoSettings }: KioskInterfaceProps = 
   const [showConfetti, setShowConfetti] = useState(false);
   const [stageAnimationKey, setStageAnimationKey] = useState(0);
   const [capturedPhoto, setCapturedPhoto] = useState<string | null>(null);
+  const [isWhatsAppDialogOpen, setIsWhatsAppDialogOpen] = useState(false);
+  const [whatsappForm, setWhatsappForm] = useState({
+    phoneNumber: '',
+    message: 'Check out my new avatar! 📸✨',
+    instanceId: 'instance136415'
+  });
+  const [isSendingWhatsApp, setIsSendingWhatsApp] = useState(false);
   const [screens, setScreens] = useState<ScreenSettings>(() => {
     if (isDemo && demoSettings) return demoSettings;
     if (isDemo) {
@@ -204,6 +217,47 @@ useEffect(() => {
   const handleRetakePhoto = () => {
     setCapturedPhoto(null);
     setCurrentStep('camera');
+  };
+
+  const handleSendWhatsApp = async () => {
+    if (!capturedPhoto) {
+      toast.error("No photo to send!");
+      return;
+    }
+
+    if (!whatsappForm.phoneNumber.trim()) {
+      toast.error("Please enter a phone number");
+      return;
+    }
+
+    setIsSendingWhatsApp(true);
+
+    try {
+      const { data, error } = await supabase.functions.invoke('send-whatsapp-image', {
+        body: {
+          phoneNumber: whatsappForm.phoneNumber,
+          message: whatsappForm.message,
+          imageData: capturedPhoto,
+          instanceId: whatsappForm.instanceId
+        }
+      });
+
+      if (error) {
+        throw error;
+      }
+
+      if (data.success) {
+        toast.success("Photo sent successfully via WhatsApp! 🎉");
+        setIsWhatsAppDialogOpen(false);
+      } else {
+        throw new Error(data.error || "Failed to send photo");
+      }
+    } catch (error) {
+      console.error('WhatsApp send error:', error);
+      toast.error(error.message || "Failed to send photo via WhatsApp");
+    } finally {
+      setIsSendingWhatsApp(false);
+    }
   };
 
   const handleRetake = () => {
@@ -534,14 +588,60 @@ useEffect(() => {
                 Print
               </Button>
               
-              <Button 
-                variant="default" 
-                size="lg"
-                className="text-2xl px-12 py-8 rounded-2xl shadow-glow hover:shadow-neon transition-all duration-500 transform hover:scale-105 neon-glow bg-green-600 hover:bg-green-500"
-              >
-                <Send className="h-8 w-8 mr-4" />
-                Send to WhatsApp
-              </Button>
+              <Dialog open={isWhatsAppDialogOpen} onOpenChange={setIsWhatsAppDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button 
+                    variant="default" 
+                    size="lg"
+                    className="text-2xl px-12 py-8 rounded-2xl shadow-glow hover:shadow-neon transition-all duration-500 transform hover:scale-105 neon-glow bg-green-600 hover:bg-green-500"
+                  >
+                    <Send className="h-8 w-8 mr-4" />
+                    Send to WhatsApp
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-md">
+                  <DialogHeader>
+                    <DialogTitle>Send Photo via WhatsApp</DialogTitle>
+                  </DialogHeader>
+                  <div className="space-y-4">
+                    <div>
+                      <Label htmlFor="instanceId">Instance ID</Label>
+                      <Input
+                        id="instanceId"
+                        value={whatsappForm.instanceId}
+                        onChange={(e) => setWhatsappForm(prev => ({ ...prev, instanceId: e.target.value }))}
+                        placeholder="e.g., instance136415"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="phoneNumber">Phone Number</Label>
+                      <Input
+                        id="phoneNumber"
+                        value={whatsappForm.phoneNumber}
+                        onChange={(e) => setWhatsappForm(prev => ({ ...prev, phoneNumber: e.target.value }))}
+                        placeholder="+1234567890"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="message">Message (Optional)</Label>
+                      <Textarea
+                        id="message"
+                        value={whatsappForm.message}
+                        onChange={(e) => setWhatsappForm(prev => ({ ...prev, message: e.target.value }))}
+                        placeholder="Check out my new avatar! 📸✨"
+                        rows={3}
+                      />
+                    </div>
+                    <Button 
+                      onClick={handleSendWhatsApp} 
+                      disabled={isSendingWhatsApp}
+                      className="w-full"
+                    >
+                      {isSendingWhatsApp ? "Sending..." : "Send Photo"}
+                    </Button>
+                  </div>
+                </DialogContent>
+              </Dialog>
             </div>
           </div>
         );
