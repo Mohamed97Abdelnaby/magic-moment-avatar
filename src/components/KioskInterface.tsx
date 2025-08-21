@@ -5,6 +5,7 @@ import { Camera, ArrowLeft, ArrowRight, RotateCcw, Send, Printer, Sparkles, Hear
 import AIRobotDrawing from "./AIRobotDrawing";
 import QuoteDisplay from "./QuoteDisplay";
 import CameraCapture from "./CameraCapture";
+import PhotoPreview from "./PhotoPreview";
 import { loadScreenSettings, getDefaultScreenSettings, type ScreenSettings } from "@/lib/kioskSettings";
 
 interface KioskInterfaceProps {
@@ -84,7 +85,7 @@ const NeuralNetwork = () => {
 };
 
 const KioskInterface = ({ isDemo = false, demoSettings }: KioskInterfaceProps = {}) => {
-  const [currentStep, setCurrentStep] = useState<'styles' | 'camera' | 'countdown' | 'loading' | 'result'>('styles');
+  const [currentStep, setCurrentStep] = useState<'styles' | 'camera' | 'photo-preview' | 'countdown' | 'loading' | 'result'>('styles');
   const [selectedStyle, setSelectedStyle] = useState<string>('');
   const [countdown, setCountdown] = useState(3);
   const [showConfetti, setShowConfetti] = useState(false);
@@ -173,6 +174,10 @@ useEffect(() => {
 
   const handlePhotoCapture = (imageData: string) => {
     setCapturedPhoto(imageData);
+    setCurrentStep('photo-preview');
+  };
+
+  const handleConfirmPhoto = () => {
     setCurrentStep('countdown');
     setCountdown(3);
     
@@ -194,6 +199,11 @@ useEffect(() => {
         return prev - 1;
       });
     }, 1000);
+  };
+
+  const handleRetakePhoto = () => {
+    setCapturedPhoto(null);
+    setCurrentStep('camera');
   };
 
   const handleRetake = () => {
@@ -316,6 +326,36 @@ useEffect(() => {
               <CameraCapture
                 onPhotoCapture={handlePhotoCapture}
                 onBack={() => setCurrentStep('styles')}
+                textColor={screens.camera.textColorHsl ? `hsl(${screens.camera.textColorHsl})` : undefined}
+              />
+            </div>
+          </div>
+        );
+
+      case 'photo-preview':
+        return (
+          <div className="relative min-h-screen overflow-hidden" key={`photo-preview-${stageAnimationKey}`}>
+            {screens.camera.backgroundImageDataUrl && (
+              <div
+                className="absolute inset-0"
+                style={{
+                  backgroundImage: `url(${screens.camera.backgroundImageDataUrl})`,
+                  backgroundSize: 'cover',
+                  backgroundPosition: 'center',
+                }}
+              />
+            )}
+            {typeof screens.camera.overlayOpacity === 'number' && screens.camera.backgroundImageDataUrl && (
+              <div className="absolute inset-0" style={{ background: `hsla(0 0% 0% / ${screens.camera.overlayOpacity})` }} />
+            )}
+
+            <ParticleField count={10} />
+            
+            <div className="relative z-10">
+              <PhotoPreview
+                capturedPhoto={capturedPhoto!}
+                onRetake={handleRetakePhoto}
+                onConfirm={handleConfirmPhoto}
                 textColor={screens.camera.textColorHsl ? `hsl(${screens.camera.textColorHsl})` : undefined}
               />
             </div>
