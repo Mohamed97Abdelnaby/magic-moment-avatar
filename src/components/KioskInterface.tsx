@@ -631,14 +631,13 @@ useEffect(() => {
               
             <div className="animate-fade-in-up">
               <h1
-                className="text-7xl font-bold mb-6 animate-scale-in"
-                style={{ color: screens.styles.textColorHsl ? `hsl(${screens.styles.textColorHsl})` : undefined }}
+                className="text-7xl font-bold mb-6 animate-scale-in text-primary"
               >
                 {screens.styles.title || 'Choose your Avatar'}
               </h1>
               <p
-                className="text-3xl mb-16 animate-fade-in-up"
-                style={{ color: screens.styles.textColorHsl ? `hsl(${screens.styles.textColorHsl})` : undefined, animationDelay: '0.2s' }}
+                className="text-3xl mb-16 animate-fade-in-up text-primary/80"
+                style={{ animationDelay: '0.2s' }}
               >
                 Select how you want your avatar to look
               </p>
@@ -663,8 +662,8 @@ useEffect(() => {
                         <div className="text-8xl mb-6 animate-float" style={{ animationDelay: `${index * 0.2}s` }}>
                           {style.preview}
                         </div>
-                        <h3 className="text-3xl font-bold mb-2">{style.name}</h3>
-                        <p className="text-lg text-muted-foreground">{style.description}</p>
+                        <h3 className="text-3xl font-bold mb-2 text-primary">{style.name}</h3>
+                        <p className="text-lg text-primary/60">{style.description}</p>
                       </div>
                       
                       {selectedStyle === style.id && (
@@ -681,12 +680,12 @@ useEffect(() => {
                     variant="default" 
                     size="lg" 
                     onClick={handleStartCamera}
-                    className="text-3xl px-20 py-10 rounded-2xl shadow-glow hover:shadow-neon transition-all duration-500 transform hover:scale-105 neon-glow"
+                    className="text-3xl px-20 py-10 rounded-2xl bg-primary hover:bg-primary/90 text-primary-foreground shadow-glow hover:shadow-neon transition-all duration-500 transform hover:scale-105 neon-glow"
                   >
                     <Camera className="h-10 w-10 mr-6" />
                     Begin Your Journey
                     <ArrowRight className="h-10 w-10 ml-6" />
-                    <Heart className="h-8 w-8 ml-4 animate-pulse-soft" />
+                    <Heart className="h-8 w-8 ml-4 animate-pulse-soft text-accent" />
                   </Button>
                 </div>
               )}
@@ -992,6 +991,30 @@ useEffect(() => {
   
   // Use direct color values to avoid affecting global app theme
   const getIsolatedBackgroundStyle = () => {
+    // For event mode, use event colors for background
+    if (!isDemo && eventColors.primary) {
+      const primary = eventColors.primary;
+      const secondary = eventColors.secondary;
+      
+      // Create a dark gradient background using event colors
+      if (secondary) {
+        return {
+          background: `linear-gradient(135deg, hsl(${primary.h} ${primary.s}% ${Math.min(25, primary.l)}%), hsl(${secondary.h} ${secondary.s}% ${Math.min(25, secondary.l)}%))`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat'
+        };
+      } else {
+        return {
+          backgroundColor: `hsl(${primary.h} ${primary.s}% ${Math.min(25, primary.l)}%)`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat'
+        };
+      }
+    }
+
+    // Demo mode or fallback - use screen background image if available
     if (currentScreen.backgroundImageDataUrl) {
       return {
         backgroundColor: undefined,
