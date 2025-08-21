@@ -163,6 +163,27 @@ export function checkAccessibility(foreground: HSLColor, background: HSLColor) {
 // Legacy function - no longer used. Event colors are now applied via applyScopedEventTheme in KioskInterface
 // export function applyDynamicTheme() - removed to prevent accidental global theme changes
 
+// Parse HSL color string to HSLColor object - supports both formats
+export function parseHslString(hslString?: string): HSLColor | null {
+  if (!hslString) return null;
+  try {
+    // Handle formats like "220 100% 60%", "hsl(220, 100%, 60%)", or "21,90,48"
+    const cleanStr = hslString.replace(/hsl\(|\)|%/g, '').trim();
+    const parts = cleanStr.split(/[,\s]+/).map(p => p.trim()).filter(p => p);
+    
+    if (parts.length >= 3) {
+      return {
+        h: parseInt(parts[0]) || 0,
+        s: parseInt(parts[1]) || 0,
+        l: parseInt(parts[2]) || 0
+      };
+    }
+  } catch (error) {
+    console.error('Error parsing HSL string:', hslString, error);
+  }
+  return null;
+}
+
 // Predefined color palette
 export const colorPalette = [
   "#3B82F6", // Blue

@@ -14,7 +14,7 @@ import PhotoPreview from "./PhotoPreview";
 import { loadScreenSettings, getDefaultScreenSettings, type ScreenSettings } from "@/lib/kioskSettings";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { HSLColor, generateColorVariants, hexToHsl } from "@/lib/colorUtils";
+import { HSLColor, generateColorVariants, hexToHsl, parseHslString } from "@/lib/colorUtils";
 
 interface KioskInterfaceProps {
   isDemo?: boolean;
@@ -49,10 +49,9 @@ const ConfettiExplosion = () => {
       {Array.from({ length: 50 }).map((_, i) => (
         <div
           key={i}
-          className="absolute w-2 h-2 rounded-full animate-confetti-fall"
+          className="absolute w-2 h-2 rounded-full animate-confetti-fall bg-primary"
           style={{
             left: `${Math.random() * 100}%`,
-            backgroundColor: `hsl(${Math.random() * 360}, 70%, 60%)`,
             animationDelay: `${Math.random() * 2}s`,
             animationDuration: `${3 + Math.random() * 2}s`,
           }}
@@ -259,7 +258,7 @@ useEffect(() => {
             setEventSelectedStyles(validStyles);
           }
 
-          // Load event colors
+          // Load event colors using the updated parseHslString function
           const primaryColor = eventData.primary_color ? parseHslString(eventData.primary_color) : null;
           const secondaryColor = eventData.secondary_color ? parseHslString(eventData.secondary_color) : null;
           setEventColors({ primary: primaryColor, secondary: secondaryColor });
@@ -277,26 +276,8 @@ useEffect(() => {
   }
 }, [isDemo, eventId]);
 
-// Parse HSL color string to HSLColor object
-const parseHslString = (hslString: string): HSLColor | null => {
-  if (!hslString) return null;
-  try {
-    // Handle formats like "220 100% 60%" or "hsl(220, 100%, 60%)"
-    const cleanStr = hslString.replace(/hsl\(|\)|%/g, '').trim();
-    const parts = cleanStr.split(/[,\s]+/).map(p => p.trim()).filter(p => p);
-    
-    if (parts.length >= 3) {
-      return {
-        h: parseInt(parts[0]) || 0,
-        s: parseInt(parts[1]) || 0,
-        l: parseInt(parts[2]) || 0
-      };
-    }
-  } catch (error) {
-    console.error('Error parsing HSL string:', hslString, error);
-  }
-  return null;
-};
+// Remove the duplicate parseHslString function since we're now importing it from colorUtils
+// This was causing duplicate definitions
 
 // Apply event theme scoped to kiosk container only
 const applyScopedEventTheme = (primaryColor: HSLColor, secondaryColor?: HSLColor | null) => {
@@ -306,16 +287,36 @@ const applyScopedEventTheme = (primaryColor: HSLColor, secondaryColor?: HSLColor
   const primaryVariants = generateColorVariants(primaryColor);
   const secondaryVariants = secondaryColor ? generateColorVariants(secondaryColor) : primaryVariants;
 
-  // Apply CSS custom properties scoped to kiosk container
+  // Apply comprehensive CSS custom properties scoped to kiosk container
   const style = kioskContainer as HTMLElement;
+  
+  // Primary colors
   style.style.setProperty('--kiosk-primary', `${primaryColor.h} ${primaryColor.s}% ${primaryColor.l}%`);
   style.style.setProperty('--kiosk-primary-foreground', `${primaryVariants[50].h} ${primaryVariants[50].s}% ${primaryVariants[50].l}%`);
-  style.style.setProperty('--kiosk-accent', `${secondaryColor?.h || primaryColor.h} ${secondaryColor?.s || primaryColor.s}% ${Math.min(95, (secondaryColor?.l || primaryColor.l) + 25)}%`);
+  
+  // Secondary colors (fallback to primary if no secondary)
+  const secColor = secondaryColor || primaryColor;
+  style.style.setProperty('--kiosk-secondary', `${secColor.h} ${secColor.s}% ${secColor.l}%`);
+  style.style.setProperty('--kiosk-secondary-foreground', `${primaryVariants[50].h} ${primaryVariants[50].s}% ${primaryVariants[50].l}%`);
+  
+  // Accent colors (lighter version of primary)
+  style.style.setProperty('--kiosk-accent', `${primaryColor.h} ${primaryColor.s}% ${Math.min(95, primaryColor.l + 25)}%`);
   style.style.setProperty('--kiosk-accent-foreground', `${primaryColor.h} ${primaryColor.s}% ${Math.max(15, primaryColor.l - 25)}%`);
+  
+  // Muted colors
   style.style.setProperty('--kiosk-muted', `${primaryColor.h} ${Math.max(5, primaryColor.s - 20)}% ${Math.min(95, primaryColor.l + 30)}%`);
   style.style.setProperty('--kiosk-muted-foreground', `${primaryColor.h} ${Math.max(10, primaryColor.s - 10)}% ${Math.max(25, primaryColor.l - 20)}%`);
   
-  // Add gradient variants
+  // Background and foreground
+  style.style.setProperty('--kiosk-background', `${primaryColor.h} ${Math.max(2, primaryColor.s - 30)}% ${Math.min(98, primaryColor.l + 40)}%`);
+  style.style.setProperty('--kiosk-foreground', `${primaryColor.h} ${Math.max(10, primaryColor.s - 10)}% ${Math.max(5, primaryColor.l - 35)}%`);
+  
+  // Border and input colors
+  style.style.setProperty('--kiosk-border', `${primaryColor.h} ${Math.max(5, primaryColor.s - 15)}% ${Math.min(90, primaryColor.l + 20)}%`);
+  style.style.setProperty('--kiosk-input', `${primaryColor.h} ${Math.max(5, primaryColor.s - 25)}% ${Math.min(95, primaryColor.l + 35)}%`);
+  style.style.setProperty('--kiosk-ring', `${primaryColor.h} ${primaryColor.s}% ${primaryColor.l}%`);
+  
+  // Gradient variants
   style.style.setProperty('--kiosk-gradient-primary', `linear-gradient(135deg, hsl(${primaryColor.h} ${primaryColor.s}% ${primaryColor.l}%), hsl(${primaryVariants[300].h} ${primaryVariants[300].s}% ${primaryVariants[300].l}%))`);
   if (secondaryColor) {
     style.style.setProperty('--kiosk-gradient-secondary', `linear-gradient(135deg, hsl(${primaryColor.h} ${primaryColor.s}% ${primaryColor.l}%), hsl(${secondaryColor.h} ${secondaryColor.s}% ${secondaryColor.l}%))`);
@@ -843,9 +844,9 @@ useEffect(() => {
                 {generationError ? 'Oops! Using your original photo 📸' : screens.result.title || 'Your Avatar is Ready! 🎉'}
               </h1>
               {generationError && (
-                <p className="text-xl mb-8 text-yellow-300">
-                  {generationError}
-                </p>
+              <p className="text-xl mb-8 text-muted-foreground">
+                {generationError}
+              </p>
               )}
             </div>
 
@@ -853,7 +854,7 @@ useEffect(() => {
               <div className="mb-8">
                 <Button
                   onClick={generateAvatar}
-                  className="bg-yellow-600 hover:bg-yellow-700 text-white px-8 py-4 text-xl"
+                  className="bg-secondary hover:bg-secondary/80 text-secondary-foreground px-8 py-4 text-xl"
                   disabled={isGenerating}
                 >
                   {isGenerating ? 'Generating...' : 'Try AI Generation Again'}
@@ -930,7 +931,7 @@ useEffect(() => {
                   <Button 
                     variant="default" 
                     size="lg"
-                    className="text-2xl px-12 py-8 rounded-2xl shadow-glow hover:shadow-neon transition-all duration-500 transform hover:scale-105 neon-glow bg-green-600 hover:bg-green-500"
+                    className="text-2xl px-12 py-8 rounded-2xl shadow-glow hover:shadow-neon transition-all duration-500 transform hover:scale-105 neon-glow bg-primary hover:bg-primary/90"
                   >
                     <Send className="h-8 w-8 mr-4" />
                     Send to WhatsApp
