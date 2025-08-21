@@ -907,20 +907,38 @@ useEffect(() => {
     }
   };
 
-  // Get current screen's background settings
+  // Get current screen's background settings with complete isolation
   const currentScreen = screens[currentStep] || screens.styles;
-  const backgroundStyle = {
-    backgroundColor: currentScreen.backgroundImageDataUrl ? undefined : 'hsl(var(--muted))',
-    backgroundImage: currentScreen.backgroundImageDataUrl ? `url(${currentScreen.backgroundImageDataUrl})` : undefined,
-    backgroundSize: 'cover',
-    backgroundPosition: 'center',
-    backgroundRepeat: 'no-repeat'
+  
+  // Use direct color values to avoid affecting global app theme
+  const getIsolatedBackgroundStyle = () => {
+    if (currentScreen.backgroundImageDataUrl) {
+      return {
+        backgroundColor: undefined,
+        backgroundImage: `url(${currentScreen.backgroundImageDataUrl})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat'
+      };
+    }
+    
+    // Use the screen's background color if available, otherwise use a neutral default
+    const backgroundColor = currentScreen.backgroundColor || '#1a1a2e'; // Dark neutral default
+    return {
+      backgroundColor: backgroundColor,
+      backgroundImage: undefined,
+      backgroundSize: 'cover',
+      backgroundPosition: 'center',
+      backgroundRepeat: 'no-repeat'
+    };
   };
+
+  const isolatedBackgroundStyle = getIsolatedBackgroundStyle();
 
   return (
     <div 
-      className="min-h-screen relative overflow-hidden" 
-      style={backgroundStyle}
+      className="min-h-screen relative overflow-hidden kiosk-isolated"
+      style={isolatedBackgroundStyle}
     >
       {/* Overlay for background images */}
       {currentScreen.backgroundImageDataUrl && (

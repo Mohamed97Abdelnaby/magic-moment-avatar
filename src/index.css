@@ -228,6 +228,12 @@ All colors MUST be HSL.
   }
 }
 
+/* Kiosk isolation - completely isolate kiosk from global theme */
+.kiosk-isolated {
+  background: inherit !important;
+  color: inherit;
+}
+
 /* Advanced Keyframe Animations */
 @keyframes float {
   0%, 100% { transform: translateY(0px) rotateZ(0deg); }
