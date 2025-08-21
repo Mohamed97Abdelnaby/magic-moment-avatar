@@ -92,8 +92,7 @@ const MyEvents = () => {
   };
 
   const handleEventClick = (event: Event) => {
-    setSelectedEvent(event);
-    setIsDetailsOpen(true);
+    navigate(`/kiosk?event=${event.id}`);
   };
 
   const handleDeleteEvent = async (eventId: string, eventName: string) => {
@@ -239,7 +238,7 @@ const MyEvents = () => {
                           )}
                         </div>
                         <p className="text-xs text-muted-foreground mt-2">
-                          Click to view all themes and details
+                          Click to open kiosk for this event
                         </p>
                       </div>
 
