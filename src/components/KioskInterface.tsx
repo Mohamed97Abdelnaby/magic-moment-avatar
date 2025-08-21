@@ -167,7 +167,6 @@ const KioskInterface = ({ isDemo = false, demoSettings, eventId }: KioskInterfac
     { id: "basha", name: "El Basha Style", preview: "🎩", description: "Elite Noble Fashion" },
     { id: "beach", name: "Beach Vibes", preview: "🏖️", description: "Summer Mediterranean" },
     { id: "pixar", name: "Pixar Style", preview: "🎭", description: "3D Animated Magic" },
-    { id: "cartoon", name: "90s Cartoon", preview: "🎨", description: "Retro Animation" },
   ];
 
 useEffect(() => {
