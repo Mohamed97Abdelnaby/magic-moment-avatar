@@ -315,6 +315,61 @@ useEffect(() => {
     }
   };
 
+  const handlePrintPhoto = () => {
+    const imageToprint = generatedAvatar || capturedPhoto;
+    if (!imageToprint) {
+      toast.error("No photo to print!");
+      return;
+    }
+
+    const printWindow = window.open('', '_blank');
+    if (printWindow) {
+      printWindow.document.write(`
+        <html>
+          <head>
+            <title>Print Photo</title>
+            <style>
+              body {
+                margin: 0;
+                padding: 20px;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                min-height: 100vh;
+                background: white;
+              }
+              img {
+                max-width: 100%;
+                max-height: 100vh;
+                width: auto;
+                height: auto;
+                object-fit: contain;
+                border-radius: 8px;
+                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+              }
+              @media print {
+                body {
+                  padding: 0;
+                }
+                img {
+                  max-width: 100%;
+                  max-height: 100%;
+                  width: auto;
+                  height: auto;
+                  page-break-inside: avoid;
+                }
+              }
+            </style>
+          </head>
+          <body>
+            <img src="${imageToprint}" alt="Photo to print" onload="window.print(); window.close();" />
+          </body>
+        </html>
+      `);
+      printWindow.document.close();
+    }
+  };
+
   const handleRetake = () => {
     setCurrentStep('styles');
     setSelectedStyle('');
@@ -656,7 +711,7 @@ useEffect(() => {
               <Button 
                 variant="default" 
                 size="lg"
-                onClick={() => window.print()}
+                onClick={handlePrintPhoto}
                 className="text-2xl px-12 py-8 rounded-2xl shadow-glow hover:shadow-neon transition-all duration-500 transform hover:scale-105 neon-glow"
               >
                 <Printer className="h-8 w-8 mr-4" />
