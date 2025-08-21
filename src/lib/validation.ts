@@ -63,7 +63,7 @@ export function getStepValidation(
   switch (step) {
     case 1: // Event Details
       return validateEventDetails(eventName, location);
-    case 7: // Final step (avatar selection)
+    case 8: // Final step (avatar selection) - Finish page
       return validateFinalStep(eventName, selectedAvatarStyles);
     default:
       // Other steps don't require validation
