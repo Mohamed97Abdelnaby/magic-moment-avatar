@@ -607,8 +607,8 @@ const SetupWizard = () => {
                 Next <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
             ) : (
-              <Button disabled={!canFinish} className="gap-2">
-                Finish <CheckCircle2 className="h-4 w-4" />
+              <Button disabled={!canFinish || loading} onClick={handleFinish} className="gap-2">
+                {loading ? "Saving..." : isEditing ? "Update Event" : "Finish"} <CheckCircle2 className="h-4 w-4" />
               </Button>
             )}
           </div>
