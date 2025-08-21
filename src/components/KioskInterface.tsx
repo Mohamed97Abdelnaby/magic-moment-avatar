@@ -100,7 +100,7 @@ const KioskInterface = ({ isDemo = false, demoSettings }: KioskInterfaceProps = 
   const [isWhatsAppDialogOpen, setIsWhatsAppDialogOpen] = useState(false);
   const [whatsappForm, setWhatsappForm] = useState({
     phoneNumber: '',
-    message: 'Check out my new avatar! 📸✨',
+    message: 'Check out my special AI avatar gift! 🎁✨',
     instanceId: 'instance136415'
   });
   const [isSendingWhatsApp, setIsSendingWhatsApp] = useState(false);
@@ -230,11 +230,6 @@ useEffect(() => {
       return;
     }
 
-    if (!whatsappForm.instanceId.trim()) {
-      toast.error("Please enter an instance ID");
-      return;
-    }
-
     console.log('Starting WhatsApp send process...');
     setIsSendingWhatsApp(true);
 
@@ -260,11 +255,11 @@ useEffect(() => {
         console.log('Message sent successfully:', data);
         toast.success(`Photo sent successfully via WhatsApp! 🎉${data.messageId ? ` (ID: ${data.messageId})` : ''}`);
         setIsWhatsAppDialogOpen(false);
-        // Reset form
+        // Reset form (keeping static values)
         setWhatsappForm({
           phoneNumber: '',
-          message: '',
-          instanceId: ''
+          message: 'Check out my special AI avatar gift! 🎁✨',
+          instanceId: 'instance136415'
         });
       } else {
         console.error('Send failed:', data);
@@ -625,15 +620,6 @@ useEffect(() => {
                   </DialogHeader>
                   <div className="space-y-4">
                     <div>
-                      <Label htmlFor="instanceId">Instance ID</Label>
-                      <Input
-                        id="instanceId"
-                        value={whatsappForm.instanceId}
-                        onChange={(e) => setWhatsappForm(prev => ({ ...prev, instanceId: e.target.value }))}
-                        placeholder="e.g., instance136415"
-                      />
-                    </div>
-                    <div>
                       <Label htmlFor="phoneNumber">Phone Number</Label>
                       <Input
                         id="phoneNumber"
@@ -642,22 +628,12 @@ useEffect(() => {
                         placeholder="+1234567890"
                       />
                     </div>
-                    <div>
-                      <Label htmlFor="message">Message (Optional)</Label>
-                      <Textarea
-                        id="message"
-                        value={whatsappForm.message}
-                        onChange={(e) => setWhatsappForm(prev => ({ ...prev, message: e.target.value }))}
-                        placeholder="Check out my new avatar! 📸✨"
-                        rows={3}
-                      />
-                    </div>
                     <Button 
                       onClick={handleSendWhatsApp} 
                       disabled={isSendingWhatsApp}
                       className="w-full"
                     >
-                      {isSendingWhatsApp ? "Sending..." : "Send Photo"}
+                      {isSendingWhatsApp ? "Sending..." : "Send Special Gift"}
                     </Button>
                   </div>
                 </DialogContent>
