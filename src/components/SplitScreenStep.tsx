@@ -82,6 +82,7 @@ const SplitScreenStep = memo(({
             backgroundStyle={backgroundStyle}
             screenSettings={allScreenSettings}
             eventName={eventName}
+            currentScreenKey={screenKey}
           />
         </div>
       </div>
