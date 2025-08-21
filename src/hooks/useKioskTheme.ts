@@ -162,6 +162,7 @@ export const useKioskTheme = ({ isDemo, demoSettings, eventId }: UseKioskThemePr
                   loadedSettings[setting.screen_key as keyof ScreenSettings] = {
                     textColorHex: setting.text_color || '#ffffff',
                     backgroundImageDataUrl: setting.background_image || null,
+                    backgroundColor: setting.background_color || undefined,
                     overlayOpacity: Number(setting.overlay_opacity) || 0.6,
                     title: setting.title || ''
                   };
