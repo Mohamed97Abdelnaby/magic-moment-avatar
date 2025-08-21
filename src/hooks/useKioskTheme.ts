@@ -202,8 +202,10 @@ export const useKioskTheme = ({ isDemo, demoSettings, eventId }: UseKioskThemePr
     return undefined;
   }, [screens, isDemo, eventColors.primary]);
 
-  const getIsolatedBackgroundStyle = useCallback((screenKey: keyof ScreenSettings) => {
-    const currentScreen = screens[screenKey] || screens.styles;
+  const getIsolatedBackgroundStyle = useCallback((screenKey: keyof ScreenSettings | 'photo-preview') => {
+    // Map photo-preview to camera screen settings
+    const actualScreenKey = screenKey === 'photo-preview' ? 'camera' : screenKey;
+    const currentScreen = screens[actualScreenKey] || screens.styles;
     
     if (currentScreen.backgroundImageDataUrl) {
       return {
