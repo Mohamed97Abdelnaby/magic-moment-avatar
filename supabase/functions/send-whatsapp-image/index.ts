@@ -48,35 +48,44 @@ serve(async (req) => {
     }
     console.log('Phone number formatted:', cleanPhoneNumber.substring(0, 5) + '***');
 
-    // Convert base64 to blob for image upload
-    const base64Data = imageData.split(',')[1] || imageData;
-    const imageBlob = new Uint8Array(atob(base64Data).split('').map(char => char.charCodeAt(0)));
-    console.log('Image processed, size:', imageBlob.length, 'bytes');
-
-    // Check image size (UltraMsg has limits)
-    if (imageBlob.length > 5 * 1024 * 1024) { // 5MB limit
-      throw new Error('Image too large. Please use a smaller image (max 5MB)');
-    }
-
-    // Create form data for the API request
-    const formData = new FormData();
-    formData.append('token', token);
-    formData.append('to', cleanPhoneNumber);
-    formData.append('image', new Blob([imageBlob], { type: 'image/jpeg' }), 'photo.jpg');
+    // Process and validate image data
+    const base64Data = imageData.includes(',') ? imageData.split(',')[1] : imageData;
+    console.log('Base64 data preview:', base64Data.slice(0, 50) + '...');
     
-    if (message) {
-      formData.append('caption', message);
-      console.log('Message caption added');
+    // Validate base64 and estimate size
+    try {
+      const imageBlob = new Uint8Array(atob(base64Data).split('').map(char => char.charCodeAt(0)));
+      console.log('Image processed, size:', imageBlob.length, 'bytes');
+      
+      // Check image size (UltraMsg has limits)
+      if (imageBlob.length > 5 * 1024 * 1024) { // 5MB limit
+        throw new Error('Image too large. Please use a smaller image (max 5MB)');
+      }
+    } catch (error) {
+      console.error('Base64 validation failed:', error);
+      throw new Error('Invalid image data format');
     }
 
     console.log('Sending request to UltraMsg API...');
-    // Send image via UltraMsg API
-    const apiUrl = `https://api.ultramsg.com/${instanceId}/messages/image`;
-    console.log('API URL:', apiUrl);
+    // Send image via UltraMsg API with token in URL (as required by UltraMsg)
+    const apiUrl = `https://api.ultramsg.com/${instanceId}/messages/image?token=${encodeURIComponent(token)}`;
+    console.log('API URL:', apiUrl.replace(token, '***TOKEN***'));
+
+    // Try URL-encoded format first (common for UltraMsg)
+    const params = new URLSearchParams();
+    params.append('to', cleanPhoneNumber);
+    params.append('image', imageData); // Send full data URL or base64
+    if (message) {
+      params.append('caption', message);
+      console.log('Message caption added');
+    }
     
     const response = await fetch(apiUrl, {
       method: 'POST',
-      body: formData,
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: params.toString(),
     });
 
     console.log('UltraMsg response status:', response.status);
