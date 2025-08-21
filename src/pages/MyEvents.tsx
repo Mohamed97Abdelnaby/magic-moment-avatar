@@ -7,8 +7,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import Navigation from '@/components/Navigation';
-import { Plus, Calendar, MapPin, Palette, Eye, Trash2, Sparkles } from 'lucide-react';
+import { Plus, Calendar, MapPin, Palette, Eye, Trash2, Sparkles, Check, X } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { Checkbox } from '@/components/ui/checkbox';
 
 interface Event {
   id: string;
@@ -31,6 +32,8 @@ const MyEvents = () => {
   const [loading, setLoading] = useState(true);
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
+  const [selectedEventIds, setSelectedEventIds] = useState<Set<string>>(new Set());
+  const [isSelectionMode, setIsSelectionMode] = useState(false);
 
   // Avatar styles mapping
   const avatarStylesMap = {
@@ -91,10 +94,6 @@ const MyEvents = () => {
     navigate(`/setup?event=${eventId}`);
   };
 
-  const handleEventClick = (event: Event) => {
-    navigate(`/kiosk?event=${event.id}`);
-  };
-
   const handleDeleteEvent = async (eventId: string, eventName: string) => {
     if (!confirm(`Are you sure you want to delete "${eventName}"?`)) {
       return;
@@ -123,6 +122,73 @@ const MyEvents = () => {
     }
   };
 
+  const handleBulkDelete = async () => {
+    const eventNames = events
+      .filter(event => selectedEventIds.has(event.id))
+      .map(event => event.name)
+      .join(', ');
+
+    if (!confirm(`Are you sure you want to delete ${selectedEventIds.size} event(s)? (${eventNames})`)) {
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from('events')
+        .delete()
+        .in('id', Array.from(selectedEventIds));
+
+      if (error) throw error;
+
+      setEvents(events.filter(event => !selectedEventIds.has(event.id)));
+      setSelectedEventIds(new Set());
+      setIsSelectionMode(false);
+      
+      toast({
+        title: 'Success',
+        description: `${selectedEventIds.size} event(s) deleted successfully`,
+      });
+    } catch (error) {
+      console.error('Error deleting events:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to delete events',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const handleSelectAll = () => {
+    if (selectedEventIds.size === events.length) {
+      setSelectedEventIds(new Set());
+    } else {
+      setSelectedEventIds(new Set(events.map(event => event.id)));
+    }
+  };
+
+  const handleSelectEvent = (eventId: string) => {
+    const newSelected = new Set(selectedEventIds);
+    if (newSelected.has(eventId)) {
+      newSelected.delete(eventId);
+    } else {
+      newSelected.add(eventId);
+    }
+    setSelectedEventIds(newSelected);
+  };
+
+  const handleEventClick = (event: Event) => {
+    if (isSelectionMode) {
+      handleSelectEvent(event.id);
+    } else {
+      navigate(`/kiosk?event=${event.id}`);
+    }
+  };
+
+  const exitSelectionMode = () => {
+    setIsSelectionMode(false);
+    setSelectedEventIds(new Set());
+  };
+
   if (authLoading || !user) {
     return null;
   }
@@ -133,18 +199,76 @@ const MyEvents = () => {
       <div className="pt-20 pb-12">
         <div className="container mx-auto px-6">
           {/* Header */}
-          <div className="flex items-center justify-between mb-8">
+          <div className="flex items-center justify-between mb-6">
             <div>
               <h1 className="text-4xl font-bold text-foreground mb-2">My Events</h1>
               <p className="text-muted-foreground">
                 Manage your saved event configurations
               </p>
             </div>
-            <Button onClick={handleCreateNew} size="lg" className="gap-2">
-              <Plus className="h-5 w-5" />
-              Create New Event
-            </Button>
+            <div className="flex items-center gap-3">
+              {events.length > 0 && (
+                <Button 
+                  onClick={() => setIsSelectionMode(!isSelectionMode)} 
+                  variant="outline" 
+                  size="lg"
+                  className="gap-2"
+                >
+                  {isSelectionMode ? (
+                    <>
+                      <X className="h-4 w-4" />
+                      Cancel
+                    </>
+                  ) : (
+                    <>
+                      <Check className="h-4 w-4" />
+                      Select
+                    </>
+                  )}
+                </Button>
+              )}
+              <Button onClick={handleCreateNew} size="lg" className="gap-2">
+                <Plus className="h-5 w-5" />
+                Create New Event
+              </Button>
+            </div>
           </div>
+
+          {/* Selection Toolbar */}
+          {isSelectionMode && (
+            <div className="bg-muted/50 rounded-lg p-4 mb-6 flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <div className="flex items-center gap-2">
+                  <Checkbox 
+                    checked={selectedEventIds.size === events.length && events.length > 0}
+                    onCheckedChange={handleSelectAll}
+                    aria-label="Select all events"
+                  />
+                  <span className="text-sm font-medium">
+                    {selectedEventIds.size === events.length && events.length > 0 ? 'Deselect All' : 'Select All'}
+                  </span>
+                </div>
+                {selectedEventIds.size > 0 && (
+                  <span className="text-sm text-muted-foreground">
+                    {selectedEventIds.size} event(s) selected
+                  </span>
+                )}
+              </div>
+              {selectedEventIds.size > 0 && (
+                <div className="flex items-center gap-2">
+                  <Button
+                    onClick={handleBulkDelete}
+                    variant="destructive"
+                    size="sm"
+                    className="gap-2"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                    Delete Selected ({selectedEventIds.size})
+                  </Button>
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Events Grid */}
           {loading ? (
@@ -180,10 +304,22 @@ const MyEvents = () => {
               {events.map((event) => (
                 <Card 
                   key={event.id} 
-                  className="group hover:shadow-lg transition-shadow cursor-pointer"
+                  className={`group hover:shadow-lg transition-all cursor-pointer relative ${
+                    selectedEventIds.has(event.id) ? 'ring-2 ring-primary bg-primary/5' : ''
+                  }`}
                   onClick={() => handleEventClick(event)}
                 >
-                  <CardHeader>
+                  {isSelectionMode && (
+                    <div className="absolute top-3 left-3 z-10">
+                      <Checkbox 
+                        checked={selectedEventIds.has(event.id)}
+                        onCheckedChange={() => handleSelectEvent(event.id)}
+                        aria-label={`Select ${event.name}`}
+                        onClick={(e) => e.stopPropagation()}
+                      />
+                    </div>
+                  )}
+                  <CardHeader className={isSelectionMode ? 'pl-12' : ''}>
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
                         <CardTitle className="text-xl mb-1 group-hover:text-primary transition-colors">
@@ -238,35 +374,37 @@ const MyEvents = () => {
                           )}
                         </div>
                         <p className="text-xs text-muted-foreground mt-2">
-                          Click to open kiosk for this event
+                          {isSelectionMode ? 'Click to select/deselect' : 'Click to open kiosk for this event'}
                         </p>
                       </div>
 
-                      {/* Actions */}
-                      <div className="flex items-center gap-2 pt-2">
-                        <Button 
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleViewEvent(event.id);
-                          }}
-                          size="sm" 
-                          className="flex-1 gap-2"
-                        >
-                          <Eye className="h-4 w-4" />
-                          Edit
-                        </Button>
-                        <Button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleDeleteEvent(event.id, event.name);
-                          }}
-                          size="sm"
-                          variant="outline"
-                          className="px-3"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
+                      {/* Actions - Only show when not in selection mode */}
+                      {!isSelectionMode && (
+                        <div className="flex items-center gap-2 pt-2">
+                          <Button 
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleViewEvent(event.id);
+                            }}
+                            size="sm" 
+                            className="flex-1 gap-2"
+                          >
+                            <Eye className="h-4 w-4" />
+                            Edit
+                          </Button>
+                          <Button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDeleteEvent(event.id, event.name);
+                            }}
+                            size="sm"
+                            variant="outline"
+                            className="px-3"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      )}
                     </div>
                   </CardContent>
                 </Card>
