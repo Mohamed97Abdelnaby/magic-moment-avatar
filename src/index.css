@@ -290,21 +290,36 @@ All colors MUST be HSL.
   border-color: hsl(var(--kiosk-border, var(--border))) !important; 
 }
 
-/* Kiosk Demo - Force Calm Dark Blue Theme */
-.kiosk-demo-theme {
-  --kiosk-primary: 217 90% 61%;
-  --kiosk-primary-foreground: 0 0% 100%;
-  --kiosk-secondary: 200 60% 50%;
-  --kiosk-secondary-foreground: 0 0% 100%;
-  --kiosk-accent: 220 28% 20%;
-  --kiosk-accent-foreground: 215 30% 92%;
-  --kiosk-muted: 220 20% 18%;
-  --kiosk-muted-foreground: 215 15% 65%;
-  --kiosk-background: 224 45% 10%;
-  --kiosk-foreground: 215 30% 92%;
-  --kiosk-border: 220 28% 22%;
-  --kiosk-ring: 217 90% 60%;
-  --kiosk-input: 220 28% 16%;
+/* Kiosk Demo - Force Calm Dark Blue Theme (LOCKED - Cannot be overridden) */
+.kiosk-demo-locked {
+  --background: 222 47% 11% !important;
+  --foreground: 210 40% 98% !important;
+  --primary: 221 83% 53% !important;
+  --primary-foreground: 210 40% 98% !important;
+  --secondary: 215 20% 65% !important;
+  --secondary-foreground: 222 47% 11% !important;
+  --accent: 221 83% 53% !important;
+  --accent-foreground: 210 40% 98% !important;
+  --muted: 217 33% 17% !important;
+  --muted-foreground: 215 20% 65% !important;
+  --border: 217 33% 20% !important;
+  --input: 217 33% 20% !important;
+  --ring: 221 83% 53% !important;
+
+  /* Lock kiosk-specific variables */
+  --kiosk-primary: 221 83% 53% !important;
+  --kiosk-primary-foreground: 210 40% 98% !important;
+  --kiosk-secondary: 215 20% 65% !important;
+  --kiosk-secondary-foreground: 222 47% 11% !important;
+  --kiosk-accent: 221 83% 53% !important;
+  --kiosk-accent-foreground: 210 40% 98% !important;
+  --kiosk-muted: 217 33% 17% !important;
+  --kiosk-muted-foreground: 215 20% 65% !important;
+  --kiosk-background: 222 47% 11% !important;
+  --kiosk-foreground: 210 40% 98% !important;
+  --kiosk-border: 217 33% 20% !important;
+  --kiosk-ring: 221 83% 53% !important;
+  --kiosk-input: 217 33% 20% !important;
 }
 
 /* Kiosk Screen Text Color Override System */

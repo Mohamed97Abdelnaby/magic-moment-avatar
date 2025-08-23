@@ -20,39 +20,37 @@ export const useKioskTheme = ({ isDemo, demoSettings, eventId }: UseKioskThemePr
   });
   
   const [screens, setScreens] = useState<ScreenSettings>(() => {
-    if (isDemo && demoSettings) return demoSettings;
     if (isDemo) {
-      // Always use Calm Dark Blue theme for demo
-      const demoScreens = getDefaultScreenSettings();
-      const calmDarkBlueTheme = {
-        textColorHex: "#ffffff",
-        textColorHsl: "0 0% 100%",
-        backgroundColor: "hsl(224, 45%, 10%)", // Calm dark blue background
+      // DEMO MODE: Always use static Calm Dark Blue theme - no external settings allowed
+      const staticDemoTheme = {
+        textColorHex: "#f8fafc",
+        textColorHsl: "210 40% 98%",
+        backgroundColor: "hsl(222, 47%, 11%)", // Static calm dark blue background
         backgroundImageDataUrl: null,
         overlayOpacity: 0.6
       };
       
+      // Return completely static demo settings - ignore demoSettings prop
       return {
         styles: {
-          ...calmDarkBlueTheme,
-          title: "Welcome to AvatarMoment"
+          ...staticDemoTheme,
+          title: "Choose your Avatar"
         },
         camera: {
-          ...calmDarkBlueTheme,
+          ...staticDemoTheme,
           title: "Strike Your Pose!"
         },
         countdown: {
-          ...calmDarkBlueTheme,
+          ...staticDemoTheme,
           title: "Perfect! Get ready..."
         },
         loading: {
-          ...calmDarkBlueTheme,
+          ...staticDemoTheme,
           title: "Creating Your Avatar..."
         },
         result: {
-          ...calmDarkBlueTheme,
-          title: "Amazing! Your Avatar is Ready!",
-          textColorHsl: "0 0% 100%"
+          ...staticDemoTheme,
+          title: "Amazing! Your Avatar is Ready!"
         }
       };
     }

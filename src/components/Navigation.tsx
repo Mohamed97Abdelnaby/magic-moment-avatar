@@ -72,7 +72,7 @@ const Navigation = () => {
             <Button variant="ghost" size="sm">
               Pricing
             </Button>
-            <Link to="/kiosk">
+            <Link to="/kiosk?demo=true">
               <Button variant="outline" size="sm">
                 <Camera className="h-4 w-4 mr-2" />
                 Kiosk Demo

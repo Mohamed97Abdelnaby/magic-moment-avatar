@@ -79,11 +79,15 @@ export default function KioskThemeWrapper({
   theme?: ThemeTokens;
   className?: string;
 }) {
-  const base = forceCalmDarkBlue ? CALM_DARK_BLUE : {};
-  const style = { ...toVarStyle(base), ...toVarStyle(theme ?? {}) };
+  // When forceCalmDarkBlue is true, completely ignore any other theme overrides
+  const finalTheme = forceCalmDarkBlue ? CALM_DARK_BLUE : theme ?? {};
+  const style = toVarStyle(finalTheme);
 
   return (
-    <div className={`kiosk-scope ${className ?? ""}`} style={style}>
+    <div 
+      className={`kiosk-scope ${forceCalmDarkBlue ? 'kiosk-demo-locked' : ''} ${className ?? ""}`} 
+      style={style}
+    >
       {children}
     </div>
   );
