@@ -28,6 +28,7 @@ interface CameraScreenProps {
   backgroundImageUrl?: string | null;
   overlayOpacity?: number;
   textColor?: string;
+  backgroundColor?: string;
   stageAnimationKey: number;
 }
 
@@ -37,6 +38,7 @@ const CameraScreen = ({
   backgroundImageUrl,
   overlayOpacity,
   textColor,
+  backgroundColor,
   stageAnimationKey
 }: CameraScreenProps) => {
   return (
@@ -57,7 +59,7 @@ const CameraScreen = ({
 
       <ParticleField count={10} />
       
-      <KioskScreenTextScope color={textColor} className="relative z-10">
+      <KioskScreenTextScope color={textColor} backgroundColor={backgroundColor} className="relative z-10">
         <CameraCapture
           onPhotoCapture={onPhotoCapture}
           onBack={onBack}

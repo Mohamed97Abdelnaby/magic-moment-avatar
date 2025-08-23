@@ -29,6 +29,7 @@ interface LoadingScreenProps {
   overlayOpacity?: number;
   title?: string;
   textColor?: string;
+  backgroundColor?: string;
   stageAnimationKey: number;
 }
 
@@ -38,6 +39,7 @@ const LoadingScreen = ({
   overlayOpacity,
   title,
   textColor,
+  backgroundColor,
   stageAnimationKey
 }: LoadingScreenProps) => {
   const generationQuotes = [
@@ -60,7 +62,7 @@ const LoadingScreen = ({
       
       <div className="absolute inset-0 gradient-subtle opacity-40" />
       
-      <KioskScreenTextScope color={textColor} className="relative z-10 space-y-12">
+      <KioskScreenTextScope color={textColor} backgroundColor={backgroundColor} className="relative z-10 space-y-12">
         <div className="space-y-8 animate-watercolor-bloom">
           <h1 className="text-4xl font-light">
             {title || 'Crafting your artistic vision...'}

@@ -28,6 +28,7 @@ interface CountdownScreenProps {
   overlayOpacity?: number;
   title?: string;
   textColor?: string;
+  backgroundColor?: string;
   stageAnimationKey: number;
 }
 
@@ -37,6 +38,7 @@ const CountdownScreen = ({
   overlayOpacity,
   title,
   textColor,
+  backgroundColor,
   stageAnimationKey
 }: CountdownScreenProps) => {
   const countdownQuotes = [
@@ -58,7 +60,7 @@ const CountdownScreen = ({
       
       <div className="absolute inset-0 gradient-subtle opacity-30" />
       
-      <KioskScreenTextScope color={textColor} className="relative z-10 space-y-12">
+      <KioskScreenTextScope color={textColor} backgroundColor={backgroundColor} className="relative z-10 space-y-12">
         <div className="space-y-8 animate-fade-in-up">
           <h1 className="text-5xl font-light mb-8">
             {title || 'Take a moment...'}

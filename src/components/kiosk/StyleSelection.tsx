@@ -38,6 +38,7 @@ interface StyleSelectionProps {
   overlayOpacity?: number;
   title?: string;
   textColor?: string;
+  backgroundColor?: string;
   stageAnimationKey: number;
 }
 
@@ -50,6 +51,7 @@ const StyleSelection = ({
   overlayOpacity,
   title,
   textColor,
+  backgroundColor,
   stageAnimationKey
 }: StyleSelectionProps) => {
   const navigate = useNavigate();
@@ -73,7 +75,7 @@ const StyleSelection = ({
         />
       )}
 
-      <KioskScreenTextScope color={textColor} className="relative z-10 text-center">
+      <KioskScreenTextScope color={textColor} backgroundColor={backgroundColor} className="relative z-10 text-center">
         <div className="fixed top-20 left-8 z-50">
           <Button
             onClick={() => navigate('/')}

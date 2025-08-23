@@ -94,21 +94,50 @@ export default function KioskThemeWrapper({
 }
 
 /**
- * Wrap a single kiosk screen to force one unified text color.
- * This overrides any text-* classes inside the screen for headings/paragraphs/etc.
+ * Wrap a single kiosk screen to force one unified text color and button styling.
+ * This overrides any text-* classes inside the screen for headings/paragraphs/buttons/etc.
  */
 export function KioskScreenTextScope({
   color, // full CSS color, e.g. "hsl(210 40% 98%)" or "#fff"
+  backgroundColor, // background color for semi-transparent buttons
   children,
   className,
 }: {
   color?: string;
+  backgroundColor?: string;
   children: ReactNode;
   className?: string;
 }) {
-  const style: React.CSSProperties | undefined = color
-    ? ({ ["--kiosk-screen-text" as any]: color } as React.CSSProperties)
-    : undefined;
+  const style: React.CSSProperties = {};
+  
+  if (color) {
+    (style as any)["--kiosk-screen-text"] = color;
+  }
+  
+  if (backgroundColor) {
+    // Create semi-transparent versions of the background color for buttons
+    const bgAlpha = backgroundColor.includes('hsl') 
+      ? backgroundColor.replace('hsl(', 'hsla(').replace(')', ', 0.15)')
+      : backgroundColor.includes('#')
+      ? `${backgroundColor}26` // Add alpha in hex
+      : `rgba(${backgroundColor}, 0.15)`;
+      
+    const bgAlphaHover = backgroundColor.includes('hsl') 
+      ? backgroundColor.replace('hsl(', 'hsla(').replace(')', ', 0.25)')
+      : backgroundColor.includes('#')
+      ? `${backgroundColor}40`
+      : `rgba(${backgroundColor}, 0.25)`;
+      
+    const bgAlphaActive = backgroundColor.includes('hsl') 
+      ? backgroundColor.replace('hsl(', 'hsla(').replace(')', ', 0.35)')
+      : backgroundColor.includes('#')
+      ? `${backgroundColor}59`
+      : `rgba(${backgroundColor}, 0.35)`;
+    
+    (style as any)["--kiosk-screen-bg-alpha"] = bgAlpha;
+    (style as any)["--kiosk-screen-bg-alpha-hover"] = bgAlphaHover;
+    (style as any)["--kiosk-screen-bg-alpha-active"] = bgAlphaActive;
+  }
 
   return (
     <section

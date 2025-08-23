@@ -249,12 +249,27 @@ export const useKioskTheme = ({ isDemo, demoSettings, eventId }: UseKioskThemePr
     };
   }, [screens, isDemo, eventColors.secondary]);
 
+  const getBackgroundColor = useCallback((screenKey: keyof ScreenSettings) => {
+    const screen = screens[screenKey];
+    
+    if (screen?.backgroundColor && screen.backgroundColor.trim() !== '') {
+      return screen.backgroundColor;
+    }
+    
+    if (!isDemo && eventColors.secondary) {
+      return `hsl(${eventColors.secondary.h} ${eventColors.secondary.s}% ${Math.min(25, eventColors.secondary.l)}%)`;
+    }
+    
+    return 'hsl(222 47% 11%)'; // Default calm dark blue background
+  }, [screens, isDemo, eventColors.secondary]);
+
   return {
     eventSelectedStyles,
     eventColors,
     screens,
     getTextColor,
     getIsolatedBackgroundStyle,
+    getBackgroundColor,
     applyScopedEventTheme
   };
 };

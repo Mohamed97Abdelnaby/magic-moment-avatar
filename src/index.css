@@ -327,12 +327,8 @@ All colors MUST be HSL.
   color: var(--kiosk-screen-text, inherit) !important;
 }
 
-/* Apply screen text color to ALL text elements with stronger selectors */
-.kiosk-screen[data-text-override="1"] *:not(button):not([role="button"]):not(.bg-primary):not(.bg-secondary):not(.bg-accent):not(.border-primary):not(.border-secondary):not(.border-accent) {
-  color: var(--kiosk-screen-text) !important;
-}
-
-/* Specifically target all text content elements */
+/* Apply screen text color to ALL text elements including buttons */
+.kiosk-screen[data-text-override="1"] *,
 .kiosk-screen[data-text-override="1"] h1,
 .kiosk-screen[data-text-override="1"] h2, 
 .kiosk-screen[data-text-override="1"] h3,
@@ -345,24 +341,39 @@ All colors MUST be HSL.
   color: var(--kiosk-screen-text) !important;
 }
 
-/* Preserve UI element colors (buttons, borders, backgrounds) */
-.kiosk-screen .bg-primary,
-.kiosk-screen .bg-secondary,
-.kiosk-screen .bg-accent,
-.kiosk-screen .border-primary,
-.kiosk-screen .border-secondary,
-.kiosk-screen .border-accent,
-.kiosk-screen button,
-.kiosk-screen [role="button"] {
-  /* Keep their original colors - don't inherit text color */
+/* Button styling - Semi-transparent background with screen background color + text color override */
+.kiosk-screen[data-text-override="1"] button,
+.kiosk-screen[data-text-override="1"] [role="button"] {
+  color: var(--kiosk-screen-text) !important;
+  background: var(--kiosk-screen-bg-alpha, rgba(255, 255, 255, 0.15)) !important;
+  border-color: var(--kiosk-screen-text) !important;
+  border-width: 1px !important;
+  border-style: solid !important;
+  backdrop-filter: blur(8px) !important;
+  transition: all 0.3s ease !important;
 }
 
-/* Override problematic Tailwind text classes within kiosk screens */
-.kiosk-screen .text-muted-foreground,
-.kiosk-screen .text-primary,
-.kiosk-screen .text-secondary,
-.kiosk-screen .text-accent {
-  color: inherit !important;
+/* Button hover states */
+.kiosk-screen[data-text-override="1"] button:hover,
+.kiosk-screen[data-text-override="1"] [role="button"]:hover {
+  background: var(--kiosk-screen-bg-alpha-hover, rgba(255, 255, 255, 0.25)) !important;
+  transform: scale(1.02) !important;
+}
+
+/* Button active states */
+.kiosk-screen[data-text-override="1"] button:active,
+.kiosk-screen[data-text-override="1"] [role="button"]:active {
+  background: var(--kiosk-screen-bg-alpha-active, rgba(255, 255, 255, 0.35)) !important;
+  transform: scale(0.98) !important;
+}
+
+/* Override all text color classes within kiosk screens */
+.kiosk-screen[data-text-override="1"] .text-muted-foreground,
+.kiosk-screen[data-text-override="1"] .text-primary,
+.kiosk-screen[data-text-override="1"] .text-secondary,
+.kiosk-screen[data-text-override="1"] .text-accent,
+.kiosk-screen[data-text-override="1"] .text-foreground {
+  color: var(--kiosk-screen-text) !important;
 }
 
 /* Advanced Keyframe Animations */

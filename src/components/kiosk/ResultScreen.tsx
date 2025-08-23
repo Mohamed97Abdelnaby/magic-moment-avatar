@@ -61,6 +61,7 @@ interface ResultScreenProps {
   overlayOpacity?: number;
   title?: string;
   textColor?: string;
+  backgroundColor?: string;
   stageAnimationKey: number;
 }
 
@@ -79,6 +80,7 @@ const ResultScreen = ({
   overlayOpacity,
   title,
   textColor,
+  backgroundColor,
   stageAnimationKey
 }: ResultScreenProps) => {
   const [isWhatsAppDialogOpen, setIsWhatsAppDialogOpen] = useState(false);
@@ -132,7 +134,7 @@ const ResultScreen = ({
       )}
       <ParticleField count={25} />
       
-      <KioskScreenTextScope color={textColor} className="animate-fade-in-up relative z-10">
+      <KioskScreenTextScope color={textColor} backgroundColor={backgroundColor} className="animate-fade-in-up relative z-10">
         <h1 className="text-8xl font-bold mb-12 animate-bounce-in">
           {generationError ? 'Oops! Using your original photo 📸' : title || 'Your Avatar is Ready! 🎉'}
         </h1>
@@ -162,7 +164,7 @@ const ResultScreen = ({
         <Card className="p-12 shadow-glow glass border-4 border-primary/20 relative overflow-hidden">
           <div className="absolute inset-0 gradient-glow animate-pulse-glow" />
           
-          <KioskScreenTextScope color={textColor} className="relative z-10">
+          <KioskScreenTextScope color={textColor} backgroundColor={backgroundColor} className="relative z-10">
             <div className="aspect-square bg-muted rounded-3xl overflow-hidden mb-8 shadow-3d animate-pulse-glow">
               {(generatedAvatar || capturedPhoto) ? (
                 <img 

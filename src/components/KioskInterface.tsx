@@ -49,7 +49,8 @@ const KioskInterface = ({ isDemo = false, demoSettings, eventId }: KioskInterfac
     eventSelectedStyles, 
     screens, 
     getTextColor, 
-    getIsolatedBackgroundStyle 
+    getIsolatedBackgroundStyle,
+    getBackgroundColor
   } = useKioskTheme({ isDemo, demoSettings, eventId });
 
   const {
@@ -169,6 +170,7 @@ const KioskInterface = ({ isDemo = false, demoSettings, eventId }: KioskInterfac
             overlayOpacity={currentScreen.overlayOpacity}
             title={currentScreen.title}
             textColor={getTextColor('styles')}
+            backgroundColor={getBackgroundColor('styles')}
             stageAnimationKey={stageAnimationKey}
           />
         );
@@ -181,6 +183,7 @@ const KioskInterface = ({ isDemo = false, demoSettings, eventId }: KioskInterfac
             backgroundImageUrl={screens.camera.backgroundImageDataUrl}
             overlayOpacity={screens.camera.overlayOpacity}
             textColor={getTextColor('camera')}
+            backgroundColor={getBackgroundColor('camera')}
             stageAnimationKey={stageAnimationKey}
           />
         );
@@ -204,7 +207,7 @@ const KioskInterface = ({ isDemo = false, demoSettings, eventId }: KioskInterfac
 
             <ParticleField count={10} />
             
-            <KioskScreenTextScope color={getTextColor('camera')} className="relative z-10">
+            <KioskScreenTextScope color={getTextColor('camera')} backgroundColor={getBackgroundColor('camera')} className="relative z-10">
               <PhotoPreview
                 capturedPhoto={capturedPhoto!}
                 onRetake={handleRetakePhoto}
@@ -222,6 +225,7 @@ const KioskInterface = ({ isDemo = false, demoSettings, eventId }: KioskInterfac
             overlayOpacity={screens.countdown.overlayOpacity}
             title={screens.countdown.title}
             textColor={getTextColor('countdown')}
+            backgroundColor={getBackgroundColor('countdown')}
             stageAnimationKey={stageAnimationKey}
           />
         );
@@ -234,6 +238,7 @@ const KioskInterface = ({ isDemo = false, demoSettings, eventId }: KioskInterfac
             overlayOpacity={screens.loading.overlayOpacity}
             title={screens.loading.title}
             textColor={getTextColor('loading')}
+            backgroundColor={getBackgroundColor('loading')}
             stageAnimationKey={stageAnimationKey}
           />
         );
@@ -255,6 +260,7 @@ const KioskInterface = ({ isDemo = false, demoSettings, eventId }: KioskInterfac
             overlayOpacity={screens.result.overlayOpacity}
             title={screens.result.title}
             textColor={getTextColor('result')}
+            backgroundColor={getBackgroundColor('result')}
             stageAnimationKey={stageAnimationKey}
           />
         );
