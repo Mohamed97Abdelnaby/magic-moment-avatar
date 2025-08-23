@@ -73,25 +73,25 @@ const StyleSelection = ({
       )}
 
       <div className="relative z-10 text-center">
-        <div className="absolute top-8 left-8 z-20">
+        <div className="fixed top-8 left-8 z-50">
           <Button
             onClick={() => navigate('/')}
             variant="ghost"
-            size="lg"
-            className="flex items-center gap-2 text-lg px-6 py-3 rounded-xl backdrop-blur-sm bg-white/10 hover:bg-white/20 border border-white/20 hover:border-white/40 transition-all duration-300"
+            size="sm"
+            className="flex items-center gap-2 text-sm px-4 py-2 rounded-xl backdrop-blur-sm bg-white/10 hover:bg-white/20 border border-white/20 hover:border-white/40 transition-all duration-300"
             style={{ 
               color: textColor,
               borderColor: textColor ? `${textColor.replace(')', ' / 0.3)')}` : 'rgba(255,255,255,0.3)'
             }}
           >
-            <Home className="h-5 w-5" />
+            <Home className="h-4 w-4" />
             Back to Home
           </Button>
         </div>
 
         <ParticleField count={15} />
         
-        <div className="animate-fade-in-up">
+        <div className="animate-fade-in-up pt-20">
           <h1
             className="text-7xl font-bold mb-6 animate-scale-in"
             style={{ color: textColor }}

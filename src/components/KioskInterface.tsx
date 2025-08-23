@@ -264,13 +264,20 @@ const KioskInterface = ({ isDemo = false, demoSettings, eventId }: KioskInterfac
     }
   };
 
-  const isolatedBackgroundStyle = getIsolatedBackgroundStyle(currentStep);
-  const currentScreen = screens[currentStep] || screens.styles;
+  const currentScreenKey = currentStep === 'photo-preview' ? 'camera' : currentStep;
+  const isolatedBackgroundStyle = getIsolatedBackgroundStyle(currentScreenKey);
+  const currentScreen = screens[currentScreenKey] || screens.styles;
 
   return (
     <div 
-      className="min-h-screen relative overflow-hidden kiosk-isolated"
-      style={isolatedBackgroundStyle}
+      className={`min-h-screen relative overflow-hidden ${
+        isDemo ? 'kiosk-isolated kiosk-demo-theme' : 'kiosk-isolated'
+      }`}
+      style={{
+        ...isolatedBackgroundStyle,
+        ['--custom-text-color' as any]: getTextColor(currentScreenKey)
+      }}
+      data-text-color={getTextColor(currentScreenKey)}
     >
       {currentScreen.backgroundImageDataUrl && (
         <div 

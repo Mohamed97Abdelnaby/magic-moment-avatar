@@ -33,6 +33,34 @@ export function validateEventDetails(eventName: string, location?: string): Step
   };
 }
 
+// Validate event name uniqueness
+export async function validateEventNameUnique(eventName: string, userId: string, eventId?: string): Promise<ValidationResult> {
+  const { supabase } = await import("@/integrations/supabase/client");
+  
+  let query = supabase
+    .from('events')
+    .select('id')
+    .eq('user_id', userId)
+    .eq('name', eventName.trim());
+  
+  // If editing, exclude current event from check
+  if (eventId) {
+    query = query.neq('id', eventId);
+  }
+  
+  const { data, error } = await query;
+  
+  if (error) {
+    return { isValid: false, errors: ['Failed to validate event name'] };
+  }
+  
+  if (data && data.length > 0) {
+    return { isValid: false, errors: ['Event name already exists. Please choose a different name.'] };
+  }
+  
+  return { isValid: true, errors: [] };
+}
+
 // Validate final step (event creation)
 export function validateFinalStep(eventName: string, selectedAvatarStyles: string[]): StepValidation {
   const errors: string[] = [];

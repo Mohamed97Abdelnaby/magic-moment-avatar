@@ -290,6 +290,40 @@ All colors MUST be HSL.
   border-color: hsl(var(--kiosk-border, var(--border))) !important; 
 }
 
+/* Kiosk Demo - Force Calm Dark Blue Theme */
+.kiosk-demo-theme {
+  --kiosk-primary: 217 90% 61%;
+  --kiosk-primary-foreground: 0 0% 100%;
+  --kiosk-secondary: 200 60% 50%;
+  --kiosk-secondary-foreground: 0 0% 100%;
+  --kiosk-accent: 220 28% 20%;
+  --kiosk-accent-foreground: 215 30% 92%;
+  --kiosk-muted: 220 20% 18%;
+  --kiosk-muted-foreground: 215 15% 65%;
+  --kiosk-background: 224 45% 10%;
+  --kiosk-foreground: 215 30% 92%;
+  --kiosk-border: 220 28% 22%;
+  --kiosk-ring: 217 90% 60%;
+  --kiosk-input: 220 28% 16%;
+}
+
+/* Apply custom text color to ALL text elements in kiosk */
+.kiosk-isolated[data-text-color] * {
+  color: var(--custom-text-color) !important;
+}
+
+.kiosk-isolated[data-text-color] h1,
+.kiosk-isolated[data-text-color] h2,
+.kiosk-isolated[data-text-color] h3,
+.kiosk-isolated[data-text-color] h4,
+.kiosk-isolated[data-text-color] h5,
+.kiosk-isolated[data-text-color] h6,
+.kiosk-isolated[data-text-color] p,
+.kiosk-isolated[data-text-color] span,
+.kiosk-isolated[data-text-color] div:not([class*="bg-"]):not([class*="border-"]) {
+  color: var(--custom-text-color) !important;
+}
+
 /* Advanced Keyframe Animations */
 @keyframes float {
   0%, 100% { transform: translateY(0px) rotateZ(0deg); }

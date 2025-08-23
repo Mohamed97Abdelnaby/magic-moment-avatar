@@ -281,6 +281,20 @@ const SetupWizard = () => {
 
     setLoading(true);
     try {
+      // Validate unique event name
+      const { validateEventNameUnique } = await import("@/lib/validation");
+      const uniqueValidation = await validateEventNameUnique(eventName, user.id, isEditing ? eventId : undefined);
+      
+      if (!uniqueValidation.isValid) {
+        toast({
+          title: "Event Name Already Exists",
+          description: uniqueValidation.errors[0],
+          variant: "destructive"
+        });
+        setLoading(false);
+        return;
+      }
+
       // Prepare event data
       const eventData = {
         name: eventName,
