@@ -1,5 +1,6 @@
 import QuoteDisplay from "@/components/QuoteDisplay";
 import AIRobotDrawing from "@/components/AIRobotDrawing";
+import { KioskScreenTextScope } from "./KioskThemeWrapper";
 
 const ParticleField = ({ count = 12 }: { count?: number }) => {
   return (
@@ -59,10 +60,7 @@ const LoadingScreen = ({
       
       <div className="absolute inset-0 gradient-subtle opacity-40" />
       
-      <div 
-        className="kiosk-screen relative z-10 space-y-12"
-        style={{ ['--screen-text-color' as any]: textColor }}
-      >
+      <KioskScreenTextScope color={textColor} className="relative z-10 space-y-12">
         <div className="space-y-8 animate-watercolor-bloom">
           <h1 className="text-4xl font-light">
             {title || 'Crafting your artistic vision...'}
@@ -98,7 +96,7 @@ const LoadingScreen = ({
             ))}
           </div>
         </div>
-      </div>
+      </KioskScreenTextScope>
     </div>
   );
 };

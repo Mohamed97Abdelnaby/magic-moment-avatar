@@ -8,6 +8,7 @@ import CountdownScreen from "./kiosk/CountdownScreen";
 import LoadingScreen from "./kiosk/LoadingScreen";
 import ResultScreen from "./kiosk/ResultScreen";
 import { type ScreenSettings } from "@/lib/kioskSettings";
+import KioskThemeWrapper, { KioskScreenTextScope } from "./kiosk/KioskThemeWrapper";
 
 interface KioskInterfaceProps {
   isDemo?: boolean;
@@ -203,16 +204,13 @@ const KioskInterface = ({ isDemo = false, demoSettings, eventId }: KioskInterfac
 
             <ParticleField count={10} />
             
-            <div 
-              className="kiosk-screen relative z-10"
-              style={{ ['--screen-text-color' as any]: getTextColor('camera') }}
-            >
+            <KioskScreenTextScope color={getTextColor('camera')} className="relative z-10">
               <PhotoPreview
                 capturedPhoto={capturedPhoto!}
                 onRetake={handleRetakePhoto}
                 onConfirm={handleConfirmPhoto}
               />
-            </div>
+            </KioskScreenTextScope>
           </div>
         );
 
@@ -271,27 +269,30 @@ const KioskInterface = ({ isDemo = false, demoSettings, eventId }: KioskInterfac
   const currentScreen = screens[currentScreenKey] || screens.styles;
 
   return (
-    <div 
-      className={`min-h-screen relative overflow-hidden ${
-        isDemo ? 'kiosk-isolated kiosk-demo-theme' : 'kiosk-isolated'
-      }`}
-      style={isolatedBackgroundStyle}
+    <KioskThemeWrapper 
+      forceCalmDarkBlue={isDemo}
+      className="min-h-screen relative overflow-hidden"
     >
-      {currentScreen.backgroundImageDataUrl && (
-        <div 
-          className="absolute inset-0 bg-black"
-          style={{ opacity: currentScreen.overlayOpacity || 0.6 }}
-        />
-      )}
-      
-      <div className="absolute inset-0 gradient-subtle opacity-30" />
-      
-      <div className="relative z-10 min-h-screen flex items-center justify-center p-8">
-        <div className="w-full max-w-7xl">
-          {renderContent()}
+      <div 
+        className="min-h-screen relative overflow-hidden kiosk-isolated"
+        style={isolatedBackgroundStyle}
+      >
+        {currentScreen.backgroundImageDataUrl && (
+          <div 
+            className="absolute inset-0 bg-black"
+            style={{ opacity: currentScreen.overlayOpacity || 0.6 }}
+          />
+        )}
+        
+        <div className="absolute inset-0 gradient-subtle opacity-30" />
+        
+        <div className="relative z-10 min-h-screen flex items-center justify-center p-8">
+          <div className="w-full max-w-7xl">
+            {renderContent()}
+          </div>
         </div>
       </div>
-    </div>
+    </KioskThemeWrapper>
   );
 };
 

@@ -59,7 +59,7 @@ export const useKioskTheme = ({ isDemo, demoSettings, eventId }: UseKioskThemePr
     return loadScreenSettings();
   });
 
-  // Load event data and selected avatar styles
+  // Load event data and selected avatar styles - SKIP in demo mode completely
   useEffect(() => {
     if (!isDemo && eventId) {
       const loadEventData = async () => {
@@ -148,7 +148,7 @@ export const useKioskTheme = ({ isDemo, demoSettings, eventId }: UseKioskThemePr
     console.log('Kiosk theme applied successfully');
   }, []);
 
-  // Load per-screen settings
+  // Load per-screen settings - SKIP in demo mode completely
   useEffect(() => {
     if (!isDemo) {
       if (eventId) {

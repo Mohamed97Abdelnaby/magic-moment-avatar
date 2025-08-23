@@ -1,4 +1,5 @@
 import QuoteDisplay from "@/components/QuoteDisplay";
+import { KioskScreenTextScope } from "./KioskThemeWrapper";
 
 const ParticleField = ({ count = 12 }: { count?: number }) => {
   return (
@@ -57,10 +58,7 @@ const CountdownScreen = ({
       
       <div className="absolute inset-0 gradient-subtle opacity-30" />
       
-      <div 
-        className="kiosk-screen relative z-10 space-y-12"
-        style={{ ['--screen-text-color' as any]: textColor }}
-      >
+      <KioskScreenTextScope color={textColor} className="relative z-10 space-y-12">
         <div className="space-y-8 animate-fade-in-up">
           <h1 className="text-5xl font-light mb-8">
             {title || 'Take a moment...'}
@@ -89,7 +87,7 @@ const CountdownScreen = ({
         >
           When you're ready... 🌸
         </p>
-      </div>
+      </KioskScreenTextScope>
     </div>
   );
 };

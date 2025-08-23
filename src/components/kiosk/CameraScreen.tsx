@@ -1,4 +1,5 @@
 import CameraCapture from "@/components/CameraCapture";
+import { KioskScreenTextScope } from "./KioskThemeWrapper";
 
 const ParticleField = ({ count = 12 }: { count?: number }) => {
   return (
@@ -56,15 +57,12 @@ const CameraScreen = ({
 
       <ParticleField count={10} />
       
-      <div 
-        className="kiosk-screen relative z-10"
-        style={{ ['--screen-text-color' as any]: textColor }}
-      >
+      <KioskScreenTextScope color={textColor} className="relative z-10">
         <CameraCapture
           onPhotoCapture={onPhotoCapture}
           onBack={onBack}
         />
-      </div>
+      </KioskScreenTextScope>
     </div>
   );
 };

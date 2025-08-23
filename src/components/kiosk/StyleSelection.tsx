@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Camera, ArrowRight, Heart, Home } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { KioskScreenTextScope } from "./KioskThemeWrapper";
 
 const ParticleField = ({ count = 12 }: { count?: number }) => {
   return (
@@ -72,11 +73,8 @@ const StyleSelection = ({
         />
       )}
 
-      <div 
-        className="kiosk-screen relative z-10 text-center"
-        style={{ ['--screen-text-color' as any]: textColor }}
-      >
-        <div className="fixed top-8 left-8 z-50">
+      <KioskScreenTextScope color={textColor} className="relative z-10 text-center">
+        <div className="fixed top-20 left-8 z-50">
           <Button
             onClick={() => navigate('/')}
             variant="ghost"
@@ -93,7 +91,7 @@ const StyleSelection = ({
 
         <ParticleField count={15} />
         
-        <div className="animate-fade-in-up pt-20">
+        <div className="animate-fade-in-up pt-32">
           <h1 className="text-7xl font-bold mb-6 animate-scale-in">
             {title || 'Choose your Avatar'}
           </h1>
@@ -152,7 +150,7 @@ const StyleSelection = ({
             </Button>
           </div>
         )}
-      </div>
+      </KioskScreenTextScope>
     </div>
   );
 };

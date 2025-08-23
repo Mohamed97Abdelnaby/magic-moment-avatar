@@ -5,6 +5,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { RotateCcw, Send, Printer } from "lucide-react";
+import { KioskScreenTextScope } from "./KioskThemeWrapper";
 
 const ParticleField = ({ count = 12 }: { count?: number }) => {
   return (
@@ -131,10 +132,7 @@ const ResultScreen = ({
       )}
       <ParticleField count={25} />
       
-      <div 
-        className="kiosk-screen animate-fade-in-up relative z-10"
-        style={{ ['--screen-text-color' as any]: textColor }}
-      >
+      <KioskScreenTextScope color={textColor} className="animate-fade-in-up relative z-10">
         <h1 className="text-8xl font-bold mb-12 animate-bounce-in">
           {generationError ? 'Oops! Using your original photo 📸' : title || 'Your Avatar is Ready! 🎉'}
         </h1>
@@ -146,7 +144,7 @@ const ResultScreen = ({
           {generationError}
         </p>
         )}
-      </div>
+      </KioskScreenTextScope>
 
       {generationError && (
         <div className="mb-8">
@@ -164,10 +162,7 @@ const ResultScreen = ({
         <Card className="p-12 shadow-glow glass border-4 border-primary/20 relative overflow-hidden">
           <div className="absolute inset-0 gradient-glow animate-pulse-glow" />
           
-          <div 
-            className="kiosk-screen relative z-10"
-            style={{ ['--screen-text-color' as any]: textColor }}
-          >
+          <KioskScreenTextScope color={textColor} className="relative z-10">
             <div className="aspect-square bg-muted rounded-3xl overflow-hidden mb-8 shadow-3d animate-pulse-glow">
               {(generatedAvatar || capturedPhoto) ? (
                 <img 
@@ -190,7 +185,7 @@ const ResultScreen = ({
             >
               {generatedAvatar ? 'Your cultural transformation is complete!' : 'Ready to share with the world!'}
             </p>
-          </div>
+          </KioskScreenTextScope>
           
           {Array.from({ length: 6 }).map((_, i) => (
             <div

@@ -308,21 +308,26 @@ All colors MUST be HSL.
 }
 
 /* Kiosk Screen Text Color Override System */
-.kiosk-screen {
-  color: var(--screen-text-color, inherit);
+.kiosk-screen[data-text-override="1"] {
+  color: var(--kiosk-screen-text, inherit) !important;
 }
 
-/* Apply screen text color to ALL text elements except UI components */
-.kiosk-screen h1,
-.kiosk-screen h2,
-.kiosk-screen h3,
-.kiosk-screen h4,
-.kiosk-screen h5,
-.kiosk-screen h6,
-.kiosk-screen p,
-.kiosk-screen span:not(.lucide):not([class*="bg-"]):not([class*="border-"]),
-.kiosk-screen div:not([class*="bg-"]):not([class*="border-"]):not([class*="button"]):not(.button) {
-  color: inherit !important;
+/* Apply screen text color to ALL text elements with stronger selectors */
+.kiosk-screen[data-text-override="1"] *:not(button):not([role="button"]):not(.bg-primary):not(.bg-secondary):not(.bg-accent):not(.border-primary):not(.border-secondary):not(.border-accent) {
+  color: var(--kiosk-screen-text) !important;
+}
+
+/* Specifically target all text content elements */
+.kiosk-screen[data-text-override="1"] h1,
+.kiosk-screen[data-text-override="1"] h2, 
+.kiosk-screen[data-text-override="1"] h3,
+.kiosk-screen[data-text-override="1"] h4,
+.kiosk-screen[data-text-override="1"] h5,
+.kiosk-screen[data-text-override="1"] h6,
+.kiosk-screen[data-text-override="1"] p,
+.kiosk-screen[data-text-override="1"] span,
+.kiosk-screen[data-text-override="1"] div {
+  color: var(--kiosk-screen-text) !important;
 }
 
 /* Preserve UI element colors (buttons, borders, backgrounds) */
