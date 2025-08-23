@@ -131,14 +131,17 @@ const ResultScreen = ({
       )}
       <ParticleField count={25} />
       
-      <div className="animate-fade-in-up relative z-10">
-        <h1 className="text-8xl font-bold mb-12 animate-bounce-in" style={{ color: textColor }}>
+      <div 
+        className="kiosk-screen animate-fade-in-up relative z-10"
+        style={{ ['--screen-text-color' as any]: textColor }}
+      >
+        <h1 className="text-8xl font-bold mb-12 animate-bounce-in">
           {generationError ? 'Oops! Using your original photo 📸' : title || 'Your Avatar is Ready! 🎉'}
         </h1>
         {generationError && (
         <p 
           className="text-xl mb-8"
-          style={{ color: textColor, opacity: 0.7 }}
+          style={{ opacity: 0.7 }}
         >
           {generationError}
         </p>
@@ -161,7 +164,10 @@ const ResultScreen = ({
         <Card className="p-12 shadow-glow glass border-4 border-primary/20 relative overflow-hidden">
           <div className="absolute inset-0 gradient-glow animate-pulse-glow" />
           
-          <div className="relative z-10">
+          <div 
+            className="kiosk-screen relative z-10"
+            style={{ ['--screen-text-color' as any]: textColor }}
+          >
             <div className="aspect-square bg-muted rounded-3xl overflow-hidden mb-8 shadow-3d animate-pulse-glow">
               {(generatedAvatar || capturedPhoto) ? (
                 <img 
@@ -175,15 +181,12 @@ const ResultScreen = ({
                 </div>
               )}
             </div>
-            <p 
-              className="text-3xl font-semibold mb-4"
-              style={{ color: textColor }}
-            >
+            <p className="text-3xl font-semibold mb-4">
               {generatedAvatar ? 'AI-Generated Egyptian Avatar' : `${selectedStyle.charAt(0).toUpperCase() + selectedStyle.slice(1)} Style`}
             </p>
             <p 
               className="text-xl"
-              style={{ color: textColor, opacity: 0.8 }}
+              style={{ opacity: 0.8 }}
             >
               {generatedAvatar ? 'Your cultural transformation is complete!' : 'Ready to share with the world!'}
             </p>

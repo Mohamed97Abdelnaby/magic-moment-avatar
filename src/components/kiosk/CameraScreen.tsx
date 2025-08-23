@@ -56,11 +56,13 @@ const CameraScreen = ({
 
       <ParticleField count={10} />
       
-      <div className="relative z-10">
+      <div 
+        className="kiosk-screen relative z-10"
+        style={{ ['--screen-text-color' as any]: textColor }}
+      >
         <CameraCapture
           onPhotoCapture={onPhotoCapture}
           onBack={onBack}
-          textColor={textColor}
         />
       </div>
     </div>

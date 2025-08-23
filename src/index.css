@@ -307,21 +307,42 @@ All colors MUST be HSL.
   --kiosk-input: 220 28% 16%;
 }
 
-/* Apply custom text color to ALL text elements in kiosk */
-.kiosk-isolated[data-text-color] * {
-  color: var(--custom-text-color) !important;
+/* Kiosk Screen Text Color Override System */
+.kiosk-screen {
+  color: var(--screen-text-color, inherit);
 }
 
-.kiosk-isolated[data-text-color] h1,
-.kiosk-isolated[data-text-color] h2,
-.kiosk-isolated[data-text-color] h3,
-.kiosk-isolated[data-text-color] h4,
-.kiosk-isolated[data-text-color] h5,
-.kiosk-isolated[data-text-color] h6,
-.kiosk-isolated[data-text-color] p,
-.kiosk-isolated[data-text-color] span,
-.kiosk-isolated[data-text-color] div:not([class*="bg-"]):not([class*="border-"]) {
-  color: var(--custom-text-color) !important;
+/* Apply screen text color to ALL text elements except UI components */
+.kiosk-screen h1,
+.kiosk-screen h2,
+.kiosk-screen h3,
+.kiosk-screen h4,
+.kiosk-screen h5,
+.kiosk-screen h6,
+.kiosk-screen p,
+.kiosk-screen span:not(.lucide):not([class*="bg-"]):not([class*="border-"]),
+.kiosk-screen div:not([class*="bg-"]):not([class*="border-"]):not([class*="button"]):not(.button) {
+  color: inherit !important;
+}
+
+/* Preserve UI element colors (buttons, borders, backgrounds) */
+.kiosk-screen .bg-primary,
+.kiosk-screen .bg-secondary,
+.kiosk-screen .bg-accent,
+.kiosk-screen .border-primary,
+.kiosk-screen .border-secondary,
+.kiosk-screen .border-accent,
+.kiosk-screen button,
+.kiosk-screen [role="button"] {
+  /* Keep their original colors - don't inherit text color */
+}
+
+/* Override problematic Tailwind text classes within kiosk screens */
+.kiosk-screen .text-muted-foreground,
+.kiosk-screen .text-primary,
+.kiosk-screen .text-secondary,
+.kiosk-screen .text-accent {
+  color: inherit !important;
 }
 
 /* Advanced Keyframe Animations */

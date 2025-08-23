@@ -59,9 +59,12 @@ const LoadingScreen = ({
       
       <div className="absolute inset-0 gradient-subtle opacity-40" />
       
-      <div className="relative z-10 space-y-12">
+      <div 
+        className="kiosk-screen relative z-10 space-y-12"
+        style={{ ['--screen-text-color' as any]: textColor }}
+      >
         <div className="space-y-8 animate-watercolor-bloom">
-          <h1 className="text-4xl font-light" style={{ color: textColor }}>
+          <h1 className="text-4xl font-light">
             {title || 'Crafting your artistic vision...'}
           </h1>
           
@@ -78,7 +81,7 @@ const LoadingScreen = ({
         <div className="mt-8 space-y-6">
           <p 
             className="text-xl font-light"
-            style={{ color: textColor, opacity: 0.8 }}
+            style={{ opacity: 0.8 }}
           >
             Creating your {selectedStyle} masterpiece
           </p>

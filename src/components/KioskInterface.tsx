@@ -203,12 +203,14 @@ const KioskInterface = ({ isDemo = false, demoSettings, eventId }: KioskInterfac
 
             <ParticleField count={10} />
             
-            <div className="relative z-10">
+            <div 
+              className="kiosk-screen relative z-10"
+              style={{ ['--screen-text-color' as any]: getTextColor('camera') }}
+            >
               <PhotoPreview
                 capturedPhoto={capturedPhoto!}
                 onRetake={handleRetakePhoto}
                 onConfirm={handleConfirmPhoto}
-                textColor={getTextColor('camera')}
               />
             </div>
           </div>
@@ -273,11 +275,7 @@ const KioskInterface = ({ isDemo = false, demoSettings, eventId }: KioskInterfac
       className={`min-h-screen relative overflow-hidden ${
         isDemo ? 'kiosk-isolated kiosk-demo-theme' : 'kiosk-isolated'
       }`}
-      style={{
-        ...isolatedBackgroundStyle,
-        ['--custom-text-color' as any]: getTextColor(currentScreenKey)
-      }}
-      data-text-color={getTextColor(currentScreenKey)}
+      style={isolatedBackgroundStyle}
     >
       {currentScreen.backgroundImageDataUrl && (
         <div 

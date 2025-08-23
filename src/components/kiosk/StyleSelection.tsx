@@ -72,7 +72,10 @@ const StyleSelection = ({
         />
       )}
 
-      <div className="relative z-10 text-center">
+      <div 
+        className="kiosk-screen relative z-10 text-center"
+        style={{ ['--screen-text-color' as any]: textColor }}
+      >
         <div className="fixed top-8 left-8 z-50">
           <Button
             onClick={() => navigate('/')}
@@ -80,7 +83,6 @@ const StyleSelection = ({
             size="sm"
             className="flex items-center gap-2 text-sm px-4 py-2 rounded-xl backdrop-blur-sm bg-white/10 hover:bg-white/20 border border-white/20 hover:border-white/40 transition-all duration-300"
             style={{ 
-              color: textColor,
               borderColor: textColor ? `${textColor.replace(')', ' / 0.3)')}` : 'rgba(255,255,255,0.3)'
             }}
           >
@@ -92,16 +94,10 @@ const StyleSelection = ({
         <ParticleField count={15} />
         
         <div className="animate-fade-in-up pt-20">
-          <h1
-            className="text-7xl font-bold mb-6 animate-scale-in"
-            style={{ color: textColor }}
-          >
+          <h1 className="text-7xl font-bold mb-6 animate-scale-in">
             {title || 'Choose your Avatar'}
           </h1>
-          <p
-            className="text-3xl mb-16 animate-fade-in-up"
-            style={{ color: textColor, animationDelay: '0.2s' }}
-          >
+          <p className="text-3xl mb-16 animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
             Select how you want your avatar to look
           </p>
         </div>
@@ -125,8 +121,8 @@ const StyleSelection = ({
                   <div className="text-8xl mb-6 animate-float" style={{ animationDelay: `${index * 0.2}s` }}>
                     {style.preview}
                   </div>
-                  <h3 className="text-3xl font-bold mb-2" style={{ color: textColor }}>{style.name}</h3>
-                  <p className="text-lg opacity-70" style={{ color: textColor }}>{style.description}</p>
+                  <h3 className="text-3xl font-bold mb-2">{style.name}</h3>
+                  <p className="text-lg opacity-70">{style.description}</p>
                 </div>
                 
                 {selectedStyle === style.id && (
@@ -145,7 +141,6 @@ const StyleSelection = ({
               onClick={onStartCamera}
               className="text-3xl px-20 py-10 rounded-2xl backdrop-blur-md bg-white/15 hover:bg-white/25 border-2 border-white/30 hover:border-white/50 shadow-glow hover:shadow-neon transition-all duration-500 transform hover:scale-105"
               style={{ 
-                color: textColor,
                 borderColor: textColor ? `${textColor.replace(')', ' / 0.4)')}` : 'rgba(255,255,255,0.4)',
                 backgroundColor: textColor ? `${textColor.replace(')', ' / 0.1)')}` : 'rgba(255,255,255,0.1)'
               }}
@@ -153,10 +148,7 @@ const StyleSelection = ({
               <Camera className="h-10 w-10 mr-6" />
               Begin Your Journey
               <ArrowRight className="h-10 w-10 ml-6" />
-              <Heart 
-                className="h-8 w-8 ml-4 animate-pulse-soft" 
-                style={{ color: textColor }}
-              />
+              <Heart className="h-8 w-8 ml-4 animate-pulse-soft" />
             </Button>
           </div>
         )}

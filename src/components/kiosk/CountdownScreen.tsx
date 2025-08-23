@@ -57,9 +57,12 @@ const CountdownScreen = ({
       
       <div className="absolute inset-0 gradient-subtle opacity-30" />
       
-      <div className="relative z-10 space-y-12">
+      <div 
+        className="kiosk-screen relative z-10 space-y-12"
+        style={{ ['--screen-text-color' as any]: textColor }}
+      >
         <div className="space-y-8 animate-fade-in-up">
-          <h1 className="text-5xl font-light mb-8" style={{ color: textColor }}>
+          <h1 className="text-5xl font-light mb-8">
             {title || 'Take a moment...'}
           </h1>
           
@@ -74,7 +77,7 @@ const CountdownScreen = ({
         <div className="relative">
           <div 
             className="text-[8rem] font-light transition-all duration-1000 ease-out animate-breathe"
-            style={{ color: textColor, opacity: 0.8 }}
+            style={{ opacity: 0.8 }}
           >
             {countdown}
           </div>
@@ -82,7 +85,7 @@ const CountdownScreen = ({
         
         <p 
           className="text-2xl font-light"
-          style={{ color: textColor, opacity: 0.7 }}
+          style={{ opacity: 0.7 }}
         >
           When you're ready... 🌸
         </p>

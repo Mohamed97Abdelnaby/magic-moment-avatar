@@ -7,10 +7,9 @@ import { useEnhancedCameraCapture } from '@/hooks/useEnhancedCameraCapture';
 interface CameraCaptureProps {
   onPhotoCapture: (imageData: string) => void;
   onBack: () => void;
-  textColor?: string;
 }
 
-const CameraCapture = ({ onPhotoCapture, onBack, textColor }: CameraCaptureProps) => {
+const CameraCapture = ({ onPhotoCapture, onBack }: CameraCaptureProps) => {
   const {
     videoRef,
     canvasRef,
@@ -50,16 +49,10 @@ const CameraCapture = ({ onPhotoCapture, onBack, textColor }: CameraCaptureProps
   return (
     <div className="text-center space-y-8">
       <div className="space-y-4">
-        <h1 
-          className="text-6xl font-bold mb-4 animate-fade-in-up" 
-          style={{ color: textColor }}
-        >
+        <h1 className="text-6xl font-bold mb-4 animate-fade-in-up">
           Strike Your Pose! 📸
         </h1>
-        <p 
-          className="text-2xl animate-fade-in-up" 
-          style={{ color: textColor, animationDelay: '0.2s' }}
-        >
+        <p className="text-2xl animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
           Get ready for your close-up
         </p>
       </div>

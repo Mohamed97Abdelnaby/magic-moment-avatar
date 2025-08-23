@@ -6,23 +6,16 @@ interface PhotoPreviewProps {
   capturedPhoto: string;
   onRetake: () => void;
   onConfirm: () => void;
-  textColor?: string;
 }
 
-const PhotoPreview = ({ capturedPhoto, onRetake, onConfirm, textColor }: PhotoPreviewProps) => {
+const PhotoPreview = ({ capturedPhoto, onRetake, onConfirm }: PhotoPreviewProps) => {
   return (
     <div className="text-center space-y-8">
       <div className="space-y-4">
-        <h1 
-          className="text-6xl font-bold mb-4 animate-fade-in-up" 
-          style={{ color: textColor }}
-        >
+        <h1 className="text-6xl font-bold mb-4 animate-fade-in-up">
           How do you look? 📸
         </h1>
-        <p 
-          className="text-2xl animate-fade-in-up" 
-          style={{ color: textColor, animationDelay: '0.2s' }}
-        >
+        <p className="text-2xl animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
           Take a look at your photo
         </p>
       </div>
