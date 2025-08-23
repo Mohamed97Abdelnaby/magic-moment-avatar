@@ -515,8 +515,8 @@ const SetupWizard = () => {
       primaryColor={primaryColor}
       secondaryColor={secondaryColor || undefined}
       backgroundStyle={backgroundStyle}
-      title="Avatar Styles Screen"
-      description="Customize how the avatar selection screen looks and feels"
+      title="Style Selection Screen"
+      description="Large, interactive style cards with particle effects and cinematic animations"
       eventName={eventName}
     />
   ), [screenSettings, handleScreenChange, primaryColor, secondaryColor, backgroundStyle, eventName]);
@@ -530,8 +530,8 @@ const SetupWizard = () => {
       primaryColor={primaryColor}
       secondaryColor={secondaryColor || undefined}
       backgroundStyle={backgroundStyle}
-      title="Camera Screen"
-      description="Design the camera interface where users take their photos"
+      title="Camera Interface"
+      description="Strike Your Pose! - Camera capture screen with elegant particle effects"
       eventName={eventName}
     />
   ), [screenSettings, handleScreenChange, primaryColor, secondaryColor, backgroundStyle, eventName]);
@@ -545,8 +545,8 @@ const SetupWizard = () => {
       primaryColor={primaryColor}
       secondaryColor={secondaryColor || undefined}
       backgroundStyle={backgroundStyle}
-      title="Countdown Screen"
-      description="Customize the countdown timer that prepares users for their photo"
+      title="Countdown Timer"
+      description="Elegant countdown with inspirational quotes and subtle breathing animations"
       eventName={eventName}
     />
   ), [screenSettings, handleScreenChange, primaryColor, secondaryColor, backgroundStyle, eventName]);
@@ -560,8 +560,8 @@ const SetupWizard = () => {
       primaryColor={primaryColor}
       secondaryColor={secondaryColor || undefined}
       backgroundStyle={backgroundStyle}
-      title="Loading Screen"
-      description="Style the AI generation screen that creates the avatar"
+      title="AI Generation"
+      description="AI robot drawing animation with inspirational quotes during avatar creation"
       eventName={eventName}
     />
   ), [screenSettings, handleScreenChange, primaryColor, secondaryColor, backgroundStyle, eventName]);
@@ -575,8 +575,8 @@ const SetupWizard = () => {
       primaryColor={primaryColor}
       secondaryColor={secondaryColor || undefined}
       backgroundStyle={backgroundStyle}
-      title="Result Screen"
-      description="Design how users see and share their final avatar"
+      title="Avatar Display & Sharing"
+      description="Final avatar reveal with confetti effects and WhatsApp/print sharing options"
       eventName={eventName}
     />
   ), [screenSettings, handleScreenChange, primaryColor, secondaryColor, backgroundStyle, eventName]);
