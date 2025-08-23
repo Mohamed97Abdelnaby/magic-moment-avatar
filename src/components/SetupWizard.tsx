@@ -131,6 +131,15 @@ const SetupWizard = () => {
         // Populate form with event data
         setEventName(eventData.name);
         setEventLocation(eventData.location || "");
+        
+        // Parse dates if they exist
+        if (eventData.start_date) {
+          setStartDate(new Date(eventData.start_date));
+        }
+        if (eventData.end_date) {
+          setEndDate(new Date(eventData.end_date));
+        }
+        
         setSelectedStyles(eventData.avatar_styles || []);
         setPrimaryColor({
           h: parseInt(eventData.primary_color.split(',')[0]),
@@ -309,6 +318,8 @@ const SetupWizard = () => {
       const eventData = {
         name: eventName,
         location: eventLocation,
+        start_date: startDate ? startDate.toISOString().split('T')[0] : null,
+        end_date: endDate ? endDate.toISOString().split('T')[0] : null,
         primary_color: `${primaryColor.h},${primaryColor.s},${primaryColor.l}`,
         secondary_color: secondaryColor ? `${secondaryColor.h},${secondaryColor.s},${secondaryColor.l}` : null,
         background_style: backgroundStyle,
@@ -354,6 +365,8 @@ const SetupWizard = () => {
       const setupConfig = {
         eventName,
         eventLocation,
+        startDate: startDate?.toISOString(),
+        endDate: endDate?.toISOString(),
         selectedStyles,
         primaryColor,
         secondaryColor,
@@ -378,7 +391,7 @@ const SetupWizard = () => {
     } finally {
       setLoading(false);
     }
-  }, [eventName, eventLocation, selectedStyles, primaryColor, secondaryColor, backgroundStyle, screenSettings, navigate, user, toast, isEditing, eventId]);
+  }, [eventName, eventLocation, startDate, endDate, selectedStyles, primaryColor, secondaryColor, backgroundStyle, screenSettings, navigate, user, toast, isEditing, eventId]);
 
   const saveScreenSettingsToDatabase = async (eventId: string, settings: ScreenSettings) => {
     // Delete existing screen settings for this event

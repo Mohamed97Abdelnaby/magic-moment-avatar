@@ -93,12 +93,14 @@ export type Database = {
           avatar_styles: string[] | null
           background_style: string | null
           created_at: string
+          end_date: string | null
           id: string
           is_active: boolean | null
           location: string | null
           name: string
           primary_color: string
           secondary_color: string | null
+          start_date: string | null
           updated_at: string
           user_id: string
         }
@@ -106,12 +108,14 @@ export type Database = {
           avatar_styles?: string[] | null
           background_style?: string | null
           created_at?: string
+          end_date?: string | null
           id?: string
           is_active?: boolean | null
           location?: string | null
           name: string
           primary_color?: string
           secondary_color?: string | null
+          start_date?: string | null
           updated_at?: string
           user_id: string
         }
@@ -119,12 +123,14 @@ export type Database = {
           avatar_styles?: string[] | null
           background_style?: string | null
           created_at?: string
+          end_date?: string | null
           id?: string
           is_active?: boolean | null
           location?: string | null
           name?: string
           primary_color?: string
           secondary_color?: string | null
+          start_date?: string | null
           updated_at?: string
           user_id?: string
         }
