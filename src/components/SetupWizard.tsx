@@ -10,13 +10,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { ArrowLeft, ArrowRight, CheckCircle2, Palette, Sparkles, Eye, AlertTriangle } from "lucide-react";
 import ColorPicker from "@/components/ColorPicker";
 import ScreenAppearanceEditor from "@/components/ScreenAppearanceEditor";
+import SplitScreenStep from "@/components/SplitScreenStep";
 import SetupProgress from "@/components/SetupProgress";
 import EventDetailsForm from "@/components/EventDetailsForm";
-import SetupStyleSelection from "@/components/setup/SetupStyleSelection";
-import SetupCameraScreen from "@/components/setup/SetupCameraScreen";
-import SetupCountdownScreen from "@/components/setup/SetupCountdownScreen";
-import SetupLoadingScreen from "@/components/setup/SetupLoadingScreen";
-import SetupResultScreen from "@/components/setup/SetupResultScreen";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { HSLColor, hexToHsl } from "@/lib/colorUtils";
 import { getDefaultScreenSettings, loadScreenSettings, saveScreenSettings, type ScreenKey, type ScreenSettings, type ScreenAppearance } from "@/lib/kioskSettings";
@@ -26,14 +22,14 @@ const calmBlue: HSLColor = { h: 217, s: 90, l: 61 };
 
 const stepLabels = [
   "Welcome",
-  "Event Details", 
-  "Theme Colors",
-  "Style Selection Experience",
-  "Camera Interface Design", 
-  "Countdown Timer Experience",
-  "AI Generation Experience",
-  "Result & Sharing Experience",
-  "Avatar Styles & Finish"
+  "Event", 
+  "Colors",
+  "Styles Screen",
+  "Camera Screen",
+  "Countdown Screen", 
+  "Loading Screen",
+  "Result Screen",
+  "Finish",
 ];
 
 const StepsTotal = stepLabels.length;
@@ -511,56 +507,76 @@ const SetupWizard = () => {
 
   // Individual Screen Steps - Memoized for performance
   const StylesScreen = useMemo(() => (
-    <SetupStyleSelection
+    <SplitScreenStep
+      screenKey="styles"
       screenSettings={screenSettings.styles}
+      allScreenSettings={screenSettings}
       onScreenChange={(next) => handleScreenChange('styles', next)}
       primaryColor={primaryColor}
       secondaryColor={secondaryColor || undefined}
       backgroundStyle={backgroundStyle}
+      title="Avatar Styles Screen"
+      description="Customize how the avatar selection screen looks and feels"
       eventName={eventName}
     />
   ), [screenSettings, handleScreenChange, primaryColor, secondaryColor, backgroundStyle, eventName]);
 
   const CameraScreen = useMemo(() => (
-    <SetupCameraScreen
+    <SplitScreenStep
+      screenKey="camera"
       screenSettings={screenSettings.camera}
+      allScreenSettings={screenSettings}
       onScreenChange={(next) => handleScreenChange('camera', next)}
       primaryColor={primaryColor}
       secondaryColor={secondaryColor || undefined}
       backgroundStyle={backgroundStyle}
+      title="Camera Screen"
+      description="Design the camera interface where users take their photos"
       eventName={eventName}
     />
   ), [screenSettings, handleScreenChange, primaryColor, secondaryColor, backgroundStyle, eventName]);
 
   const CountdownScreen = useMemo(() => (
-    <SetupCountdownScreen
+    <SplitScreenStep
+      screenKey="countdown"
       screenSettings={screenSettings.countdown}
+      allScreenSettings={screenSettings}
       onScreenChange={(next) => handleScreenChange('countdown', next)}
       primaryColor={primaryColor}
       secondaryColor={secondaryColor || undefined}
       backgroundStyle={backgroundStyle}
+      title="Countdown Screen"
+      description="Customize the countdown timer that prepares users for their photo"
       eventName={eventName}
     />
   ), [screenSettings, handleScreenChange, primaryColor, secondaryColor, backgroundStyle, eventName]);
 
   const LoadingScreen = useMemo(() => (
-    <SetupLoadingScreen
+    <SplitScreenStep
+      screenKey="loading"
       screenSettings={screenSettings.loading}
+      allScreenSettings={screenSettings}
       onScreenChange={(next) => handleScreenChange('loading', next)}
       primaryColor={primaryColor}
       secondaryColor={secondaryColor || undefined}
       backgroundStyle={backgroundStyle}
+      title="Loading Screen"
+      description="Style the AI generation screen that creates the avatar"
       eventName={eventName}
     />
   ), [screenSettings, handleScreenChange, primaryColor, secondaryColor, backgroundStyle, eventName]);
 
   const ResultScreen = useMemo(() => (
-    <SetupResultScreen
+    <SplitScreenStep
+      screenKey="result"
       screenSettings={screenSettings.result}
+      allScreenSettings={screenSettings}
       onScreenChange={(next) => handleScreenChange('result', next)}
       primaryColor={primaryColor}
       secondaryColor={secondaryColor || undefined}
       backgroundStyle={backgroundStyle}
+      title="Result Screen"
+      description="Design how users see and share their final avatar"
       eventName={eventName}
     />
   ), [screenSettings, handleScreenChange, primaryColor, secondaryColor, backgroundStyle, eventName]);
