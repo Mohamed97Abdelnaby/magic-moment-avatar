@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { HSLColor, generateColorVariants, parseHslString } from "@/lib/colorUtils";
+import { HSLColor, generateColorVariants, parseHslString, hexToHsl } from "@/lib/colorUtils";
 import { supabase } from "@/integrations/supabase/client";
 import { ScreenSettings, loadScreenSettings, getDefaultScreenSettings } from "@/lib/kioskSettings";
 
@@ -161,8 +161,12 @@ export const useKioskTheme = ({ isDemo, demoSettings, eventId }: UseKioskThemePr
               const loadedSettings = { ...getDefaultScreenSettings() };
               screenData.forEach(setting => {
                 if (setting.screen_key in loadedSettings) {
+                  const textColorHex = setting.text_color || '#ffffff';
+                  const textColorHsl = textColorHex ? hexToHsl(textColorHex) : null;
+                  
                   loadedSettings[setting.screen_key as keyof ScreenSettings] = {
-                    textColorHex: setting.text_color || '#ffffff',
+                    textColorHex,
+                    textColorHsl: textColorHsl ? `${textColorHsl.h} ${textColorHsl.s}% ${textColorHsl.l}%` : undefined,
                     backgroundImageDataUrl: setting.background_image || null,
                     backgroundColor: setting.background_color || undefined,
                     overlayOpacity: Number(setting.overlay_opacity) || 0.6,
@@ -194,10 +198,20 @@ export const useKioskTheme = ({ isDemo, demoSettings, eventId }: UseKioskThemePr
   const getTextColor = useCallback((screenKey: keyof ScreenSettings) => {
     const screen = screens[screenKey];
     
+    // First check for HSL string format
     if (screen?.textColorHsl && screen.textColorHsl.trim() !== '') {
       return `hsl(${screen.textColorHsl})`;
     }
     
+    // Then check for hex format and convert
+    if (screen?.textColorHex && screen.textColorHex.trim() !== '') {
+      const hslColor = hexToHsl(screen.textColorHex);
+      if (hslColor) {
+        return `hsl(${hslColor.h} ${hslColor.s}% ${hslColor.l}%)`;
+      }
+    }
+    
+    // Fallback to event primary color
     if (!isDemo && eventColors.primary) {
       return `hsl(${eventColors.primary.h} ${eventColors.primary.s}% ${eventColors.primary.l}%)`;
     }
