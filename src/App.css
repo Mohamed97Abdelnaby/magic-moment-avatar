@@ -1,3 +1,47 @@
+/* app.css */
+
+/* Base application styles */
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+}
+
+/* Kiosk theme styles */
+.kiosk-theme {
+  --kiosk-bg: #1a1a1a;
+  --kiosk-text: #ffffff;
+  --kiosk-event-bg: #0078d4;
+  --kiosk-event-text: #ffffff;
+  --kiosk-border: #444444;
+
+  background-color: var(--kiosk-bg);
+  color: var(--kiosk-text);
+}
+
+/* Apply theme to FullCalendar */
+.kiosk-theme .fc {
+  background-color: var(--kiosk-bg) !important;
+  color: var(--kiosk-text) !important;
+}
+
+.kiosk-theme .fc-event {
+  background-color: var(--kiosk-event-bg) !important;
+  color: var(--kiosk-event-text) !important;
+  border: 1px solid var(--kiosk-border) !important;
+}
+
+.kiosk-theme .fc-toolbar {
+  background: var(--kiosk-bg) !important;
+  color: var(--kiosk-text) !important;
+}
+
+.kiosk-theme .fc-daygrid-day,
+.kiosk-theme .fc-timegrid-slot {
+  background-color: var(--kiosk-bg) !important;
+  color: var(--kiosk-text) !important;
+}
+/* app.css (keep your existing base if needed) */
+
 #root {
   max-width: 1280px;
   margin: 0 auto;
@@ -5,38 +49,74 @@
   text-align: center;
 }
 
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
+/* ===== KIOSK THEME SCOPE =====
+   Everything inside .kiosk-scope uses these CSS vars,
+   so Tailwind classes like bg-primary/text-primary resolve locally.
+*/
+.kiosk-scope {
+  /* Provide fallbacks if tokens are missing */
+  --background: 222 47% 11%;
+  --foreground: 210 40% 98%;
+
+  --primary: 221 83% 53%;
+  --primary-foreground: 210 40% 98%;
+
+  --secondary: 215 20% 65%;
+  --secondary-foreground: 222 47% 11%;
+
+  --accent: 221 83% 53%;
+  --accent-foreground: 210 40% 98%;
+
+  --muted: 217 33% 17%;
+  --muted-foreground: 215 20% 65%;
+
+  --border: 217 33% 20%;
+  --input: 217 33% 20%;
+  --ring: 221 83% 53%;
+
+  /* Optional: base text & bg if components rely on plain color inheritance */
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
 }
 
-@keyframes logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+/* Make common Tailwind semantic colors pick up from local vars */
+.kiosk-scope .bg-primary { background-color: hsl(var(--primary)) !important; }
+.kiosk-scope .text-primary { color: hsl(var(--primary)) !important; }
+.kiosk-scope .border-primary { border-color: hsl(var(--primary)) !important; }
+
+.kiosk-scope .bg-secondary { background-color: hsl(var(--secondary)) !important; }
+.kiosk-scope .text-secondary { color: hsl(var(--secondary)) !important; }
+.kiosk-scope .border-secondary { border-color: hsl(var(--secondary)) !important; }
+
+.kiosk-scope .bg-accent { background-color: hsl(var(--accent)) !important; }
+.kiosk-scope .text-accent { color: hsl(var(--accent)) !important; }
+.kiosk-scope .border-accent { border-color: hsl(var(--accent)) !important; }
+
+.kiosk-scope .bg-muted { background-color: hsl(var(--muted)) !important; }
+.kiosk-scope .text-muted-foreground { color: hsl(var(--muted-foreground)) !important; }
+.kiosk-scope .border-border { border-color: hsl(var(--border)) !important; }
+
+/* ===== PER-SCREEN TEXT OVERRIDE =====
+   If a screen sets data-text-override and --kiosk-screen-text,
+   unify ALL text for typical text elements.
+*/
+.kiosk-scope .kiosk-screen[data-text-override="1"] :is(
+  h1,h2,h3,h4,h5,h6,
+  p,span,small,li,label,
+  blockquote,figcaption,em,strong,code
+) {
+  color: var(--kiosk-screen-text) !important;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
-  }
+/* Don't let the "Back to Home" button cover content */
+.kiosk-scope .back-to-home {
+  position: relative;
+  z-index: 10;           /* enough to be visible */
+  pointer-events: auto;  /* clickable */
+}
+.kiosk-scope .kiosk-stage {
+  position: relative;
+  z-index: 0;
 }
 
-.card {
-  padding: 2em;
-}
-
-.read-the-docs {
-  color: #888;
-}
+/* (Keep your other styles below…) */
