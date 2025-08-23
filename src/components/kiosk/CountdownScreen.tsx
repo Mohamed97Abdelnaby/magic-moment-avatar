@@ -67,16 +67,23 @@ const CountdownScreen = ({
             quotes={countdownQuotes}
             className="mb-12"
             interval={2500}
+            textColor={textColor}
           />
         </div>
         
         <div className="relative">
-          <div className="text-[8rem] font-light text-accent/80 transition-all duration-1000 ease-out animate-breathe">
+          <div 
+            className="text-[8rem] font-light transition-all duration-1000 ease-out animate-breathe"
+            style={{ color: textColor, opacity: 0.8 }}
+          >
             {countdown}
           </div>
         </div>
         
-        <p className="text-2xl text-muted-foreground font-light">
+        <p 
+          className="text-2xl font-light"
+          style={{ color: textColor, opacity: 0.7 }}
+        >
           When you're ready... 🌸
         </p>
       </div>

@@ -136,7 +136,10 @@ const ResultScreen = ({
           {generationError ? 'Oops! Using your original photo 📸' : title || 'Your Avatar is Ready! 🎉'}
         </h1>
         {generationError && (
-        <p className="text-xl mb-8 text-muted-foreground">
+        <p 
+          className="text-xl mb-8"
+          style={{ color: textColor, opacity: 0.7 }}
+        >
           {generationError}
         </p>
         )}
@@ -172,10 +175,16 @@ const ResultScreen = ({
                 </div>
               )}
             </div>
-            <p className="text-3xl font-semibold mb-4">
+            <p 
+              className="text-3xl font-semibold mb-4"
+              style={{ color: textColor }}
+            >
               {generatedAvatar ? 'AI-Generated Egyptian Avatar' : `${selectedStyle.charAt(0).toUpperCase() + selectedStyle.slice(1)} Style`}
             </p>
-            <p className="text-xl text-muted-foreground">
+            <p 
+              className="text-xl"
+              style={{ color: textColor, opacity: 0.8 }}
+            >
               {generatedAvatar ? 'Your cultural transformation is complete!' : 'Ready to share with the world!'}
             </p>
           </div>

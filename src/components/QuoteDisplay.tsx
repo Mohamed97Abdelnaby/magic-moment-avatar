@@ -4,12 +4,14 @@ interface QuoteDisplayProps {
   quotes: string[];
   className?: string;
   interval?: number;
+  textColor?: string;
 }
 
 const QuoteDisplay: React.FC<QuoteDisplayProps> = ({ 
   quotes, 
   className = "",
-  interval = 3000 
+  interval = 3000,
+  textColor
 }) => {
   const [currentQuoteIndex, setCurrentQuoteIndex] = useState(0);
   const [isVisible, setIsVisible] = useState(true);
@@ -34,9 +36,10 @@ const QuoteDisplay: React.FC<QuoteDisplayProps> = ({
   return (
     <div className={`text-center transition-all duration-300 ${className}`}>
       <p 
-        className={`text-xl text-muted-foreground italic transition-all duration-300 ${
+        className={`text-xl italic transition-all duration-300 ${
           isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2'
-        }`}
+        } ${!textColor ? 'text-muted-foreground' : ''}`}
+        style={textColor ? { color: textColor, opacity: 0.8 } : undefined}
       >
         "{quotes[currentQuoteIndex]}"
       </p>

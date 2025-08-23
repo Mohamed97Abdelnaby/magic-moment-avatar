@@ -69,13 +69,17 @@ const LoadingScreen = ({
             quotes={generationQuotes}
             className="mb-8"
             interval={3500}
+            textColor={textColor}
           />
         </div>
         
         <AIRobotDrawing selectedStyle={selectedStyle} />
         
         <div className="mt-8 space-y-6">
-          <p className="text-xl text-muted-foreground font-light">
+          <p 
+            className="text-xl font-light"
+            style={{ color: textColor, opacity: 0.8 }}
+          >
             Creating your {selectedStyle} masterpiece
           </p>
           <div className="flex justify-center items-center gap-1">
