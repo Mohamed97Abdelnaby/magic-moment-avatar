@@ -2,24 +2,39 @@ import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Image } from "lucide-react";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Button } from "@/components/ui/button";
+import { Image, CalendarIcon } from "lucide-react";
+import { format } from "date-fns";
+import { cn } from "@/lib/utils";
 
 interface EventDetailsFormProps {
   initialEventName: string;
   initialEventLocation: string;
   onEventNameChange: (eventName: string) => void;
   onEventLocationChange: (eventLocation: string) => void;
+  initialStartDate?: Date;
+  initialEndDate?: Date;
+  onStartDateChange?: (date: Date | undefined) => void;
+  onEndDateChange?: (date: Date | undefined) => void;
 }
 
 const EventDetailsForm = React.memo(({ 
   initialEventName, 
   initialEventLocation, 
   onEventNameChange, 
-  onEventLocationChange 
+  onEventLocationChange,
+  initialStartDate,
+  initialEndDate,
+  onStartDateChange,
+  onEndDateChange
 }: EventDetailsFormProps) => {
   // Local state for smooth typing experience
   const [localEventName, setLocalEventName] = useState(initialEventName);
   const [localEventLocation, setLocalEventLocation] = useState(initialEventLocation);
+  const [startDate, setStartDate] = useState<Date | undefined>(initialStartDate);
+  const [endDate, setEndDate] = useState<Date | undefined>(initialEndDate);
   
   // Refs for debounced updates
   const eventNameTimeoutRef = useRef<NodeJS.Timeout>();
@@ -99,6 +114,72 @@ const EventDetailsForm = React.memo(({
             className="bg-input/50 border-border" 
           />
         </div>
+        
+        {onStartDateChange && onEndDateChange && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <Label>Start Date</Label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className={cn(
+                      "w-full justify-start text-left font-normal bg-input/50 border-border",
+                      !startDate && "text-muted-foreground"
+                    )}
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {startDate ? format(startDate, "PPP") : <span>Pick start date</span>}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={startDate}
+                    onSelect={(date) => {
+                      setStartDate(date);
+                      onStartDateChange(date);
+                    }}
+                    disabled={(date) => date < new Date()}
+                    initialFocus
+                    className="pointer-events-auto"
+                  />
+                </PopoverContent>
+              </Popover>
+            </div>
+            
+            <div>
+              <Label>End Date</Label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className={cn(
+                      "w-full justify-start text-left font-normal bg-input/50 border-border",
+                      !endDate && "text-muted-foreground"
+                    )}
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {endDate ? format(endDate, "PPP") : <span>Pick end date</span>}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={endDate}
+                    onSelect={(date) => {
+                      setEndDate(date);
+                      onEndDateChange(date);
+                    }}
+                    disabled={(date) => date < new Date() || (startDate && date < startDate)}
+                    initialFocus
+                    className="pointer-events-auto"
+                  />
+                </PopoverContent>
+              </Popover>
+            </div>
+          </div>
+        )}
       </CardContent>
     </Card>
   );

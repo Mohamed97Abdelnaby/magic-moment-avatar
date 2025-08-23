@@ -71,6 +71,8 @@ const SetupWizard = () => {
   // Core state (mirrors EventSetup to preserve functionality)
   const [eventName, setEventName] = useState("");
   const [eventLocation, setEventLocation] = useState("");
+  const [startDate, setStartDate] = useState<Date | undefined>();
+  const [endDate, setEndDate] = useState<Date | undefined>();
   const [selectedStyles, setSelectedStyles] = useState<string[]>([]);
   const [primaryColor, setPrimaryColor] = useState<HSLColor>(calmBlue);
   const [secondaryColor, setSecondaryColor] = useState<HSLColor | null>(null);
@@ -267,6 +269,14 @@ const SetupWizard = () => {
     setEventLocation(newEventLocation);
   }, []);
 
+  const handleStartDateChange = useCallback((date: Date | undefined) => {
+    setStartDate(date);
+  }, []);
+
+  const handleEndDateChange = useCallback((date: Date | undefined) => {
+    setEndDate(date);
+  }, []);
+
   const canFinish = eventName.trim().length > 0 && selectedStyles.length > 0;
 
   const handleFinish = useCallback(async () => {
@@ -435,9 +445,13 @@ const SetupWizard = () => {
         initialEventLocation={eventLocation}
         onEventNameChange={handleEventNameChange}
         onEventLocationChange={handleEventLocationChange}
+        initialStartDate={startDate}
+        initialEndDate={endDate}
+        onStartDateChange={handleStartDateChange}
+        onEndDateChange={handleEndDateChange}
       />
     </StepContainer>
-  ), [handleEventNameChange, handleEventLocationChange]);
+  ), [eventName, eventLocation, startDate, endDate, handleEventNameChange, handleEventLocationChange, handleStartDateChange, handleEndDateChange]);
 
   const ThemeColors = () => (
     <StepContainer>
