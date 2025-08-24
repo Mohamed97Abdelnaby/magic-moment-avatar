@@ -1,14 +1,14 @@
 import { useState, useEffect } from "react";
-import PhotoPreview from "./PhotoPreview";
 import { useKioskTheme } from "@/hooks/useKioskTheme";
 import { useAvatarGeneration } from "@/hooks/useAvatarGeneration";
-import StyleSelection from "./kiosk/StyleSelection";
-import CameraScreen from "./kiosk/CameraScreen";
-import CountdownScreen from "./kiosk/CountdownScreen";
-import LoadingScreen from "./kiosk/LoadingScreen";
-import ResultScreen from "./kiosk/ResultScreen";
+import SharedStyleSelection from "./shared/SharedStyleSelection";
+import SharedCameraScreen from "./shared/SharedCameraScreen";
+import SharedPhotoPreview from "./shared/SharedPhotoPreview";
+import SharedCountdownScreen from "./shared/SharedCountdownScreen";
+import SharedLoadingScreen from "./shared/SharedLoadingScreen";
+import SharedResultScreen from "./shared/SharedResultScreen";
 import { type ScreenSettings } from "@/lib/kioskSettings";
-import KioskThemeWrapper, { KioskScreenTextScope } from "./kiosk/KioskThemeWrapper";
+import KioskThemeWrapper from "./kiosk/KioskThemeWrapper";
 
 interface KioskInterfaceProps {
   isDemo?: boolean;
@@ -16,26 +16,6 @@ interface KioskInterfaceProps {
   eventId?: string;
 }
 
-const ParticleField = ({ count = 12 }: { count?: number }) => {
-  return (
-    <div className="particles">
-      {Array.from({ length: count }).map((_, i) => (
-        <div
-          key={i}
-          className="absolute w-1 h-1 rounded-full opacity-40"
-          style={{
-            left: `${Math.random() * 100}%`,
-            top: `${Math.random() * 100}%`,
-            background: 'hsl(var(--gradient-particle))',
-            animationDelay: `${Math.random() * 8}s`,
-            animationDuration: `${8 + Math.random() * 4}s`,
-            animation: 'float 8s ease-in-out infinite',
-          }}
-        />
-      ))}
-    </div>
-  );
-};
 
 const KioskInterface = ({ isDemo = false, demoSettings, eventId }: KioskInterfaceProps = {}) => {
   const [currentStep, setCurrentStep] = useState<'styles' | 'camera' | 'photo-preview' | 'countdown' | 'loading' | 'result'>('styles');
@@ -161,7 +141,8 @@ const KioskInterface = ({ isDemo = false, demoSettings, eventId }: KioskInterfac
     switch (currentStep) {
       case 'styles':
         return (
-          <StyleSelection
+          <SharedStyleSelection
+            mode="kiosk"
             selectedStyle={selectedStyle}
             onStyleSelect={handleStyleSelect}
             onStartCamera={handleStartCamera}
@@ -177,11 +158,13 @@ const KioskInterface = ({ isDemo = false, demoSettings, eventId }: KioskInterfac
 
       case 'camera':
         return (
-          <CameraScreen
+          <SharedCameraScreen
+            mode="kiosk"
             onPhotoCapture={handlePhotoCapture}
             onBack={() => setCurrentStep('styles')}
             backgroundImageUrl={screens.camera.backgroundImageDataUrl}
             overlayOpacity={screens.camera.overlayOpacity}
+            title={screens.camera.title}
             textColor={getTextColor('camera')}
             backgroundColor={getBackgroundColor('camera')}
             stageAnimationKey={stageAnimationKey}
@@ -190,36 +173,24 @@ const KioskInterface = ({ isDemo = false, demoSettings, eventId }: KioskInterfac
 
       case 'photo-preview':
         return (
-          <div className="relative min-h-screen overflow-hidden" key={`photo-preview-${stageAnimationKey}`}>
-            {screens.camera.backgroundImageDataUrl && (
-              <div
-                className="absolute inset-0"
-                style={{
-                  backgroundImage: `url(${screens.camera.backgroundImageDataUrl})`,
-                  backgroundSize: 'cover',
-                  backgroundPosition: 'center',
-                }}
-              />
-            )}
-            {typeof screens.camera.overlayOpacity === 'number' && screens.camera.backgroundImageDataUrl && (
-              <div className="absolute inset-0" style={{ background: `hsla(0 0% 0% / ${screens.camera.overlayOpacity})` }} />
-            )}
-
-            <ParticleField count={10} />
-            
-            <KioskScreenTextScope color={getTextColor('camera')} backgroundColor={getBackgroundColor('camera')} className="relative z-10">
-              <PhotoPreview
-                capturedPhoto={capturedPhoto!}
-                onRetake={handleRetakePhoto}
-                onConfirm={handleConfirmPhoto}
-              />
-            </KioskScreenTextScope>
-          </div>
+          <SharedPhotoPreview
+            mode="kiosk"
+            capturedPhoto={capturedPhoto!}
+            onRetake={handleRetakePhoto}
+            onConfirm={handleConfirmPhoto}
+            backgroundImageUrl={screens['photo-preview'].backgroundImageDataUrl}
+            overlayOpacity={screens['photo-preview'].overlayOpacity}
+            title={screens['photo-preview'].title}
+            textColor={getTextColor('photo-preview')}
+            backgroundColor={getBackgroundColor('photo-preview')}
+            stageAnimationKey={stageAnimationKey}
+          />
         );
 
       case 'countdown':
         return (
-          <CountdownScreen
+          <SharedCountdownScreen
+            mode="kiosk"
             countdown={countdown}
             backgroundImageUrl={screens.countdown.backgroundImageDataUrl}
             overlayOpacity={screens.countdown.overlayOpacity}
@@ -232,7 +203,8 @@ const KioskInterface = ({ isDemo = false, demoSettings, eventId }: KioskInterfac
 
       case 'loading':
         return (
-          <LoadingScreen
+          <SharedLoadingScreen
+            mode="kiosk"
             selectedStyle={selectedStyle}
             backgroundImageUrl={screens.loading.backgroundImageDataUrl}
             overlayOpacity={screens.loading.overlayOpacity}
@@ -245,7 +217,8 @@ const KioskInterface = ({ isDemo = false, demoSettings, eventId }: KioskInterfac
 
       case 'result':
         return (
-          <ResultScreen
+          <SharedResultScreen
+            mode="kiosk"
             generatedAvatar={generatedAvatar}
             capturedPhoto={capturedPhoto}
             selectedStyle={selectedStyle}
@@ -253,7 +226,7 @@ const KioskInterface = ({ isDemo = false, demoSettings, eventId }: KioskInterfac
             isGenerating={isGenerating}
             showConfetti={showConfetti}
             onRetake={handleRetake}
-            onPrintPhoto={printPhoto}
+            onPrintPhoto={() => printPhoto(generatedAvatar || capturedPhoto || '')}
             onSendWhatsApp={sendWhatsApp}
             onGenerateAvatar={handleGenerateAvatar}
             backgroundImageUrl={screens.result.backgroundImageDataUrl}
@@ -270,7 +243,7 @@ const KioskInterface = ({ isDemo = false, demoSettings, eventId }: KioskInterfac
     }
   };
 
-  const currentScreenKey = currentStep === 'photo-preview' ? 'camera' : currentStep;
+  const currentScreenKey = currentStep;
   const isolatedBackgroundStyle = getIsolatedBackgroundStyle(currentScreenKey);
   const currentScreen = screens[currentScreenKey] || screens.styles;
 

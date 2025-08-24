@@ -26,6 +26,7 @@ const stepLabels = [
   "Colors",
   "Styles Screen",
   "Camera Screen",
+  "Photo Preview", 
   "Countdown Screen", 
   "Loading Screen",
   "Result Screen",
@@ -611,6 +612,21 @@ const SetupWizardOptimized = () => {
     />
   ), [screenSettings, handleScreenChange, primaryColor, secondaryColor, backgroundStyle, eventName]);
 
+  const PhotoPreviewScreen = useMemo(() => (
+    <SplitScreenStep
+      screenKey="photo-preview"
+      screenSettings={screenSettings['photo-preview']}
+      allScreenSettings={screenSettings}
+      onScreenChange={(changes) => handleScreenChange('photo-preview', changes)}
+      primaryColor={primaryColor}
+      secondaryColor={secondaryColor}
+      backgroundStyle={backgroundStyle}
+      title="Customize Photo Preview Screen"
+      description="Style how users review their captured photo"
+      eventName={eventName}
+    />
+  ), [screenSettings, handleScreenChange, primaryColor, secondaryColor, backgroundStyle, eventName]);
+
   const CountdownScreen = useMemo(() => (
     <SplitScreenStep
       screenKey="countdown"
@@ -670,10 +686,11 @@ const SetupWizardOptimized = () => {
       />;
       case 3: return StylesScreen;
       case 4: return CameraScreen;
-      case 5: return CountdownScreen;
-      case 6: return LoadingScreen;
-      case 7: return ResultScreen;
-      case 8: return <StylesAndFinish
+      case 5: return PhotoPreviewScreen;
+      case 6: return CountdownScreen;
+      case 7: return LoadingScreen;
+      case 8: return ResultScreen;
+      case 9: return <StylesAndFinish
         selectedStyles={selectedStyles}
         toggleStyle={toggleStyle}
         canFinish={canFinish}

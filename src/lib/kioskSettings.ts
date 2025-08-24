@@ -1,7 +1,7 @@
 // Utilities for persisting and reading kiosk screen appearance settings
 import { HSLColor, hslToHex } from "@/lib/colorUtils";
 
-export type ScreenKey = 'styles' | 'camera' | 'countdown' | 'loading' | 'result';
+export type ScreenKey = 'styles' | 'camera' | 'photo-preview' | 'countdown' | 'loading' | 'result';
 
 export interface ScreenAppearance {
   title?: string;
@@ -31,6 +31,7 @@ export function getDefaultScreenSettings(): ScreenSettings {
   return {
     styles: { ...getDefaultAppearance(), title: 'Choose your Avatar' },
     camera: { ...getDefaultAppearance(), title: 'Get Ready!' },
+    'photo-preview': { ...getDefaultAppearance(), title: 'Perfect Shot!' },
     countdown: { ...getDefaultAppearance(), title: 'Take a moment...' },
     loading: { ...getDefaultAppearance(), title: 'Generating...' },
     result: { ...getDefaultAppearance(), title: 'Your Avatar is Ready!' },

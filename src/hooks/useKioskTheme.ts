@@ -40,6 +40,10 @@ export const useKioskTheme = ({ isDemo, demoSettings, eventId }: UseKioskThemePr
           ...staticDemoTheme,
           title: "Strike Your Pose!"
         },
+        'photo-preview': {
+          ...staticDemoTheme,
+          title: "Perfect Shot!"
+        },
         countdown: {
           ...staticDemoTheme,
           title: "Perfect! Get ready..."
