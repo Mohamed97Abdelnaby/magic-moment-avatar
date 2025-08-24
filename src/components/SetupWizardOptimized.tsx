@@ -50,44 +50,22 @@ const AnimatedBackdrop = memo(() => (
 ));
 AnimatedBackdrop.displayName = "AnimatedBackdrop";
 
-// Optimized state persistence hook
-const useStateWithPersistence = <T,>(key: string, defaultValue: T, debounceMs = 300) => {
-  const [state, setState] = useState<T>(() => {
-    try {
-      const saved = sessionStorage.getItem(key);
-      return saved ? JSON.parse(saved) : defaultValue;
-    } catch {
-      return defaultValue;
-    }
-  });
+// Simple persistence utilities
+const loadFromSession = <T,>(key: string, defaultValue: T): T => {
+  try {
+    const saved = sessionStorage.getItem(key);
+    return saved ? JSON.parse(saved) : defaultValue;
+  } catch {
+    return defaultValue;
+  }
+};
 
-  const timeoutRef = useRef<NodeJS.Timeout>();
-  
-  const setStateWithPersistence = useCallback((newState: T | ((prev: T) => T)) => {
-    setState(prev => {
-      const nextState = typeof newState === 'function' ? (newState as (prev: T) => T)(prev) : newState;
-      
-      // Debounced save to sessionStorage
-      if (timeoutRef.current) clearTimeout(timeoutRef.current);
-      timeoutRef.current = setTimeout(() => {
-        try {
-          sessionStorage.setItem(key, JSON.stringify(nextState));
-        } catch (error) {
-          console.warn('Failed to save to sessionStorage:', error);
-        }
-      }, debounceMs);
-      
-      return nextState;
-    });
-  }, [key, debounceMs]);
-
-  useEffect(() => {
-    return () => {
-      if (timeoutRef.current) clearTimeout(timeoutRef.current);
-    };
-  }, []);
-
-  return [state, setStateWithPersistence] as const;
+const saveToSession = <T,>(key: string, value: T) => {
+  try {
+    sessionStorage.setItem(key, JSON.stringify(value));
+  } catch (error) {
+    console.warn('Failed to save to sessionStorage:', error);
+  }
 };
 
 const SetupWizardOptimized = () => {
@@ -105,23 +83,42 @@ const SetupWizardOptimized = () => {
     document.title = isEditing ? "Edit Event – Calm Dark Blue" : "Event Setup Wizard – Calm Dark Blue";
   }, [isEditing]);
 
-  // Optimized state with persistence
-  const [step, setStep] = useStateWithPersistence('setupWizard_step', 0);
+  // State with simple persistence
+  const [step, setStep] = useState(() => loadFromSession('setupWizard_step', 0));
   const [dir, setDir] = useState<Dir>("forward");
   const [loading, setLoading] = useState(false);
   const [initialLoadComplete, setInitialLoadComplete] = useState(false);
 
-  // Core state with persistence for better UX
-  const [eventName, setEventName] = useStateWithPersistence('setupWizard_eventName', "");
-  const [eventLocation, setEventLocation] = useStateWithPersistence('setupWizard_eventLocation', "");
-  const [startDate, setStartDate] = useStateWithPersistence<Date | undefined>('setupWizard_startDate', undefined);
-  const [endDate, setEndDate] = useStateWithPersistence<Date | undefined>('setupWizard_endDate', undefined);
-  const [selectedStyles, setSelectedStyles] = useStateWithPersistence<string[]>('setupWizard_selectedStyles', []);
-  const [primaryColor, setPrimaryColor] = useStateWithPersistence<HSLColor>('setupWizard_primaryColor', calmBlue);
-  const [secondaryColor, setSecondaryColor] = useStateWithPersistence<HSLColor | null>('setupWizard_secondaryColor', null);
-  const [backgroundStyle, setBackgroundStyle] = useStateWithPersistence<'solid' | 'gradient' | 'default'>('setupWizard_backgroundStyle', "default");
-  const [screenSettings, setScreenSettings] = useStateWithPersistence<ScreenSettings>('setupWizard_screenSettings', getDefaultScreenSettings());
-  const [previewScreen, setPreviewScreen] = useStateWithPersistence<ScreenKey>('setupWizard_previewScreen', 'styles');
+  // Core state with initial values from session storage
+  const [eventName, setEventName] = useState(() => loadFromSession('setupWizard_eventName', ""));
+  const [eventLocation, setEventLocation] = useState(() => loadFromSession('setupWizard_eventLocation', ""));
+  const [startDate, setStartDate] = useState<Date | undefined>(() => loadFromSession('setupWizard_startDate', undefined));
+  const [endDate, setEndDate] = useState<Date | undefined>(() => loadFromSession('setupWizard_endDate', undefined));
+  const [selectedStyles, setSelectedStyles] = useState<string[]>(() => loadFromSession('setupWizard_selectedStyles', []));
+  const [primaryColor, setPrimaryColor] = useState<HSLColor>(() => loadFromSession('setupWizard_primaryColor', calmBlue));
+  const [secondaryColor, setSecondaryColor] = useState<HSLColor | null>(() => loadFromSession('setupWizard_secondaryColor', null));
+  const [backgroundStyle, setBackgroundStyle] = useState<'solid' | 'gradient' | 'default'>(() => loadFromSession('setupWizard_backgroundStyle', "default"));
+  const [screenSettings, setScreenSettings] = useState<ScreenSettings>(() => loadFromSession('setupWizard_screenSettings', getDefaultScreenSettings()));
+  const [previewScreen, setPreviewScreen] = useState<ScreenKey>(() => loadFromSession('setupWizard_previewScreen', 'styles'));
+
+  // Debounced persistence effect
+  const persistenceTimeoutRef = useRef<NodeJS.Timeout>();
+  useEffect(() => {
+    if (persistenceTimeoutRef.current) clearTimeout(persistenceTimeoutRef.current);
+    persistenceTimeoutRef.current = setTimeout(() => {
+      saveToSession('setupWizard_step', step);
+      saveToSession('setupWizard_eventName', eventName);
+      saveToSession('setupWizard_eventLocation', eventLocation);
+      saveToSession('setupWizard_startDate', startDate);
+      saveToSession('setupWizard_endDate', endDate);
+      saveToSession('setupWizard_selectedStyles', selectedStyles);
+      saveToSession('setupWizard_primaryColor', primaryColor);
+      saveToSession('setupWizard_secondaryColor', secondaryColor);
+      saveToSession('setupWizard_backgroundStyle', backgroundStyle);
+      saveToSession('setupWizard_screenSettings', screenSettings);
+      saveToSession('setupWizard_previewScreen', previewScreen);
+    }, 300);
+  }, [step, eventName, eventLocation, startDate, endDate, selectedStyles, primaryColor, secondaryColor, backgroundStyle, screenSettings, previewScreen]);
 
   // Stable memoized validation
   const currentStepValidation: StepValidation = useMemo(() => 
@@ -235,7 +232,7 @@ const SetupWizardOptimized = () => {
     };
 
     loadEventData();
-  }, [eventId, user, initialLoadComplete, navigate, toast, setEventName, setEventLocation, setStartDate, setEndDate, setSelectedStyles, setPrimaryColor, setSecondaryColor, setBackgroundStyle, setScreenSettings]);
+  }, [eventId, user, initialLoadComplete, navigate, toast]);
 
   // Load saved screen settings for new events
   useEffect(() => {
@@ -243,7 +240,7 @@ const SetupWizardOptimized = () => {
       setScreenSettings(loadScreenSettings());
       setInitialLoadComplete(true);
     }
-  }, [isEditing, initialLoadComplete, setScreenSettings]);
+  }, [isEditing, initialLoadComplete]);
 
   // Optimized localStorage save for screen settings
   const saveTimeoutRef = useRef<NodeJS.Timeout>();
@@ -272,7 +269,7 @@ const SetupWizardOptimized = () => {
   const handleScreenChange = useCallback((screenKey: ScreenKey, next: ScreenAppearance) => {
     setScreenSettings(prev => ({ ...prev, [screenKey]: next }));
     debouncedSave();
-  }, [debouncedSave, setScreenSettings]);
+  }, [debouncedSave]);
 
   // Stable navigation handlers
   const next = useCallback(() => {
@@ -287,12 +284,12 @@ const SetupWizardOptimized = () => {
     
     setDir("forward");
     setStep(s => Math.min(StepsTotal - 1, s + 1));
-  }, [currentStepValidation, toast, setStep]);
+  }, [currentStepValidation, toast]);
   
   const back = useCallback(() => { 
     setDir("backward"); 
     setStep(s => Math.max(0, s - 1)); 
-  }, [setStep]);
+  }, []);
 
   // Avatar styles (memoized)
   const avatarStyles = useMemo(() => [
@@ -305,24 +302,24 @@ const SetupWizardOptimized = () => {
 
   const toggleStyle = useCallback((styleId: string) => {
     setSelectedStyles(prev => prev.includes(styleId) ? prev.filter(id => id !== styleId) : [...prev, styleId]);
-  }, [setSelectedStyles]);
+  }, []);
 
   // Event details update handlers - stable callbacks
   const handleEventNameChange = useCallback((newEventName: string) => {
     setEventName(newEventName);
-  }, [setEventName]);
+  }, []);
 
   const handleEventLocationChange = useCallback((newEventLocation: string) => {
     setEventLocation(newEventLocation);
-  }, [setEventLocation]);
+  }, []);
 
   const handleStartDateChange = useCallback((date: Date | undefined) => {
     setStartDate(date);
-  }, [setStartDate]);
+  }, []);
 
   const handleEndDateChange = useCallback((date: Date | undefined) => {
     setEndDate(date);
-  }, [setEndDate]);
+  }, []);
 
   const canFinish = eventName.trim().length > 0 && selectedStyles.length > 0;
 
@@ -716,7 +713,7 @@ const SetupWizardOptimized = () => {
 
   const handleStepClick = useCallback((stepIndex: number) => {
     setStep(stepIndex);
-  }, [setStep]);
+  }, []);
 
   return (
     <main className="min-h-screen relative bg-background">
