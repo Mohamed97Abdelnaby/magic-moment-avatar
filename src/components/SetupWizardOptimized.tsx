@@ -36,7 +36,7 @@ const StepsTotal = stepLabels.length;
 
 type Dir = "forward" | "backward";
 
-// Memoized animated backdrop
+// Memoized animated backdrop - OUTSIDE main component
 const AnimatedBackdrop = memo(() => (
   <div className="absolute inset-0 -z-10 overflow-hidden">
     <div className="absolute inset-0 gradient-subtle" />
@@ -49,6 +49,176 @@ const AnimatedBackdrop = memo(() => (
   </div>
 ));
 AnimatedBackdrop.displayName = "AnimatedBackdrop";
+
+// Step container component - OUTSIDE main component
+const StepContainer = memo(({ children }: { children: React.ReactNode }) => (
+  <section className="relative transition-all duration-500 animate-fade-in">
+    {children}
+  </section>
+));
+StepContainer.displayName = "StepContainer";
+
+// Welcome component - OUTSIDE main component
+const Welcome = memo(({ onNext }: { onNext: () => void }) => (
+  <StepContainer>
+    <div className="text-center py-10">
+      <div className="inline-flex items-center gap-3 px-4 py-2 rounded-full bg-secondary/60 border border-border shadow-soft animate-[pulse-soft_3s_ease-in-out_infinite]">
+        <Sparkles className="h-4 w-4 text-primary" />
+        <span className="text-sm">A calm, animated setup experience</span>
+      </div>
+      <h1 className="mt-6 text-4xl md:text-5xl font-bold tracking-tight">
+        <span className="bg-clip-text text-transparent gradient-primary">Setup Your Event</span>
+      </h1>
+      <p className="mt-3 text-muted-foreground max-w-xl mx-auto">
+        Guided steps with smooth animations inspired by Apple and Frame.io.
+      </p>
+    </div>
+    <div className="flex justify-center">
+      <Button size="lg" variant="hero" onClick={onNext} className="px-10">
+        Get Started
+        <ArrowRight className="ml-2 h-5 w-5" />
+      </Button>
+    </div>
+  </StepContainer>
+));
+Welcome.displayName = "Welcome";
+
+// Theme colors component - OUTSIDE main component
+const ThemeColors = memo(({ 
+  primaryColor, 
+  setPrimaryColor, 
+  secondaryColor, 
+  setSecondaryColor, 
+  backgroundStyle, 
+  setBackgroundStyle 
+}: {
+  primaryColor: HSLColor;
+  setPrimaryColor: (color: HSLColor) => void;
+  secondaryColor: HSLColor | null;
+  setSecondaryColor: (color: HSLColor | null) => void;
+  backgroundStyle: 'solid' | 'gradient' | 'default';
+  setBackgroundStyle: (style: 'solid' | 'gradient' | 'default') => void;
+}) => (
+  <StepContainer>
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <ColorPicker value={primaryColor} onChange={setPrimaryColor} label="Primary Color" showAccessibilityCheck contrastBackground={{ h: 0, s: 0, l: 100 }} />
+
+      <div className="space-y-4">
+        <Card className="bg-card/80 backdrop-blur border-border">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-lg"><Palette className="h-5 w-5" />Secondary Color (Optional)</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                id="useSecondaryColor"
+                checked={!!secondaryColor}
+                onChange={(e) => setSecondaryColor(e.target.checked ? { ...primaryColor } : null)}
+                className="rounded"
+              />
+              <Label htmlFor="useSecondaryColor">Enable secondary color</Label>
+            </div>
+            {secondaryColor && (
+              <ColorPicker 
+                value={secondaryColor} 
+                onChange={setSecondaryColor} 
+                label="Secondary Color"
+                showAccessibilityCheck
+                contrastBackground={{ h: 0, s: 0, l: 100 }}
+              />
+            )}
+          </CardContent>
+        </Card>
+
+        <Card className="bg-card/80 backdrop-blur border-border">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-lg"><Eye className="h-5 w-5" />Background Style</CardTitle>
+            <CardDescription>Choose how colors blend in the background</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Select value={backgroundStyle} onValueChange={(value) => setBackgroundStyle(value as 'solid' | 'gradient' | 'default')}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="default">Default</SelectItem>
+                <SelectItem value="solid">Solid Color</SelectItem>
+                <SelectItem value="gradient">Gradient</SelectItem>
+              </SelectContent>
+            </Select>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  </StepContainer>
+));
+ThemeColors.displayName = "ThemeColors";
+
+// Styles and finish component - OUTSIDE main component
+const StylesAndFinish = memo(({ 
+  avatarStyles, 
+  selectedStyles, 
+  toggleStyle, 
+  handleFinish, 
+  canFinish, 
+  loading, 
+  isEditing 
+}: {
+  avatarStyles: Array<{ id: string; name: string; description: string; preview: string }>;
+  selectedStyles: string[];
+  toggleStyle: (styleId: string) => void;
+  handleFinish: () => void;
+  canFinish: boolean;
+  loading: boolean;
+  isEditing: boolean;
+}) => (
+  <StepContainer>
+    <div className="space-y-6">
+      <div className="text-center">
+        <h2 className="text-2xl font-bold mb-2">Choose Avatar Styles</h2>
+        <p className="text-muted-foreground">Select the styles you want available in your kiosk</p>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {avatarStyles.map((style) => (
+          <Card 
+            key={style.id}
+            className={`cursor-pointer transition-all duration-200 hover:scale-105 ${
+              selectedStyles.includes(style.id) 
+                ? 'ring-2 ring-primary shadow-glow bg-primary/5' 
+                : 'hover:shadow-lg'
+            }`}
+            onClick={() => toggleStyle(style.id)}
+          >
+            <CardContent className="p-6 text-center">
+              <div className="text-4xl mb-3">{style.preview}</div>
+              <h3 className="font-semibold mb-1">{style.name}</h3>
+              <p className="text-sm text-muted-foreground">{style.description}</p>
+              {selectedStyles.includes(style.id) && (
+                <CheckCircle2 className="h-5 w-5 text-primary mt-2 mx-auto" />
+              )}
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
+      <div className="flex justify-center pt-4">
+        <Button 
+          size="lg" 
+          variant="hero" 
+          onClick={handleFinish} 
+          disabled={!canFinish || loading}
+          className="px-10"
+        >
+          {loading ? "Saving..." : isEditing ? "Update Event" : "Create Event"}
+          <ArrowRight className="ml-2 h-5 w-5" />
+        </Button>
+      </div>
+    </div>
+  </StepContainer>
+));
+StylesAndFinish.displayName = "StylesAndFinish";
 
 // Simple persistence utilities
 const loadFromSession = <T,>(key: string, defaultValue: T): T => {
@@ -462,39 +632,6 @@ const SetupWizardOptimized = () => {
     }
   };
 
-  // Memoized step container
-  const StepContainer = memo(({ children }: { children: React.ReactNode }) => (
-    <section className={`relative transition-all duration-500 ${dir === 'forward' ? 'animate-fade-in' : 'animate-fade-in'}`}>
-      {children}
-    </section>
-  ));
-  StepContainer.displayName = "StepContainer";
-
-  // Memoized welcome component
-  const Welcome = memo(() => (
-    <StepContainer>
-      <div className="text-center py-10">
-        <div className="inline-flex items-center gap-3 px-4 py-2 rounded-full bg-secondary/60 border border-border shadow-soft animate-[pulse-soft_3s_ease-in-out_infinite]">
-          <Sparkles className="h-4 w-4 text-primary" />
-          <span className="text-sm">A calm, animated setup experience</span>
-        </div>
-        <h1 className="mt-6 text-4xl md:text-5xl font-bold tracking-tight">
-          <span className="bg-clip-text text-transparent gradient-primary">Setup Your Event</span>
-        </h1>
-        <p className="mt-3 text-muted-foreground max-w-xl mx-auto">
-          Guided steps with smooth animations inspired by Apple and Frame.io.
-        </p>
-      </div>
-      <div className="flex justify-center">
-        <Button size="lg" variant="hero" onClick={next} className="px-10">
-          Get Started
-          <ArrowRight className="ml-2 h-5 w-5" />
-        </Button>
-      </div>
-    </StepContainer>
-  ));
-  Welcome.displayName = "Welcome";
-
   // Memoized event details component
   const EventDetails = useMemo(() => (
     <StepContainer>
@@ -511,119 +648,21 @@ const SetupWizardOptimized = () => {
     </StepContainer>
   ), [eventName, eventLocation, startDate, endDate, handleEventNameChange, handleEventLocationChange, handleStartDateChange, handleEndDateChange]);
 
-  // Memoized theme colors component
-  const ThemeColors = memo(() => (
-    <StepContainer>
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <ColorPicker value={primaryColor} onChange={setPrimaryColor} label="Primary Color" showAccessibilityCheck contrastBackground={{ h: 0, s: 0, l: 100 }} />
-
-        <div className="space-y-4">
-          <Card className="bg-card/80 backdrop-blur border-border">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-lg"><Palette className="h-5 w-5" />Secondary Color (Optional)</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  id="useSecondaryColor"
-                  checked={!!secondaryColor}
-                  onChange={(e) => setSecondaryColor(e.target.checked ? { ...primaryColor } : null)}
-                  className="rounded"
-                />
-                <Label htmlFor="useSecondaryColor">Enable secondary color</Label>
-              </div>
-              {secondaryColor && (
-                <ColorPicker 
-                  value={secondaryColor} 
-                  onChange={setSecondaryColor} 
-                  label="Secondary Color"
-                  showAccessibilityCheck
-                  contrastBackground={{ h: 0, s: 0, l: 100 }}
-                />
-              )}
-            </CardContent>
-          </Card>
-
-          <Card className="bg-card/80 backdrop-blur border-border">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-lg"><Eye className="h-5 w-5" />Background Style</CardTitle>
-              <CardDescription>Choose how colors blend in the background</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Select value={backgroundStyle} onValueChange={(value) => setBackgroundStyle(value as 'solid' | 'gradient' | 'default')}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="default">Default</SelectItem>
-                  <SelectItem value="solid">Solid Color</SelectItem>
-                  <SelectItem value="gradient">Gradient</SelectItem>
-                </SelectContent>
-              </Select>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-    </StepContainer>
-  ));
-  ThemeColors.displayName = "ThemeColors";
-
-  // Memoized styles and finish component
-  const StylesAndFinish = memo(() => (
-    <StepContainer>
-      <div className="space-y-6">
-        <div className="text-center">
-          <h2 className="text-2xl font-bold mb-2">Choose Avatar Styles</h2>
-          <p className="text-muted-foreground">Select the styles you want available in your kiosk</p>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {avatarStyles.map((style) => (
-            <Card 
-              key={style.id}
-              className={`cursor-pointer transition-all duration-200 hover:scale-105 ${
-                selectedStyles.includes(style.id) 
-                  ? 'ring-2 ring-primary shadow-glow bg-primary/5' 
-                  : 'hover:shadow-lg'
-              }`}
-              onClick={() => toggleStyle(style.id)}
-            >
-              <CardContent className="p-6 text-center">
-                <div className="text-4xl mb-3">{style.preview}</div>
-                <h3 className="font-semibold mb-1">{style.name}</h3>
-                <p className="text-sm text-muted-foreground">{style.description}</p>
-                {selectedStyles.includes(style.id) && (
-                  <CheckCircle2 className="h-5 w-5 text-primary mt-2 mx-auto" />
-                )}
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-
-        <div className="flex justify-center pt-4">
-          <Button 
-            size="lg" 
-            variant="hero" 
-            onClick={handleFinish} 
-            disabled={!canFinish || loading}
-            className="px-10"
-          >
-            {loading ? "Saving..." : isEditing ? "Update Event" : "Create Event"}
-            <ArrowRight className="ml-2 h-5 w-5" />
-          </Button>
-        </div>
-      </div>
-    </StepContainer>
-  ));
-  StylesAndFinish.displayName = "StylesAndFinish";
-
-  // Memoized step renderer
-  const renderStep = useCallback(() => {
+  // Simple step renderer without useCallback
+  const renderStep = () => {
     switch (step) {
-      case 0: return <Welcome />;
+      case 0: return <Welcome onNext={next} />;
       case 1: return EventDetails;
-      case 2: return <ThemeColors />;
+      case 2: return (
+        <ThemeColors 
+          primaryColor={primaryColor}
+          setPrimaryColor={setPrimaryColor}
+          secondaryColor={secondaryColor}
+          setSecondaryColor={setSecondaryColor}
+          backgroundStyle={backgroundStyle}
+          setBackgroundStyle={setBackgroundStyle}
+        />
+      );
       case 3: return (
         <SplitScreenStep
           title="Styles Screen"
@@ -694,10 +733,20 @@ const SetupWizardOptimized = () => {
           eventName={eventName}
         />
       );
-      case 8: return <StylesAndFinish />;
-      default: return <Welcome />;
+      case 8: return (
+        <StylesAndFinish 
+          avatarStyles={avatarStyles}
+          selectedStyles={selectedStyles}
+          toggleStyle={toggleStyle}
+          handleFinish={handleFinish}
+          canFinish={canFinish}
+          loading={loading}
+          isEditing={isEditing}
+        />
+      );
+      default: return <Welcome onNext={next} />;
     }
-  }, [step, EventDetails, screenSettings, handleScreenChange, primaryColor, secondaryColor, backgroundStyle, eventName]);
+  };
 
   // Show loading state during auth check
   if (authLoading || (!isEditing && !initialLoadComplete)) {
