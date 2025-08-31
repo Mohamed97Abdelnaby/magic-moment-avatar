@@ -26,10 +26,16 @@ serve(async (req: Request) => {
   }
 
   try {
+    // Verify OpenAI API key with enhanced logging
     const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
+    console.log('OpenAI API key status:', openAIApiKey ? `Present (${openAIApiKey.substring(0, 7)}...)` : 'Missing');
+    
     if (!openAIApiKey) {
       console.error('OpenAI API key not found in environment variables');
-      return new Response(JSON.stringify({ error: 'OpenAI API key not configured' }), {
+      return new Response(JSON.stringify({ 
+        error: 'OpenAI API key not configured',
+        status: 'configuration_error'
+      }), {
         status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
@@ -57,33 +63,46 @@ serve(async (req: Request) => {
     console.log('Style requested:', style);
 
     // Step 1: Analyze the input image using vision model
-    console.log('Starting vision analysis...');
-    const visionResponse = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${openAIApiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'gpt-4o',
-        messages: [
-          {
-            role: 'user',
-            content: [
-              {
-                type: 'text',
-                text: 'Describe this person in detail focusing on facial features, hair, skin tone, age, gender, and distinctive characteristics. Be specific and detailed for avatar creation.'
-              },
-              {
-                type: 'image_url',
-                image_url: { url: image }
-              }
-            ]
-          }
-        ],
-        max_tokens: 300
-      }),
-    });
+    console.log('Starting vision analysis with gpt-4o-mini...');
+    
+    let visionResponse;
+    try {
+      visionResponse = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${openAIApiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: 'gpt-4o-mini',
+          messages: [
+            {
+              role: 'user',
+              content: [
+                {
+                  type: 'text',
+                  text: 'Describe this person in detail focusing on facial features, hair, skin tone, age, gender, and distinctive characteristics. Be specific and detailed for avatar creation.'
+                },
+                {
+                  type: 'image_url',
+                  image_url: { url: image }
+                }
+              ]
+            }
+          ],
+          max_tokens: 300
+        }),
+      });
+    } catch (fetchError) {
+      console.error('Vision API fetch error:', fetchError);
+      return new Response(JSON.stringify({ 
+        error: 'Failed to connect to vision API',
+        status: 'api_connection_error'
+      }), {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
 
     if (!visionResponse.ok) {
       const errorData = await visionResponse.text();
@@ -116,20 +135,32 @@ serve(async (req: Request) => {
     console.log('Generating image with DALL-E-3...');
     console.log('Prompt length:', finalPrompt.length);
 
-    const imageResponse = await fetch('https://api.openai.com/v1/images/generations', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${openAIApiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'dall-e-3',
-        prompt: finalPrompt,
-        size: '1024x1024',
-        quality: 'hd',
-        n: 1
-      }),
-    });
+    let imageResponse;
+    try {
+      imageResponse = await fetch('https://api.openai.com/v1/images/generations', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${openAIApiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: 'dall-e-3',
+          prompt: finalPrompt,
+          size: '1024x1024',
+          quality: 'hd',
+          n: 1
+        }),
+      });
+    } catch (fetchError) {
+      console.error('Image generation fetch error:', fetchError);
+      return new Response(JSON.stringify({ 
+        error: 'Failed to connect to image generation API',
+        status: 'api_connection_error'
+      }), {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
 
     if (!imageResponse.ok) {
       const errorData = await imageResponse.text();
@@ -163,8 +194,11 @@ serve(async (req: Request) => {
       });
     }
 
+    console.log('Converting image to base64...');
     const imageBuffer = await imageDownloadResponse.arrayBuffer();
-    const base64Image = btoa(String.fromCharCode(...new Uint8Array(imageBuffer)));
+    
+    // Use Buffer.from() instead of btoa() to handle large images properly
+    const base64Image = Buffer.from(imageBuffer).toString('base64');
     const imageDataUrl = `data:image/png;base64,${base64Image}`;
 
     console.log('Avatar generated successfully');
