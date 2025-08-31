@@ -130,8 +130,8 @@ export const useEnhancedCameraCapture = (): EnhancedCameraCaptureHook => {
     context.drawImage(video, -canvas.width, 0, canvas.width, canvas.height);
     context.setTransform(1, 0, 0, 1, 0, 0); // Reset transform
     
-    // Convert to image data
-    const imageData = canvas.toDataURL('image/jpeg', 0.9);
+    // Convert to image data (PNG format for OpenAI compatibility)
+    const imageData = canvas.toDataURL('image/png');
     setCapturedImage(imageData);
     
     console.log('📸 Photo captured successfully', video.videoWidth + 'x' + video.videoHeight);
