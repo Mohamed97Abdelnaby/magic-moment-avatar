@@ -35,24 +35,36 @@ serve(async (req) => {
 
     console.log('Generating avatar with style:', style);
 
+    // Check if OpenAI API key is available
+    if (!openAIApiKey) {
+      console.error('OpenAI API key not found');
+      return new Response(JSON.stringify({ 
+        error: 'Server configuration error',
+        details: 'OpenAI API key not configured'
+      }), {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
     // Get the appropriate prompt for the style
-    const prompt = stylePrompts[style as keyof typeof stylePrompts] || stylePrompts.default;
+    const stylePrompt = stylePrompts[style as keyof typeof stylePrompts] || stylePrompts.pixar;
     
-    // Convert base64 to blob for OpenAI API
+    // Convert base64 image to proper format for OpenAI
     const imageData = image.split(',')[1]; // Remove data:image/jpeg;base64, prefix
     const imageBuffer = Uint8Array.from(atob(imageData), c => c.charCodeAt(0));
     
-    // Create form data for OpenAI API
+    // Create form data for OpenAI API (DALL-E 2 image variations)
     const formData = new FormData();
     formData.append('image', new Blob([imageBuffer], { type: 'image/png' }), 'image.png');
-    formData.append('prompt', prompt);
     formData.append('n', '1');
-    formData.append('size', '1536x1024');
-    formData.append('model', 'gpt-image-1');
+    formData.append('size', '1024x1024');
+    formData.append('response_format', 'b64_json');
 
-    console.log('Calling OpenAI API...');
+    console.log('Calling OpenAI DALL-E 2 variations API with style:', style);
+    console.log('API Key available:', openAIApiKey ? 'Yes' : 'No');
     
-    const response = await fetch('https://api.openai.com/v1/images/edits', {
+    const response = await fetch('https://api.openai.com/v1/images/variations', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${openAIApiKey}`,
@@ -75,7 +87,7 @@ serve(async (req) => {
 
     console.log('Avatar generated successfully');
 
-    // Since gpt-image-1 returns base64, we need to handle the response differently
+    // Handle DALL-E 2 response format
     if (responseData.data && responseData.data[0]) {
       let generatedImage;
       
