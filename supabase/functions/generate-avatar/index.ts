@@ -4,6 +4,9 @@ const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
+  'Cache-Control': 'no-cache, no-store, must-revalidate',
+  'Pragma': 'no-cache',
+  'Expires': '0'
 };
 
 serve(async (req: Request) => {
@@ -54,6 +57,7 @@ serve(async (req: Request) => {
     console.log('Style requested:', style);
 
     // Step 1: Analyze the input image using vision model
+    console.log('Starting vision analysis...');
     const visionResponse = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -61,7 +65,7 @@ serve(async (req: Request) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4.1-2025-04-14',
+        model: 'gpt-4o',
         messages: [
           {
             role: 'user',
@@ -77,7 +81,7 @@ serve(async (req: Request) => {
             ]
           }
         ],
-        max_completion_tokens: 300
+        max_tokens: 300
       }),
     });
 
@@ -106,10 +110,11 @@ serve(async (req: Request) => {
 
     const prompt = stylePrompts[style as keyof typeof stylePrompts] || stylePrompts['cartoon'];
     
-    // Truncate prompt if it's too long (gpt-image-1 has character limits)
-    const finalPrompt = prompt.length > 1000 ? prompt.substring(0, 1000) + '...' : prompt;
+    // DALL-E-3 has a 4000 character limit
+    const finalPrompt = prompt.length > 4000 ? prompt.substring(0, 4000) + '...' : prompt;
 
-    console.log('Generating image with prompt:', finalPrompt);
+    console.log('Generating image with DALL-E-3...');
+    console.log('Prompt length:', finalPrompt.length);
 
     const imageResponse = await fetch('https://api.openai.com/v1/images/generations', {
       method: 'POST',
@@ -118,10 +123,10 @@ serve(async (req: Request) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-image-1',
+        model: 'dall-e-3',
         prompt: finalPrompt,
         size: '1024x1024',
-        quality: 'high',
+        quality: 'hd',
         n: 1
       }),
     });
@@ -129,7 +134,7 @@ serve(async (req: Request) => {
     if (!imageResponse.ok) {
       const errorData = await imageResponse.text();
       console.error('Image generation error:', errorData);
-      return new Response(JSON.stringify({ error: 'Failed to generate avatar image' }), {
+      return new Response(JSON.stringify({ error: 'Failed to generate avatar image', details: errorData }), {
         status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
@@ -137,7 +142,7 @@ serve(async (req: Request) => {
 
     const imageData = await imageResponse.json();
     
-    if (!imageData.data || !imageData.data[0]) {
+    if (!imageData.data || !imageData.data[0] || !imageData.data[0].url) {
       console.error('No image data received from OpenAI');
       return new Response(JSON.stringify({ error: 'No image generated' }), {
         status: 500,
@@ -145,9 +150,22 @@ serve(async (req: Request) => {
       });
     }
 
-    // gpt-image-1 returns base64 data directly
-    const generatedImage = imageData.data[0].b64_json;
-    const imageDataUrl = `data:image/png;base64,${generatedImage}`;
+    // DALL-E-3 returns a URL, we need to fetch it and convert to base64
+    const imageUrl = imageData.data[0].url;
+    console.log('Fetching generated image from URL...');
+    
+    const imageDownloadResponse = await fetch(imageUrl);
+    if (!imageDownloadResponse.ok) {
+      console.error('Failed to download generated image');
+      return new Response(JSON.stringify({ error: 'Failed to download generated image' }), {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    const imageBuffer = await imageDownloadResponse.arrayBuffer();
+    const base64Image = btoa(String.fromCharCode(...new Uint8Array(imageBuffer)));
+    const imageDataUrl = `data:image/png;base64,${base64Image}`;
 
     console.log('Avatar generated successfully');
 
