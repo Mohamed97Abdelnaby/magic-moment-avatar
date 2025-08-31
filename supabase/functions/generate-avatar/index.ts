@@ -10,11 +10,11 @@ const corsHeaders = {
 
 // Style prompt mapping
 const stylePrompts = {
-  'farmer': "Automatically detect all people in the image using face and age detection. For each individual, generate a 3D-stylized avatar in the Pixar or DreamWorks animation style. Preserve all original facial features, expressions, age, gender, and identity for every person — do not alter their face shape, emotional expression, or age characteristics. Transform each person into a character styled as a modern Egyptian farmer. For males: dress them in traditional light or neutral-colored galabeyas with a white or patterned headscarf. For females: dress them in female-style galabeyas with colorful headscarves and modest traditional detailing. Set the background in a vibrant green agricultural field under warm, natural sunlight. Include authentic rural Egyptian village elements in the scene such as palm trees, clay houses, farming tools, or common farm animals like donkeys and cows. The visual style should be slightly exaggerated and emotionally expressive like Pixar or DreamWorks, with soft, clean rendering. The overall tone should remain respectful, warm, and culturally authentic with a wholesome, storybook-like atmosphere.",
-  'pharaonic': "Create a 3D-stylized avatar (Pixar or DreamWorks style) of a person using face and age detection. Keep the original facial features, expressions, and age intact with no changes to identity Transform the person into an ancient Egyptian (Pharaonic) character, wearing traditional royal or noble clothing from the Pharaonic era:– For men: dress in a linen kilt, wide beaded collar, royal headdress (nemes or khepresh), and sandals.– For women: dress in a white linen dress with gold accessories, wide beaded collar, and a decorative headdress or braided hairstyle.Set the scene in an ancient Egyptian environment — like beside a temple, on the Nile riverbank, or in front of pyramids — under warm golden sunlight.Style should be culturally respectful, semi-realistic, and slightly exaggerated in the expressive and colorful style of Pixar or animated film characters",
-  'basha': "Automatically detect all people in the image using face and age detection. For each individual, generate a 3D-stylized avatar in the Pixar or DreamWorks animation style.Preserve all original facial features, expressions, age, and identity for every person — do not alter their face shape, emotional expression, or age characteristics. Transform each person into a character styled as \"El Basha\" (الباشا بالطاربوش) — a noble or upper-class Egyptian figure from the early 20th century: Dress each person in an elegant dark suit or traditional Egyptian formal wear appropriate to their gender, status, and time period. Add a red tarboosh (fez) to each character. Optional accessories may include a classic cane, monocle, or pocket watch, depending on the person's age and look. For women, adapt the look to match elite fashion of early 1900s Egyptian aristocratic women — refined dresses, tasteful jewelry, elegant hairstyles or headwear that align with cultural norms of the time. Set the scene in a refined background inspired by early 1900s Cairo or Alexandria, including: Old mansions or royal palaces Vintage cafés or French-style shops Historic tram lines Cobblestone streets under warm, golden vintage lighting The art style should be: Slightly exaggerated and emotionally expressive like Pixar or DreamWorks Refined, culturally respectful, and dignified With clean, detailed rendering and a warm, nostalgic tone",
-  'beach': "Automatically detect all people in the image using face and age detection. For each individual detected — and only those individuals — generate a 3D-stylized avatar in the Pixar or DreamWorks animation style. Do not invent or add any people who are not present in the image. Preserve all original facial features, expressions, age, and identity for every person — do not alter their face shape, emotional expression, or age characteristics. Transform each person into a character styled for a summery, joyful Mediterranean or Egyptian beach scene: Dress each person in relaxed and culturally-appropriate beachwear that reflects their age and gender. For men: casual short-sleeve shirts, tank tops, swim trunks, sandals, straw hats, or sunglasses. For women (non-hijabi): stylish yet modest summer dresses, beach wraps, swimwear with light cover-ups, wide-brimmed hats, or colorful scarves. For hijabi women: modern, modest beachwear such as colorful burkinis or lightweight tunics with swim-appropriate hijabs or light scarves. For children or elders: simple, age-appropriate summer clothing with light beach accessories like sandals, towels, or sun hats. Optional items (if appropriate): sunglasses, beach bags, ice cream cones, floaties, or books. Set the scene in a warm, sunny coastal environment inspired by Mediterranean or Egyptian beaches, featuring golden sand, clear waves, palm trees, colorful umbrellas, and relaxed seaside cafés. Ensure the background is peaceful and realistic — do not add people or fictional characters beyond those detected in the original photo. The art style should be slightly exaggerated and emotionally expressive, like Pixar or DreamWorks; rendered in a bright, clean, and vibrant animation style that captures warmth, fun, and cultural authenticity.",
-  'pixar': "Create a stylized avatar of the persons in the image"
+  'farmer': "Create a portrait of a person as a friendly farmer character wearing overalls, a straw hat, with a warm welcoming expression, in a rural farm setting with rolling hills and a red barn in the background. Style: realistic portrait, warm lighting, earthy tones.",
+  'pharaonic': "Create a portrait of a person as an ancient Egyptian pharaoh wearing elaborate golden headdress, ornate jewelry, and royal Egyptian attire, in an ancient Egyptian palace with hieroglyphics on the walls. Style: majestic portrait, golden lighting, rich colors.",
+  'basha': "Create a portrait of a person as an elegant Ottoman basha wearing traditional Ottoman robes, a turban with feathers, and ornate decorations, in a luxurious Ottoman palace setting. Style: regal portrait, warm lighting, rich fabrics.",
+  'beach': "Create a portrait of a person as a relaxed beach character wearing casual beach attire and sunglasses, with a cheerful expression, on a beautiful tropical beach with palm trees and crystal blue water. Style: bright portrait, sunny lighting, vibrant colors.",
+  'pixar': "Create a portrait of a person as a Pixar-style animated character with exaggerated features, bright colors, and an expressive face typical of Pixar animation. Style: 3D animated character, colorful, family-friendly."
 };
 
 serve(async (req) => {
@@ -34,6 +34,7 @@ serve(async (req) => {
     }
 
     console.log('Generating avatar with style:', style);
+    console.log('OpenAI API key available:', openAIApiKey ? 'Yes' : 'No');
 
     // Check if OpenAI API key is available
     if (!openAIApiKey) {
@@ -50,28 +51,26 @@ serve(async (req) => {
     // Get the appropriate prompt for the style
     const stylePrompt = stylePrompts[style as keyof typeof stylePrompts] || stylePrompts.pixar;
     
-    // Convert base64 image to proper format for OpenAI
-    const imageData = image.split(',')[1]; // Remove data:image/jpeg;base64, prefix
-    const imageBuffer = Uint8Array.from(atob(imageData), c => c.charCodeAt(0));
+    console.log('Using style prompt:', stylePrompt);
     
-    // Create form data for OpenAI API (DALL-E 2 image edits)
-    const formData = new FormData();
-    formData.append('image', new Blob([imageBuffer], { type: 'image/png' }), 'image.png');
-    formData.append('prompt', stylePrompt);
-    formData.append('n', '1');
-    formData.append('size', '1024x1024');
-    formData.append('response_format', 'b64_json');
+    // Use DALL-E 2 generations endpoint (creates image from text prompt)
+    const requestBody = {
+      model: 'dall-e-2',
+      prompt: stylePrompt,
+      n: 1,
+      size: '1024x1024',
+      response_format: 'b64_json'
+    };
 
-    console.log('Calling OpenAI DALL-E 2 image edits with style:', style);
-    console.log('API Key available:', openAIApiKey ? 'Yes' : 'No');
-    console.log('Style prompt:', stylePrompt);
+    console.log('Calling OpenAI DALL-E 2 generations API');
     
-    const response = await fetch('https://api.openai.com/v1/images/edits', {
+    const response = await fetch('https://api.openai.com/v1/images/generations', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${openAIApiKey}`,
+        'Content-Type': 'application/json',
       },
-      body: formData,
+      body: JSON.stringify(requestBody),
     });
 
     const responseData = await response.json();
