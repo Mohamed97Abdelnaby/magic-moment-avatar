@@ -16,13 +16,13 @@ const corsHeaders = {
   'Access-Control-Max-Age': '86400',
 };
 
-// Style transformation prompts for image editing
+// Style transformation prompts for image generation
 const stylePrompts = {
-  'farmer': "Transform this person into a friendly farmer character. Add overalls, a straw hat, and place them in a rural farm setting with rolling hills and a red barn in the background. Keep their facial features recognizable while applying realistic portrait style with warm lighting and earthy tones.",
-  'pharaonic': "Transform this person into an ancient Egyptian pharaoh. Add elaborate golden headdress, ornate jewelry, and royal Egyptian attire. Place them in an ancient Egyptian palace with hieroglyphics on the walls. Keep their facial features recognizable while applying majestic portrait style with golden lighting and rich colors.",
-  'basha': "Transform this person into an elegant Ottoman basha. Add traditional Ottoman robes, a turban with feathers, and ornate decorations. Place them in a luxurious Ottoman palace setting. Keep their facial features recognizable while applying regal portrait style with warm lighting and rich fabrics.",
-  'beach': "Transform this person into a relaxed beach character. Add casual beach attire and sunglasses, keep their cheerful expression. Place them on a beautiful tropical beach with palm trees and crystal blue water. Keep their facial features recognizable while applying bright portrait style with sunny lighting and vibrant colors.",
-  'pixar': "Transform this person into a Pixar-style animated character. Apply exaggerated features, bright colors, and expressive facial features typical of Pixar animation. Keep their basic facial structure recognizable while converting to 3D animated character style that's colorful and family-friendly."
+  'farmer': "A professional portrait of a person as a friendly farmer character wearing overalls and a straw hat, standing in a rural farm setting with rolling hills and a red barn in the background. Realistic portrait style with warm lighting and earthy tones. High quality headshot.",
+  'pharaonic': "A professional portrait of a person as an ancient Egyptian pharaoh wearing elaborate golden headdress, ornate jewelry, and royal Egyptian attire, in an ancient Egyptian palace with hieroglyphics on the walls. Majestic portrait style with golden lighting and rich colors. High quality headshot.",
+  'basha': "A professional portrait of a person as an elegant Ottoman basha wearing traditional Ottoman robes, a turban with feathers, and ornate decorations, in a luxurious Ottoman palace setting. Regal portrait style with warm lighting and rich fabrics. High quality headshot.",
+  'beach': "A professional portrait of a person as a relaxed beach character wearing casual beach attire and sunglasses, with a cheerful expression, on a beautiful tropical beach with palm trees and crystal blue water. Bright portrait style with sunny lighting and vibrant colors. High quality headshot.",
+  'pixar': "A professional portrait of a person in Pixar-style animation with exaggerated features, bright colors, and expressive facial features typical of Pixar animation. 3D animated character style that's colorful and family-friendly. High quality character design."
 };
 
 serve(async (req) => {
@@ -64,53 +64,36 @@ serve(async (req) => {
     // Get the appropriate prompt for the style
     const stylePrompt = stylePrompts[style as keyof typeof stylePrompts] || stylePrompts.pixar;
     
-    console.log('Using transformation prompt:', stylePrompt);
+    console.log('Using generation prompt:', stylePrompt);
     
-    // Convert base64 image to blob
-    let base64Data, imageBytes, imageBlob;
-    try {
-      base64Data = image.replace(/^data:image\/[a-z]+;base64,/, '');
-      console.log('Base64 data length after cleanup:', base64Data.length);
-      
-      imageBytes = Uint8Array.from(atob(base64Data), c => c.charCodeAt(0));
-      imageBlob = new Blob([imageBytes], { type: 'image/png' });
-      console.log('Image blob created, size:', imageBlob.size);
-    } catch (imageError) {
-      console.error('Error processing image data:', imageError);
-      return new Response(JSON.stringify({ 
-        error: 'Invalid image data',
-        details: 'Could not process the provided image data'
-      }), {
-        status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
+    console.log('Calling OpenAI image generation API');
     
-    // Create FormData for image editing endpoint
-    const formData = new FormData();
-    formData.append('image', imageBlob, 'image.png');
-    formData.append('prompt', stylePrompt);
-    formData.append('n', '1');
-    formData.append('size', '1024x1024');
-    formData.append('response_format', 'b64_json');
-
-    console.log('Calling OpenAI DALL-E 2 edits API to transform user image');
-    
-    const response = await fetch('https://api.openai.com/v1/images/edits', {
+    const response = await fetch('https://api.openai.com/v1/images/generations', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${openAIApiKey}`,
+        'Content-Type': 'application/json',
       },
-      body: formData,
+      body: JSON.stringify({
+        model: 'gpt-image-1',
+        prompt: stylePrompt,
+        n: 1,
+        size: '1024x1024',
+        quality: 'high',
+        output_format: 'png',
+        response_format: 'b64_json'
+      }),
     });
 
     const responseData = await response.json();
     
     if (!response.ok) {
-      console.error('OpenAI API error:', responseData);
+      console.error('OpenAI API error status:', response.status);
+      console.error('OpenAI API error response:', responseData);
       return new Response(JSON.stringify({ 
         error: 'Failed to generate avatar',
-        details: responseData.error?.message || 'Unknown error'
+        details: responseData.error?.message || `API Error: ${response.status}`,
+        apiStatus: response.status
       }), {
         status: response.status,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -118,21 +101,26 @@ serve(async (req) => {
     }
 
     console.log('Avatar generated successfully');
+    console.log('Response data structure:', Object.keys(responseData));
 
-    // Handle DALL-E 2 response format
+    // Handle image generation response format
     if (responseData.data && responseData.data[0]) {
       let generatedImage;
       
       if (responseData.data[0].b64_json) {
         // If we get base64 directly
         generatedImage = `data:image/png;base64,${responseData.data[0].b64_json}`;
+        console.log('Generated image base64 length:', responseData.data[0].b64_json.length);
       } else if (responseData.data[0].url) {
         // If we get a URL, fetch it and convert to base64
+        console.log('Fetching image from URL:', responseData.data[0].url);
         const imageResponse = await fetch(responseData.data[0].url);
         const arrayBuffer = await imageResponse.arrayBuffer();
         const base64 = btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)));
         generatedImage = `data:image/png;base64,${base64}`;
+        console.log('Converted URL image to base64, length:', base64.length);
       } else {
+        console.error('No image data in response:', responseData.data[0]);
         throw new Error('No image data received from OpenAI');
       }
 
@@ -144,6 +132,7 @@ serve(async (req) => {
       });
     }
 
+    console.error('Invalid response structure:', responseData);
     throw new Error('No image data in response');
 
   } catch (error) {
