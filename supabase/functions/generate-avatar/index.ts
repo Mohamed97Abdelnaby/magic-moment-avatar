@@ -54,17 +54,19 @@ serve(async (req) => {
     const imageData = image.split(',')[1]; // Remove data:image/jpeg;base64, prefix
     const imageBuffer = Uint8Array.from(atob(imageData), c => c.charCodeAt(0));
     
-    // Create form data for OpenAI API (DALL-E 2 image variations)
+    // Create form data for OpenAI API (DALL-E 2 image edits)
     const formData = new FormData();
     formData.append('image', new Blob([imageBuffer], { type: 'image/png' }), 'image.png');
+    formData.append('prompt', stylePrompt);
     formData.append('n', '1');
     formData.append('size', '1024x1024');
     formData.append('response_format', 'b64_json');
 
-    console.log('Calling OpenAI DALL-E 2 variations API with style:', style);
+    console.log('Calling OpenAI DALL-E 2 image edits with style:', style);
     console.log('API Key available:', openAIApiKey ? 'Yes' : 'No');
+    console.log('Style prompt:', stylePrompt);
     
-    const response = await fetch('https://api.openai.com/v1/images/variations', {
+    const response = await fetch('https://api.openai.com/v1/images/edits', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${openAIApiKey}`,
