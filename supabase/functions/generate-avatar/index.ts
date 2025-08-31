@@ -8,13 +8,13 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-// Style prompt mapping
+// Style transformation prompts for image editing
 const stylePrompts = {
-  'farmer': "Create a portrait of a person as a friendly farmer character wearing overalls, a straw hat, with a warm welcoming expression, in a rural farm setting with rolling hills and a red barn in the background. Style: realistic portrait, warm lighting, earthy tones.",
-  'pharaonic': "Create a portrait of a person as an ancient Egyptian pharaoh wearing elaborate golden headdress, ornate jewelry, and royal Egyptian attire, in an ancient Egyptian palace with hieroglyphics on the walls. Style: majestic portrait, golden lighting, rich colors.",
-  'basha': "Create a portrait of a person as an elegant Ottoman basha wearing traditional Ottoman robes, a turban with feathers, and ornate decorations, in a luxurious Ottoman palace setting. Style: regal portrait, warm lighting, rich fabrics.",
-  'beach': "Create a portrait of a person as a relaxed beach character wearing casual beach attire and sunglasses, with a cheerful expression, on a beautiful tropical beach with palm trees and crystal blue water. Style: bright portrait, sunny lighting, vibrant colors.",
-  'pixar': "Create a portrait of a person as a Pixar-style animated character with exaggerated features, bright colors, and an expressive face typical of Pixar animation. Style: 3D animated character, colorful, family-friendly."
+  'farmer': "Transform this person into a friendly farmer character. Add overalls, a straw hat, and place them in a rural farm setting with rolling hills and a red barn in the background. Keep their facial features recognizable while applying realistic portrait style with warm lighting and earthy tones.",
+  'pharaonic': "Transform this person into an ancient Egyptian pharaoh. Add elaborate golden headdress, ornate jewelry, and royal Egyptian attire. Place them in an ancient Egyptian palace with hieroglyphics on the walls. Keep their facial features recognizable while applying majestic portrait style with golden lighting and rich colors.",
+  'basha': "Transform this person into an elegant Ottoman basha. Add traditional Ottoman robes, a turban with feathers, and ornate decorations. Place them in a luxurious Ottoman palace setting. Keep their facial features recognizable while applying regal portrait style with warm lighting and rich fabrics.",
+  'beach': "Transform this person into a relaxed beach character. Add casual beach attire and sunglasses, keep their cheerful expression. Place them on a beautiful tropical beach with palm trees and crystal blue water. Keep their facial features recognizable while applying bright portrait style with sunny lighting and vibrant colors.",
+  'pixar': "Transform this person into a Pixar-style animated character. Apply exaggerated features, bright colors, and expressive facial features typical of Pixar animation. Keep their basic facial structure recognizable while converting to 3D animated character style that's colorful and family-friendly."
 };
 
 serve(async (req) => {
@@ -35,6 +35,7 @@ serve(async (req) => {
 
     console.log('Generating avatar with style:', style);
     console.log('OpenAI API key available:', openAIApiKey ? 'Yes' : 'No');
+    console.log('Image data length:', image?.length || 0);
 
     // Check if OpenAI API key is available
     if (!openAIApiKey) {
@@ -51,26 +52,29 @@ serve(async (req) => {
     // Get the appropriate prompt for the style
     const stylePrompt = stylePrompts[style as keyof typeof stylePrompts] || stylePrompts.pixar;
     
-    console.log('Using style prompt:', stylePrompt);
+    console.log('Using transformation prompt:', stylePrompt);
     
-    // Use DALL-E 2 generations endpoint (creates image from text prompt)
-    const requestBody = {
-      model: 'dall-e-2',
-      prompt: stylePrompt,
-      n: 1,
-      size: '1024x1024',
-      response_format: 'b64_json'
-    };
+    // Convert base64 image to blob
+    const base64Data = image.replace(/^data:image\/[a-z]+;base64,/, '');
+    const imageBytes = Uint8Array.from(atob(base64Data), c => c.charCodeAt(0));
+    const imageBlob = new Blob([imageBytes], { type: 'image/png' });
+    
+    // Create FormData for image editing endpoint
+    const formData = new FormData();
+    formData.append('image', imageBlob, 'image.png');
+    formData.append('prompt', stylePrompt);
+    formData.append('n', '1');
+    formData.append('size', '1024x1024');
+    formData.append('response_format', 'b64_json');
 
-    console.log('Calling OpenAI DALL-E 2 generations API');
+    console.log('Calling OpenAI DALL-E 2 edits API to transform user image');
     
-    const response = await fetch('https://api.openai.com/v1/images/generations', {
+    const response = await fetch('https://api.openai.com/v1/images/edits', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${openAIApiKey}`,
-        'Content-Type': 'application/json',
       },
-      body: JSON.stringify(requestBody),
+      body: formData,
     });
 
     const responseData = await response.json();
