@@ -8,8 +8,8 @@ export const useAvatarGeneration = () => {
   const [generationError, setGenerationError] = useState<string | null>(null);
   const [showConfetti, setShowConfetti] = useState(false);
 
-  const generateAvatar = useCallback(async (capturedPhoto: string, selectedStylePrompt: string) => {
-    if (!capturedPhoto || !selectedStylePrompt) {
+  const generateAvatar = useCallback(async (capturedPhoto: string, selectedStyle: string) => {
+    if (!capturedPhoto || !selectedStyle) {
       setGenerationError('Missing photo or style selection');
       return false;
     }
@@ -18,13 +18,13 @@ export const useAvatarGeneration = () => {
     setGenerationError(null);
 
     try {
-      console.log('Photo data length:', capturedPhoto.length);
-      console.log('Style prompt:', selectedStylePrompt);
+      console.log(capturedPhoto)
+      console.log(selectedStyle)
       console.log('Starting avatar generation...');
       const { data, error } = await supabase.functions.invoke('generate-avatar', {
         body: {
           image: capturedPhoto,
-          style: selectedStylePrompt
+          style: selectedStyle
         }
       });
 
