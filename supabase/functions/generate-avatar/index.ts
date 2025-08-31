@@ -30,9 +30,18 @@ serve(async (req) => {
   try {
     const { image, style } = await req.json();
 
+    // Validate input parameters
     if (!image) {
       console.error("No image provided in request");
       return new Response(JSON.stringify({ error: "Image is required" }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    if (!image.startsWith('data:image/')) {
+      console.error("Invalid image format provided");
+      return new Response(JSON.stringify({ error: "Image must be a valid data URL" }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -69,7 +78,7 @@ serve(async (req) => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "gpt-4o",
+        model: "gpt-4.1-2025-04-14",
         messages: [
           {
             role: "user",
@@ -87,7 +96,7 @@ serve(async (req) => {
             ]
           }
         ],
-        max_tokens: 500
+        max_completion_tokens: 500
       }),
     });
 
@@ -122,7 +131,10 @@ Based on this detailed description of the person in the original image: "${perso
 
 Create the styled avatar maintaining all the specific facial features, age, gender, and identity characteristics described above.`;
 
-    console.log("Step 2: Generating styled avatar with DALL-E...");
+    // Validate and truncate prompt if needed (gpt-image-1 has 32000 char limit)
+    const truncatedPrompt = fullPrompt.length > 32000 ? fullPrompt.substring(0, 32000) : fullPrompt;
+    
+    console.log("Step 2: Generating styled avatar with gpt-image-1...");
     const imageResponse = await fetch("https://api.openai.com/v1/images/generations", {
       method: "POST",
       headers: {
@@ -131,11 +143,10 @@ Create the styled avatar maintaining all the specific facial features, age, gend
       },
       body: JSON.stringify({
         model: "gpt-image-1",
-        prompt: fullPrompt,
+        prompt: truncatedPrompt,
         n: 1,
         size: "1024x1024",
-        quality: "high",
-        output_format: "png"
+        quality: "high"
       }),
     });
 
@@ -160,21 +171,16 @@ Create the styled avatar maintaining all the specific facial features, age, gend
       );
     }
 
-    // gpt-image-1 returns base64 directly, no need for b64_json format
+    // gpt-image-1 returns base64 directly in the data array
     if (!imageData?.data?.[0]) {
+      console.error("No image data received:", imageData);
       throw new Error("No image data received from OpenAI Image Generation API");
     }
 
-    // The response format varies - handle both base64 string and b64_json format
-    let generatedImageData;
-    if (typeof imageData.data[0] === 'string') {
-      generatedImageData = imageData.data[0];
-    } else if (imageData.data[0].b64_json) {
-      generatedImageData = imageData.data[0].b64_json;
-    } else {
-      throw new Error("Unexpected image data format from OpenAI");
-    }
-
+    // gpt-image-1 always returns base64 strings directly
+    const generatedImageData = imageData.data[0];
+    console.log("Image data received, length:", generatedImageData.length);
+    
     const generatedImage = generatedImageData.startsWith('data:') 
       ? generatedImageData 
       : `data:image/png;base64,${generatedImageData}`;
