@@ -18,6 +18,8 @@ export const useAvatarGeneration = () => {
     setGenerationError(null);
 
     try {
+      console.log(capturedPhoto)
+      console.log(selectedStyle)
       console.log('Starting avatar generation...');
       const { data, error } = await supabase.functions.invoke('generate-avatar', {
         body: {
