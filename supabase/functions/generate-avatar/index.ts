@@ -3,6 +3,11 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
 const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
 
+console.log('Environment check:');
+console.log('Available env keys:', Object.keys(Deno.env.toObject()).filter(key => key.includes('OPENAI')));
+console.log('OPENAI_API_KEY exists:', !!openAIApiKey);
+console.log('OPENAI_API_KEY length:', openAIApiKey?.length || 0);
+
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
@@ -40,9 +45,10 @@ serve(async (req) => {
     // Check if OpenAI API key is available
     if (!openAIApiKey) {
       console.error('OpenAI API key not found');
+      console.error('All environment variables:', Object.keys(Deno.env.toObject()));
       return new Response(JSON.stringify({ 
         error: 'Server configuration error',
-        details: 'OpenAI API key not configured'
+        details: 'OpenAI API key not configured. Please check your Supabase function secrets.'
       }), {
         status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -55,9 +61,24 @@ serve(async (req) => {
     console.log('Using transformation prompt:', stylePrompt);
     
     // Convert base64 image to blob
-    const base64Data = image.replace(/^data:image\/[a-z]+;base64,/, '');
-    const imageBytes = Uint8Array.from(atob(base64Data), c => c.charCodeAt(0));
-    const imageBlob = new Blob([imageBytes], { type: 'image/png' });
+    let base64Data, imageBytes, imageBlob;
+    try {
+      base64Data = image.replace(/^data:image\/[a-z]+;base64,/, '');
+      console.log('Base64 data length after cleanup:', base64Data.length);
+      
+      imageBytes = Uint8Array.from(atob(base64Data), c => c.charCodeAt(0));
+      imageBlob = new Blob([imageBytes], { type: 'image/png' });
+      console.log('Image blob created, size:', imageBlob.size);
+    } catch (imageError) {
+      console.error('Error processing image data:', imageError);
+      return new Response(JSON.stringify({ 
+        error: 'Invalid image data',
+        details: 'Could not process the provided image data'
+      }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
     
     // Create FormData for image editing endpoint
     const formData = new FormData();

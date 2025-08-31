@@ -10,9 +10,7 @@ const ParticleField = ({ count = 12 }: { count?: number }) => {
             left: `${Math.random() * 100}%`,
             top: `${Math.random() * 100}%`,
             background: 'hsl(var(--gradient-particle))',
-            animationDelay: `${Math.random() * 8}s`,
-            animationDuration: `${8 + Math.random() * 4}s`,
-            animation: 'float 8s ease-in-out infinite',
+            animation: `float ${8 + Math.random() * 4}s ease-in-out infinite ${Math.random() * 8}s`,
           }}
         />
       ))}

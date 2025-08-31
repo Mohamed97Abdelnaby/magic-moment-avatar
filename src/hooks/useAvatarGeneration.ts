@@ -28,7 +28,9 @@ export const useAvatarGeneration = () => {
 
       if (error) {
         console.error('Avatar generation error:', error);
-        setGenerationError('Failed to generate avatar. Please try again.');
+        const errorMsg = error.message || error.details || 'Failed to generate avatar. Please try again.';
+        setGenerationError(errorMsg);
+        toast.error(`Avatar generation failed: ${errorMsg}`);
         return false;
       } else if (data?.generatedImage) {
         console.log('Avatar generated successfully');
