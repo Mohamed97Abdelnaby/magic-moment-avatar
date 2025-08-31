@@ -2,7 +2,7 @@ import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
 const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
-openAIApiKey="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"
+
 console.log('Environment check:');
 console.log('Available env keys:', Object.keys(Deno.env.toObject()).filter(key => key.includes('OPENAI')));
 console.log('OPENAI_API_KEY exists:', !!openAIApiKey);
@@ -11,6 +11,8 @@ console.log('OPENAI_API_KEY length:', openAIApiKey?.length || 0);
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+  'Access-Control-Max-Age': '86400',
 };
 
 // Style transformation prompts for image editing
