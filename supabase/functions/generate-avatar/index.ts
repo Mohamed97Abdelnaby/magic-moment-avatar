@@ -7,11 +7,11 @@ const corsHeaders = {
 };
 
 const stylePrompts = {
-  pixar: "Transform this person into a Pixar/Disney 3D animated character with big expressive eyes, smooth colorful features, and cheerful cartoon styling while maintaining their facial structure and identity.",
-  farmer: "Transform this person into an Egyptian farmer wearing traditional galabiya, keffiyeh headwrap, working in lush green fields with the Nile in background, realistic oil painting style.",
-  pharaonic: "Transform this person into an ancient Egyptian pharaoh with golden headdress, ornate collar jewelry, dramatic eye makeup, desert pyramid background, classical Egyptian art style.",
-  basha: "Transform this person into an elegant Egyptian basha (nobleman) wearing fez hat, formal Ottoman-era clothing, distinguished mustache, seated in ornate palace setting, vintage portrait style.",
-  beach: "Transform this person into a relaxed beach vacation look with sunglasses, casual summer clothing, tropical beach background with palm trees and blue ocean, bright sunny photography style."
+  pixar: "Create a stylized avatar of the persons in the image",
+  farmer: "Automatically detect all people in the image using face and age detection. For each individual, generate a 3D-stylized avatar in the Pixar or DreamWorks animation style. Preserve all original facial features, expressions, age, gender, and identity for every person — do not alter their face shape, emotional expression, or age characteristics. Transform each person into a character styled as a modern Egyptian farmer. For males: dress them in traditional light or neutral-colored galabeyas with a white or patterned headscarf. For females: dress them in female-style galabeyas with colorful headscarves and modest traditional detailing. Set the background in a vibrant green agricultural field under warm, natural sunlight. Include authentic rural Egyptian village elements in the scene such as palm trees, clay houses, farming tools, or common farm animals like donkeys and cows. The visual style should be slightly exaggerated and emotionally expressive like Pixar or DreamWorks, with soft, clean rendering. The overall tone should remain respectful, warm, and culturally authentic with a wholesome, storybook-like atmosphere.",
+  pharaonic: "Create a 3D-stylized avatar (Pixar or DreamWorks style) of a person using face and age detection. Keep the original facial features, expressions, and age intact with no changes to identity Transform the person into an ancient Egyptian (Pharaonic) character, wearing traditional royal or noble clothing from the Pharaonic era:– For men: dress in a linen kilt, wide beaded collar, royal headdress (nemes or khepresh), and sandals.– For women: dress in a white linen dress with gold accessories, wide beaded collar, and a decorative headdress or braided hairstyle.Set the scene in an ancient Egyptian environment — like beside a temple, on the Nile riverbank, or in front of pyramids — under warm golden sunlight.Style should be culturally respectful, semi-realistic, and slightly exaggerated in the expressive and colorful style of Pixar or animated film characters",
+  basha: "Automatically detect all people in the image using face and age detection. For each individual, generate a 3D-stylized avatar in the Pixar or DreamWorks animation style.Preserve all original facial features, expressions, age, and identity for every person — do not alter their face shape, emotional expression, or age characteristics. Transform each person into a character styled as \"El Basha\" (الباشا بالطاربوش) — a noble or upper-class Egyptian figure from the early 20th century: Dress each person in an elegant dark suit or traditional Egyptian formal wear appropriate to their gender, status, and time period. Add a red tarboosh (fez) to each character. Optional accessories may include a classic cane, monocle, or pocket watch, depending on the person's age and look. For women, adapt the look to match elite fashion of early 1900s Egyptian aristocratic women — refined dresses, tasteful jewelry, elegant hairstyles or headwear that align with cultural norms of the time. Set the scene in a refined background inspired by early 1900s Cairo or Alexandria, including: Old mansions or royal palaces Vintage cafés or French-style shops Historic tram lines Cobblestone streets under warm, golden vintage lighting The art style should be: Slightly exaggerated and emotionally expressive like Pixar or DreamWorks Refined, culturally respectful, and dignified With clean, detailed rendering and a warm, nostalgic tone",
+  beach: "Automatically detect all people in the image using face and age detection. For each individual detected — and only those individuals — generate a 3D-stylized avatar in the Pixar or DreamWorks animation style. Do not invent or add any people who are not present in the image. Preserve all original facial features, expressions, age, and identity for every person — do not alter their face shape, emotional expression, or age characteristics. Transform each person into a character styled for a summery, joyful Mediterranean or Egyptian beach scene: Dress each person in relaxed and culturally-appropriate beachwear that reflects their age and gender. For men: casual short-sleeve shirts, tank tops, swim trunks, sandals, straw hats, or sunglasses. For women (non-hijabi): stylish yet modest summer dresses, beach wraps, swimwear with light cover-ups, wide-brimmed hats, or colorful scarves. For hijabi women: modern, modest beachwear such as colorful burkinis or lightweight tunics with swim-appropriate hijabs or light scarves. For children or elders: simple, age-appropriate summer clothing with light beach accessories like sandals, towels, or sun hats. Optional items (if appropriate): sunglasses, beach bags, ice cream cones, floaties, or books. Set the scene in a warm, sunny coastal environment inspired by Mediterranean or Egyptian beaches, featuring golden sand, clear waves, palm trees, colorful umbrellas, and relaxed seaside cafés. Ensure the background is peaceful and realistic — do not add people or fictional characters beyond those detected in the original photo. The art style should be slightly exaggerated and emotionally expressive, like Pixar or DreamWorks; rendered in a bright, clean, and vibrant animation style that captures warmth, fun, and cultural authenticity."
 };
 
 serve(async (req) => {
@@ -43,70 +43,36 @@ serve(async (req) => {
       });
     }
 
-    console.log('Analyzing image with GPT-4 Vision...');
+    console.log('Generating avatar with gpt-image-1 using Image Edits API...');
     
-    // Step 1: Analyze the image with GPT-4 Vision
-    const visionResponse = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${apiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'gpt-4o-mini',
-        messages: [
-          {
-            role: 'user',
-            content: [
-              {
-                type: 'text',
-                text: 'Describe this person\'s key facial features, age, gender, and overall appearance in detail for avatar generation. Focus on distinctive characteristics.'
-              },
-              {
-                type: 'image_url',
-                image_url: {
-                  url: image
-                }
-              }
-            ]
-          }
-        ],
-        max_tokens: 300,
-      }),
-    });
-
-    if (!visionResponse.ok) {
-      console.error('Vision API error:', await visionResponse.text());
-      throw new Error('Failed to analyze image');
-    }
-
-    const visionData = await visionResponse.json();
-    const personDescription = visionData.choices[0].message.content;
-    console.log('Person analysis complete:', personDescription.substring(0, 100) + '...');
-
-    // Step 2: Generate styled avatar
+    // Get the style prompt
     const stylePrompt = stylePrompts[style as keyof typeof stylePrompts];
     if (!stylePrompt) {
       throw new Error(`Invalid style: ${style}`);
     }
 
-    const fullPrompt = `${stylePrompt} Person details: ${personDescription}`;
-    console.log('Generating avatar with style:', style);
+    // Convert base64 image to blob for multipart upload
+    const base64Data = image.split(',')[1]; // Remove data:image/...;base64, prefix
+    const imageBuffer = Uint8Array.from(atob(base64Data), c => c.charCodeAt(0));
+    const imageBlob = new Blob([imageBuffer], { type: 'image/png' });
 
-    const imageResponse = await fetch('https://api.openai.com/v1/images/generations', {
+    // Create FormData for multipart request
+    const formData = new FormData();
+    formData.append('image', imageBlob, 'image.png');
+    formData.append('prompt', stylePrompt);
+    formData.append('model', 'gpt-image-1');
+    formData.append('n', '1');
+    formData.append('size', '1536x1024');
+    formData.append('response_format', 'b64_json');
+
+    console.log('Sending request to Image Edits API...');
+    
+    const imageResponse = await fetch('https://api.openai.com/v1/images/edits', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${apiKey}`,
-        'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        model: 'dall-e-3',
-        prompt: fullPrompt,
-        n: 1,
-        size: '1024x1024',
-        quality: 'standard',
-        response_format: 'b64_json'
-      }),
+      body: formData,
     });
 
     if (!imageResponse.ok) {
