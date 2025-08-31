@@ -1,9 +1,10 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
 const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Origin': 'https://f04b2339-5de6-477e-b8aa-36a296858f11.sandbox.lovable.dev',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
+  'Access-Control-Allow-Credentials': 'true',
   'Cache-Control': 'no-cache, no-store, must-revalidate',
   'Pragma': 'no-cache',
   'Expires': '0'
@@ -19,7 +20,10 @@ serve(async (req: Request) => {
   }
 
   if (req.method !== 'POST') {
-    return new Response(JSON.stringify({ error: 'Method not allowed' }), {
+    return new Response(JSON.stringify({ 
+      error: 'Method not allowed',
+      status: 'method_error'
+    }), {
       status: 405,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
@@ -28,13 +32,14 @@ serve(async (req: Request) => {
   try {
     // Verify OpenAI API key with enhanced logging
     const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
-    console.log('OpenAI API key status:', openAIApiKey ? `Present (${openAIApiKey.substring(0, 7)}...)` : 'Missing');
+    console.log('Environment check - API key status:', openAIApiKey ? `Present (length: ${openAIApiKey.length})` : 'Missing');
     
-    if (!openAIApiKey) {
-      console.error('OpenAI API key not found in environment variables');
+    if (!openAIApiKey || openAIApiKey.trim() === '') {
+      console.error('OpenAI API key not found or empty in environment variables');
       return new Response(JSON.stringify({ 
-        error: 'OpenAI API key not configured',
-        status: 'configuration_error'
+        error: 'OpenAI API key not configured. Please check your environment variables.',
+        status: 'configuration_error',
+        timestamp: new Date().toISOString()
       }), {
         status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -45,7 +50,10 @@ serve(async (req: Request) => {
 
     // Validate input parameters
     if (!image || !style) {
-      return new Response(JSON.stringify({ error: 'Missing required parameters: image and style' }), {
+      return new Response(JSON.stringify({ 
+        error: 'Missing required parameters: image and style',
+        status: 'validation_error'
+      }), {
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
@@ -53,7 +61,10 @@ serve(async (req: Request) => {
 
     // Validate image data URL format
     if (!image.startsWith('data:image/')) {
-      return new Response(JSON.stringify({ error: 'Invalid image format. Expected data URL.' }), {
+      return new Response(JSON.stringify({ 
+        error: 'Invalid image format. Expected data URL.',
+        status: 'validation_error'
+      }), {
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
@@ -64,6 +75,9 @@ serve(async (req: Request) => {
 
     // Step 1: Analyze the input image using vision model
     console.log('Starting vision analysis with gpt-4o-mini...');
+    
+    const visionController = new AbortController();
+    const visionTimeout = setTimeout(() => visionController.abort(), 30000); // 30s timeout
     
     let visionResponse;
     try {
@@ -92,12 +106,17 @@ serve(async (req: Request) => {
           ],
           max_tokens: 300
         }),
+        signal: visionController.signal
       });
+      
+      clearTimeout(visionTimeout);
     } catch (fetchError) {
+      clearTimeout(visionTimeout);
       console.error('Vision API fetch error:', fetchError);
       return new Response(JSON.stringify({ 
         error: 'Failed to connect to vision API',
-        status: 'api_connection_error'
+        status: 'api_connection_error',
+        details: fetchError.message
       }), {
         status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -107,7 +126,11 @@ serve(async (req: Request) => {
     if (!visionResponse.ok) {
       const errorData = await visionResponse.text();
       console.error('Vision API error:', errorData);
-      return new Response(JSON.stringify({ error: 'Failed to analyze image' }), {
+      return new Response(JSON.stringify({ 
+        error: 'Failed to analyze image',
+        status: 'vision_api_error',
+        details: errorData
+      }), {
         status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
@@ -115,7 +138,7 @@ serve(async (req: Request) => {
 
     const visionData = await visionResponse.json();
     const personDescription = visionData.choices[0].message.content;
-    console.log('Person description:', personDescription);
+    console.log('Person description generated successfully');
 
     // Step 2: Generate avatar using the detailed style prompts
     const stylePrompts = {
@@ -135,6 +158,9 @@ serve(async (req: Request) => {
     console.log('Generating image with DALL-E-3...');
     console.log('Prompt length:', finalPrompt.length);
 
+    const imageController = new AbortController();
+    const imageTimeout = setTimeout(() => imageController.abort(), 45000); // 45s timeout for image generation
+
     let imageResponse;
     try {
       imageResponse = await fetch('https://api.openai.com/v1/images/generations', {
@@ -150,12 +176,17 @@ serve(async (req: Request) => {
           quality: 'hd',
           n: 1
         }),
+        signal: imageController.signal
       });
+      
+      clearTimeout(imageTimeout);
     } catch (fetchError) {
+      clearTimeout(imageTimeout);
       console.error('Image generation fetch error:', fetchError);
       return new Response(JSON.stringify({ 
         error: 'Failed to connect to image generation API',
-        status: 'api_connection_error'
+        status: 'image_api_connection_error',
+        details: fetchError.message
       }), {
         status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -165,7 +196,11 @@ serve(async (req: Request) => {
     if (!imageResponse.ok) {
       const errorData = await imageResponse.text();
       console.error('Image generation error:', errorData);
-      return new Response(JSON.stringify({ error: 'Failed to generate avatar image', details: errorData }), {
+      return new Response(JSON.stringify({ 
+        error: 'Failed to generate avatar image', 
+        status: 'image_generation_error',
+        details: errorData 
+      }), {
         status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
@@ -175,7 +210,10 @@ serve(async (req: Request) => {
     
     if (!imageData.data || !imageData.data[0] || !imageData.data[0].url) {
       console.error('No image data received from OpenAI');
-      return new Response(JSON.stringify({ error: 'No image generated' }), {
+      return new Response(JSON.stringify({ 
+        error: 'No image generated',
+        status: 'no_image_error'
+      }), {
         status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
@@ -185,10 +223,36 @@ serve(async (req: Request) => {
     const imageUrl = imageData.data[0].url;
     console.log('Fetching generated image from URL...');
     
-    const imageDownloadResponse = await fetch(imageUrl);
+    const downloadController = new AbortController();
+    const downloadTimeout = setTimeout(() => downloadController.abort(), 30000); // 30s timeout for download
+    
+    let imageDownloadResponse;
+    try {
+      imageDownloadResponse = await fetch(imageUrl, {
+        signal: downloadController.signal
+      });
+      
+      clearTimeout(downloadTimeout);
+    } catch (fetchError) {
+      clearTimeout(downloadTimeout);
+      console.error('Image download fetch error:', fetchError);
+      return new Response(JSON.stringify({ 
+        error: 'Failed to download generated image',
+        status: 'download_error',
+        details: fetchError.message
+      }), {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+    
     if (!imageDownloadResponse.ok) {
-      console.error('Failed to download generated image');
-      return new Response(JSON.stringify({ error: 'Failed to download generated image' }), {
+      console.error('Failed to download generated image - HTTP error:', imageDownloadResponse.status);
+      return new Response(JSON.stringify({ 
+        error: 'Failed to download generated image',
+        status: 'download_http_error',
+        httpStatus: imageDownloadResponse.status
+      }), {
         status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
@@ -205,7 +269,8 @@ serve(async (req: Request) => {
 
     return new Response(JSON.stringify({ 
       generatedImage: imageDataUrl,
-      success: true 
+      success: true,
+      timestamp: new Date().toISOString()
     }), {
       status: 200,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -215,7 +280,9 @@ serve(async (req: Request) => {
     console.error('Avatar generation error:', error);
     return new Response(JSON.stringify({ 
       error: error.message || 'Internal server error',
-      details: 'Avatar generation failed'
+      status: 'internal_error',
+      details: 'Avatar generation failed',
+      timestamp: new Date().toISOString()
     }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
