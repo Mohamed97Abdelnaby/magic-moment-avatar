@@ -38,7 +38,7 @@ interface SharedResultScreenProps {
   showConfetti?: boolean;
   onRetake: () => void;
   onPrintPhoto: (imageData: string) => void;
-  onSendWhatsApp: (phoneNumber: string, message: string, imageData: string, instanceId: string) => Promise<boolean>;
+  onSendWhatsApp: (phoneNumber: string, imageData: string) => Promise<boolean>;
   onGenerateAvatar: () => void;
   backgroundImageUrl?: string | null;
   overlayOpacity?: number;
@@ -71,8 +71,7 @@ const SharedResultScreen = ({
   isInteractive = true
 }: SharedResultScreenProps) => {
   const [whatsappDialogOpen, setWhatsappDialogOpen] = useState(false);
-  const [phoneNumber, setPhoneNumber] = useState("");
-  const [message, setMessage] = useState("Check out my awesome avatar!");
+  const [phoneNumber, setPhoneNumber] = useState('');
   const { toast } = useToast();
 
   const containerClasses = mode === 'preview' 
@@ -97,11 +96,10 @@ const SharedResultScreen = ({
       return;
     }
 
-    const success = await onSendWhatsApp(phoneNumber, message, displayImage || '', 'kiosk-instance');
+    const success = await onSendWhatsApp(phoneNumber, displayImage || '');
     if (success) {
       setWhatsappDialogOpen(false);
       setPhoneNumber("");
-      setMessage("Check out my awesome avatar!");
     }
   };
 
@@ -213,14 +211,6 @@ const SharedResultScreen = ({
                             placeholder="+1234567890"
                             value={phoneNumber}
                             onChange={(e) => setPhoneNumber(e.target.value)}
-                          />
-                        </div>
-                        <div>
-                          <Label htmlFor="message">Message</Label>
-                          <Input
-                            id="message"
-                            value={message}
-                            onChange={(e) => setMessage(e.target.value)}
                           />
                         </div>
                         <Button onClick={handleSendWhatsApp} className="w-full">
