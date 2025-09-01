@@ -34,9 +34,9 @@ export const useAvatarGeneration = () => {
         setGenerationError(errorMsg);
         toast.error(`Avatar generation failed: ${errorMsg}`);
         return false;
-      } else if (data?.generatedImage) {
+      } else if (data?.image) {
         console.log('Avatar generated successfully');
-        setGeneratedAvatar(data.generatedImage);
+        setGeneratedAvatar(data.image);
         setShowConfetti(true);
         setTimeout(() => setShowConfetti(false), 4000);
         return true;
