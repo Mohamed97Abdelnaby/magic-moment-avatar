@@ -21,6 +21,7 @@ const stylePrompts = {
   pixar: "Create a stylized avatar of the persons in the image."
 };
 
+
 function validateImageFormat(base64Data: string): boolean {
   // Check if it's a valid base64 image (PNG, JPEG, or WebP)
   const imagePattern = /^data:image\/(png|jpeg|jpg|webp);base64,/i;
