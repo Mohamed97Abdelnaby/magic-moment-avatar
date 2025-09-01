@@ -5,14 +5,11 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-// Static configuration
-const INSTANCE_ID = "instance136415";
-const TOKEN = "19cdejkhli8lwz4d";
-const DEFAULT_MESSAGE = "Check out my awesome avatar! 🎨✨";
-
 interface WhatsAppRequest {
   phoneNumber: string;
+  message: string;
   imageData: string; // base64 image data
+  instanceId: string;
 }
 
 serve(async (req) => {
@@ -22,19 +19,24 @@ serve(async (req) => {
   }
 
   try {
-    const { phoneNumber, imageData }: WhatsAppRequest = await req.json();
+    const { phoneNumber, message, imageData, instanceId }: WhatsAppRequest = await req.json();
     
-    console.log('WhatsApp request received:', { 
-      phoneNumber: phoneNumber?.substring(0, 5) + '***', 
-      instanceId: INSTANCE_ID, 
-      hasImage: !!imageData 
-    });
+    console.log('WhatsApp request received:', { phoneNumber: phoneNumber?.substring(0, 5) + '***', instanceId, hasImage: !!imageData });
+
+    // Get the API token from secrets
+    const token = Deno.env.get('ULTRAMSG_API_TOKEN');
+    if (!token) {
+      console.error('UltraMsg API token not found in environment');
+      throw new Error('UltraMsg API token not configured');
+    }
+    console.log('API token retrieved successfully');
 
     // Validate required fields
-    if (!phoneNumber || !imageData) {
+    if (!phoneNumber || !imageData || !instanceId) {
       const missing = [];
       if (!phoneNumber) missing.push('phoneNumber');
       if (!imageData) missing.push('imageData');
+      if (!instanceId) missing.push('instanceId');
       console.error('Missing required fields:', missing);
       throw new Error(`Missing required fields: ${missing.join(', ')}`);
     }
@@ -46,19 +48,41 @@ serve(async (req) => {
     }
     console.log('Phone number formatted:', cleanPhoneNumber.substring(0, 5) + '***');
 
-    console.log('Sending request to UltraMsg API...');
-    // Send image via UltraMsg API using form-encoded data
-    const apiUrl = `https://api.ultramsg.com/${INSTANCE_ID}/messages/image`;
-    console.log('API URL:', apiUrl);
-
-    // Prepare form data
-    const params = new URLSearchParams();
-    params.append('token', TOKEN);
-    params.append('to', cleanPhoneNumber);
-    params.append('image', imageData); // Send full data URL with base64
-    params.append('caption', DEFAULT_MESSAGE);
+    // Process and validate image data
+    const base64Data = imageData.includes(',') ? imageData.split(',')[1] : imageData;
+    console.log('Base64 data preview:', base64Data.slice(0, 50) + '...');
     
-    console.log('Request payload prepared with token and caption');
+    // Validate base64 and estimate size
+    try {
+      const imageBlob = new Uint8Array(atob(base64Data).split('').map(char => char.charCodeAt(0)));
+      console.log('Image processed, size:', imageBlob.length, 'bytes');
+      
+      // Check image size (UltraMsg has limits)
+      if (imageBlob.length > 5 * 1024 * 1024) { // 5MB limit
+        throw new Error('Image too large. Please use a smaller image (max 5MB)');
+      }
+    } catch (error) {
+      console.error('Base64 validation failed:', error);
+      throw new Error('Invalid image data format');
+    }
+
+    console.log('Sending request to UltraMsg API...');
+    // Send image via UltraMsg API with token in URL (as required by UltraMsg)
+    const apiUrl = `https://api.ultramsg.com/${instanceId}/messages/image?token=${encodeURIComponent(token)}`;
+    console.log('API URL constructed:', apiUrl.replace(token, '***TOKEN***'));
+    console.log('Token length:', token?.length || 0);
+    console.log('Instance ID:', instanceId);
+
+    // Try URL-encoded format first (common for UltraMsg)
+    const params = new URLSearchParams();
+    params.append('to', cleanPhoneNumber);
+    params.append('image', imageData); // Send full data URL or base64
+    if (message) {
+      params.append('caption', message);
+      console.log('Message caption added');
+    }
+    
+    console.log('Request payload preview:', params.toString().slice(0, 200) + '...');
     
     const response = await fetch(apiUrl, {
       method: 'POST',

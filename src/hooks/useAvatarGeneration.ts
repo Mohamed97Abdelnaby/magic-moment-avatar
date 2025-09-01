@@ -62,14 +62,18 @@ export const useAvatarGeneration = () => {
 
   const sendWhatsApp = useCallback(async (
     phoneNumber: string,
-    imageData: string
+    message: string,
+    imageData: string,
+    instanceId: string
   ) => {
     try {
       console.log('Invoking send-whatsapp-image function...');
       const { data, error } = await supabase.functions.invoke('send-whatsapp-image', {
         body: {
           phoneNumber,
-          imageData
+          message,
+          imageData,
+          instanceId
         }
       });
 
