@@ -38,7 +38,7 @@ interface SharedResultScreenProps {
   showConfetti?: boolean;
   onRetake: () => void;
   onPrintPhoto: (imageData: string) => void;
-  onSendWhatsApp: (phoneNumber: string, message: string, imageData: string, instanceId: string) => Promise<boolean>;
+  onSendWhatsApp: (phoneNumber: string, imageData: string) => Promise<boolean>;
   onGenerateAvatar: () => void;
   backgroundImageUrl?: string | null;
   overlayOpacity?: number;
@@ -97,11 +97,10 @@ const SharedResultScreen = ({
       return;
     }
 
-    const success = await onSendWhatsApp(phoneNumber, message, displayImage || '', 'kiosk-instance');
+    const success = await onSendWhatsApp(phoneNumber, displayImage || '');
     if (success) {
       setWhatsappDialogOpen(false);
       setPhoneNumber("");
-      setMessage("Check out my awesome avatar!");
     }
   };
 
@@ -216,11 +215,12 @@ const SharedResultScreen = ({
                           />
                         </div>
                         <div>
-                          <Label htmlFor="message">Message</Label>
+                          <Label htmlFor="message">Message (automatically set)</Label>
                           <Input
                             id="message"
-                            value={message}
-                            onChange={(e) => setMessage(e.target.value)}
+                            value="Check out my awesome avatar! 🎨✨"
+                            disabled
+                            className="opacity-50"
                           />
                         </div>
                         <Button onClick={handleSendWhatsApp} className="w-full">

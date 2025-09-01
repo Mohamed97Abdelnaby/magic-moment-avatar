@@ -55,7 +55,7 @@ interface ResultScreenProps {
   showConfetti: boolean;
   onRetake: () => void;
   onPrintPhoto: (imageData: string) => void;
-  onSendWhatsApp: (phoneNumber: string, message: string, imageData: string, instanceId: string) => Promise<boolean>;
+  onSendWhatsApp: (phoneNumber: string, imageData: string) => Promise<boolean>;
   onGenerateAvatar: () => void;
   backgroundImageUrl?: string | null;
   overlayOpacity?: number;
@@ -85,9 +85,7 @@ const ResultScreen = ({
 }: ResultScreenProps) => {
   const [isWhatsAppDialogOpen, setIsWhatsAppDialogOpen] = useState(false);
   const [whatsappForm, setWhatsappForm] = useState({
-    phoneNumber: '',
-    message: 'Check out my special AI avatar gift! 🎁✨',
-    instanceId: 'instance136415'
+    phoneNumber: ''
   });
   const [isSendingWhatsApp, setIsSendingWhatsApp] = useState(false);
 
@@ -100,17 +98,13 @@ const ResultScreen = ({
     const imageToSend = generatedAvatar || capturedPhoto;
     const success = await onSendWhatsApp(
       whatsappForm.phoneNumber,
-      whatsappForm.message,
-      imageToSend,
-      whatsappForm.instanceId
+      imageToSend
     );
 
     if (success) {
       setIsWhatsAppDialogOpen(false);
       setWhatsappForm({
-        phoneNumber: '',
-        message: 'Check out my special AI avatar gift! 🎁✨',
-        instanceId: 'instance136415'
+        phoneNumber: ''
       });
     }
     setIsSendingWhatsApp(false);
