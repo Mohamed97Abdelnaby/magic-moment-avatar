@@ -1,6 +1,8 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std/http/server.ts";
-
+ const apiKey = Deno.env.get("OPENAI_API_KEY");
+    // const apiKey = "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";
+    
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
@@ -96,9 +98,7 @@ serve(async (req) => {
       });
     }
 
-    const apiKey = Deno.env.get("OPENAI_API_KEY");
-    // const apiKey = "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";
-    if (!apiKey) {
+   if (!apiKey) {
       console.error("OpenAI API key not found");
       return new Response(JSON.stringify({ error: "Server configuration error" }), {
         status: 500,
