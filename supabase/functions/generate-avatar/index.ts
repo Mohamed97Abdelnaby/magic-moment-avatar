@@ -106,17 +106,15 @@ serve(async (req) => {
       });
     }
 
-    // Convert base64 to blob for OpenAI API
-    const base64Content = image.split(',')[1];
-    const imageBytes = Uint8Array.from(atob(base64Content), c => c.charCodeAt(0));
+    // Convert base64 image to Blob
+    const imageBlob = await (await fetch(image)).blob();
     
     // Create form data for OpenAI image edit API
     const formData = new FormData();
-    formData.append('image', new Blob([imageBytes], { type: 'image/png' }), 'image.png');
-    formData.append('prompt', stylePrompts[style.toLowerCase()]);
     formData.append('model', 'gpt-image-1');
+    formData.append('image', imageBlob, 'input.png');
+    formData.append('prompt', stylePrompts[style.toLowerCase()]);
     formData.append('size', '1024x1024');
-    formData.append('quality', 'high');
 
     console.log(`Sending request to OpenAI for ${style} style transformation`);
 
