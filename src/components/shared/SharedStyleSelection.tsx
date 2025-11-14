@@ -43,17 +43,17 @@ const SharedStyleSelection = ({
 
   const containerClasses = mode === 'preview' 
     ? "relative h-full overflow-hidden" 
-    : "relative min-h-screen overflow-hidden flex items-center justify-center";
+    : "relative min-h-screen overflow-hidden";
 
   const contentClasses = mode === 'preview'
     ? "animate-fade-in pt-8"
-    : "animate-fade-in-up portrait:pt-12 landscape:pt-20";
+    : "animate-fade-in-up portrait:pt-8 landscape:pt-12";
 
-  const headingSize = mode === 'preview' ? "text-3xl" : "portrait:text-5xl landscape:text-7xl";
-  const subtitleSize = mode === 'preview' ? "text-lg" : "portrait:text-xl landscape:text-3xl";
+  const headingSize = mode === 'preview' ? "text-3xl" : "portrait:text-4xl landscape:text-6xl";
+  const subtitleSize = mode === 'preview' ? "text-lg" : "portrait:text-lg landscape:text-2xl";
   const gridClasses = mode === 'preview' 
     ? "grid grid-cols-1 md:grid-cols-2 gap-4 max-w-4xl mx-auto mb-8"
-    : "grid portrait:grid-cols-2 landscape:grid-cols-3 portrait:gap-4 landscape:gap-8 portrait:max-w-3xl landscape:max-w-6xl mx-auto portrait:mb-8 landscape:mb-12";
+    : "grid portrait:grid-cols-2 landscape:grid-cols-3 portrait:gap-6 landscape:gap-10 portrait:px-6 landscape:px-16 portrait:mb-6 landscape:mb-8";
 
   return (
     <div className={containerClasses} key={`styles-${stageAnimationKey}`}>
@@ -74,9 +74,9 @@ const SharedStyleSelection = ({
         />
       )}
 
-      <KioskScreenTextScope color={textColor} backgroundColor={backgroundColor} className="relative z-10 text-center portrait:py-8 landscape:py-4">
+      <KioskScreenTextScope color={textColor} backgroundColor={backgroundColor} className="relative z-10 text-center h-full flex flex-col portrait:py-6 landscape:py-8">
         {mode === 'kiosk' && (
-          <div className="fixed portrait:top-4 landscape:top-12 portrait:left-4 landscape:left-8 z-50">
+          <div className="fixed portrait:top-4 landscape:top-8 portrait:left-4 landscape:left-8 z-50">
             <Button
               onClick={() => navigate('/')}
               variant="ghost"
@@ -95,10 +95,10 @@ const SharedStyleSelection = ({
         {mode === 'kiosk' && <ParticleField count={15} />}
         
         <div className={contentClasses}>
-          <h1 className={`${headingSize} font-bold portrait:mb-3 landscape:mb-6 animate-scale-in`}>
+          <h1 className={`${headingSize} font-bold portrait:mb-2 landscape:mb-4 animate-scale-in`}>
             {title || 'Choose your Avatar'}
           </h1>
-          <p className={`${subtitleSize} ${mode === 'preview' ? 'mb-8' : 'portrait:mb-6 landscape:mb-12'} animate-fade-in-up`} style={{ animationDelay: '0.2s' }}>
+          <p className={`${subtitleSize} ${mode === 'preview' ? 'mb-8' : 'portrait:mb-4 landscape:mb-6'} animate-fade-in-up`} style={{ animationDelay: '0.2s' }}>
             Select how you want your avatar to look
           </p>
         </div>
@@ -112,7 +112,7 @@ const SharedStyleSelection = ({
             >
               <button
                 onClick={() => isInteractive && onStyleSelect(style.id)}
-                className={`w-full ${mode === 'preview' ? 'p-4' : 'portrait:p-4 landscape:p-8'} rounded-3xl border-4 transition-all duration-500 ${
+                className={`w-full ${mode === 'preview' ? 'p-4' : 'portrait:p-6 landscape:p-10'} rounded-3xl border-4 transition-all duration-500 ${
                   mode === 'kiosk' ? 'transform-3d magnetic' : ''
                 } relative overflow-hidden ${
                   selectedStyle === style.id
@@ -122,11 +122,11 @@ const SharedStyleSelection = ({
                 disabled={!isInteractive}
               >
                 <div className="relative z-10">
-                  <div className={`${mode === 'preview' ? 'text-4xl mb-3' : 'portrait:text-5xl landscape:text-8xl portrait:mb-3 landscape:mb-6'} animate-float`} style={{ animationDelay: `${index * 0.2}s` }}>
+                  <div className={`${mode === 'preview' ? 'text-4xl mb-3' : 'portrait:text-6xl landscape:text-9xl portrait:mb-4 landscape:mb-6'} animate-float`} style={{ animationDelay: `${index * 0.2}s` }}>
                     {style.preview}
                   </div>
-                  <h3 className={`${mode === 'preview' ? 'text-lg' : 'portrait:text-xl landscape:text-3xl'} font-bold portrait:mb-1 landscape:mb-2`}>{style.name}</h3>
-                  <p className={`${mode === 'preview' ? 'text-sm' : 'portrait:text-sm landscape:text-lg'} opacity-70`}>{style.description}</p>
+                  <h3 className={`${mode === 'preview' ? 'text-lg' : 'portrait:text-2xl landscape:text-4xl'} font-bold portrait:mb-2 landscape:mb-3`}>{style.name}</h3>
+                  <p className={`${mode === 'preview' ? 'text-sm' : 'portrait:text-base landscape:text-xl'} opacity-70`}>{style.description}</p>
                 </div>
                 
                 {selectedStyle === style.id && (
