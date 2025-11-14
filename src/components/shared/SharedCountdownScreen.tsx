@@ -33,7 +33,7 @@ const SharedCountdownScreen = ({
 }: SharedCountdownScreenProps) => {
   const containerClasses = mode === 'preview' 
     ? "relative h-full overflow-hidden" 
-    : "relative min-h-screen overflow-hidden";
+    : "relative min-h-screen overflow-hidden flex items-center justify-center";
 
   const displayCountdown = mode === 'preview' ? 3 : countdown;
 
@@ -59,24 +59,24 @@ const SharedCountdownScreen = ({
       {mode === 'kiosk' && <ParticleField count={8} />}
       
       <KioskScreenTextScope color={textColor} backgroundColor={backgroundColor} className="relative z-10">
-        <div className="min-h-screen flex flex-col items-center justify-center text-center p-8">
-          <h1 className={`${mode === 'preview' ? 'text-3xl' : 'text-6xl'} font-bold mb-8 animate-fade-in`}>
+        <div className="min-h-screen flex flex-col items-center justify-center text-center portrait:p-4 landscape:p-8">
+          <h1 className={`${mode === 'preview' ? 'text-3xl' : 'portrait:text-4xl landscape:text-6xl'} font-bold portrait:mb-4 landscape:mb-8 animate-fade-in`}>
             {title || 'Take a moment...'}
           </h1>
           
-          <div className="mb-8">
+          <div className="portrait:mb-4 landscape:mb-8">
             <QuoteDisplay 
               quotes={countdownQuotes} 
-              className={`${mode === 'preview' ? 'text-lg' : 'text-2xl'} opacity-80`}
+              className={`${mode === 'preview' ? 'text-lg' : 'portrait:text-xl landscape:text-2xl'} opacity-80`}
               interval={mode === 'preview' ? 5000 : 2500}
             />
           </div>
           
-          <div className={`${mode === 'preview' ? 'text-8xl' : 'text-[12rem]'} font-bold mb-8 animate-bounce-soft`}>
+          <div className={`${mode === 'preview' ? 'text-8xl' : 'portrait:text-8xl landscape:text-[12rem]'} font-bold portrait:mb-4 landscape:mb-8 animate-bounce-soft`}>
             {displayCountdown}
           </div>
           
-          <p className={`${mode === 'preview' ? 'text-lg' : 'text-2xl'} opacity-60 animate-pulse-soft`}>
+          <p className={`${mode === 'preview' ? 'text-lg' : 'portrait:text-xl landscape:text-2xl'} opacity-60 animate-pulse-soft`}>
             When you're ready...
           </p>
         </div>
