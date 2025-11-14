@@ -127,14 +127,14 @@ const SharedResultScreen = ({
       {mode === 'kiosk' && <ParticleField count={20} />}
       
       <KioskScreenTextScope color={textColor} backgroundColor={backgroundColor} className="relative z-10">
-        <div className="min-h-screen flex flex-col items-center justify-center text-center p-8">
-          <h1 className={`${mode === 'preview' ? 'text-3xl' : 'text-6xl'} font-bold mb-8 animate-fade-in`}>
+        <div className="min-h-screen flex flex-col items-center justify-center text-center portrait:p-4 landscape:p-8">
+          <h1 className={`${mode === 'preview' ? 'text-3xl' : 'portrait:text-4xl landscape:text-6xl'} font-bold portrait:mb-4 landscape:mb-8 animate-fade-in`}>
             {generationError ? "Oops! Something went wrong" : (title || "Your Avatar is Ready!")}
           </h1>
 
           {generationError && (
-            <div className="mb-8 p-6 bg-red-500/20 border border-red-500/30 rounded-xl max-w-md">
-              <p className="text-red-200 mb-4">{generationError}</p>
+            <div className="portrait:mb-4 landscape:mb-8 portrait:p-4 landscape:p-6 bg-red-500/20 border border-red-500/30 rounded-xl max-w-md">
+              <p className="text-red-200 portrait:mb-2 landscape:mb-4">{generationError}</p>
               <Button 
                 onClick={isInteractive ? onGenerateAvatar : () => {}}
                 disabled={isGenerating || !isInteractive}
@@ -147,8 +147,8 @@ const SharedResultScreen = ({
           )}
 
           {displayImage && !generationError && (
-            <Card className={`mb-8 overflow-hidden border-4 border-primary/30 shadow-glow animate-scale-in ${
-              mode === 'preview' ? 'max-w-sm' : 'max-w-2xl'
+            <Card className={`portrait:mb-4 landscape:mb-8 overflow-hidden border-4 border-primary/30 shadow-glow animate-scale-in ${
+              mode === 'preview' ? 'max-w-sm' : 'portrait:max-w-lg landscape:max-w-2xl'
             }`}>
               <CardContent className="p-0">
                 <img 
@@ -162,15 +162,15 @@ const SharedResultScreen = ({
           )}
 
           {displayImage && !generationError && (
-            <div className={`grid ${mode === 'preview' ? 'grid-cols-1 gap-2' : 'grid-cols-1 md:grid-cols-3 gap-6'} max-w-4xl animate-fade-in`} style={{ animationDelay: '0.3s' }}>
+            <div className={`grid ${mode === 'preview' ? 'grid-cols-1 gap-2' : 'portrait:grid-cols-1 portrait:gap-3 landscape:grid-cols-3 landscape:gap-6'} portrait:max-w-md landscape:max-w-4xl animate-fade-in`} style={{ animationDelay: '0.3s' }}>
               <Button 
                 onClick={isInteractive ? onRetake : () => {}}
                 disabled={!isInteractive}
                 variant="outline"
                 size={mode === 'preview' ? 'sm' : 'lg'}
-                className={`${mode === 'preview' ? 'px-4 py-2' : 'px-8 py-6 text-xl'} border-white/30 hover:bg-white/10`}
+                className={`${mode === 'preview' ? 'px-4 py-2' : 'portrait:px-6 portrait:py-4 portrait:text-base landscape:px-8 landscape:py-6 landscape:text-xl'} border-white/30 hover:bg-white/10`}
               >
-                <RotateCcw className={`${mode === 'preview' ? 'h-4 w-4 mr-2' : 'h-6 w-6 mr-3'}`} />
+                <RotateCcw className={`${mode === 'preview' ? 'h-4 w-4 mr-2' : 'portrait:h-5 portrait:w-5 portrait:mr-2 landscape:h-6 landscape:w-6 landscape:mr-3'}`} />
                 Start Over
               </Button>
 
@@ -181,9 +181,9 @@ const SharedResultScreen = ({
                     disabled={!isInteractive}
                     variant="outline"
                     size="lg"
-                    className="px-8 py-6 text-xl border-white/30 hover:bg-white/10"
+                    className="portrait:px-6 portrait:py-4 portrait:text-base landscape:px-8 landscape:py-6 landscape:text-xl border-white/30 hover:bg-white/10"
                   >
-                    <Printer className="h-6 w-6 mr-3" />
+                    <Printer className="portrait:h-5 portrait:w-5 portrait:mr-2 landscape:h-6 landscape:w-6 landscape:mr-3" />
                     Print Photo
                   </Button>
 
@@ -192,10 +192,10 @@ const SharedResultScreen = ({
                       <Button 
                         variant="outline"
                         size="lg"
-                        className="px-8 py-6 text-xl border-white/30 hover:bg-white/10"
+                        className="portrait:px-6 portrait:py-4 portrait:text-base landscape:px-8 landscape:py-6 landscape:text-xl border-white/30 hover:bg-white/10"
                         disabled={!isInteractive}
                       >
-                        <MessageCircle className="h-6 w-6 mr-3" />
+                        <MessageCircle className="portrait:h-5 portrait:w-5 portrait:mr-2 landscape:h-6 landscape:w-6 landscape:mr-3" />
                         Send via WhatsApp
                       </Button>
                     </DialogTrigger>
